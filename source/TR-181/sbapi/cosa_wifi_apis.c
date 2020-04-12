@@ -16578,6 +16578,7 @@ CosaDmlWiFi_SetBandSteeringOptions(PCOSA_DML_WIFI_BANDSTEERING_OPTION  pBandStee
 	return ANSC_STATUS_SUCCESS;
 }
 
+#if defined(_ENABLE_BAND_STEERING_)
 #if defined (_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_TURRIS_)
 void *_Band_Switch( void *arg)
 {
@@ -16609,6 +16610,7 @@ void _wifi_eventCapture(void){
 	system("iw event -f > /tmp/event_count.txt");
 	//pthread_exit(NULL);
 }
+#endif
 #endif
 
 ANSC_STATUS 
