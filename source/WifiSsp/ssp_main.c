@@ -372,6 +372,10 @@ int main(int argc, char* argv[])
     char                            *subSys            = NULL;
     extern ANSC_HANDLE bus_handle;
 
+    // Buffer characters till newline for stdout and stderr
+    setlinebuf(stdout);
+    setlinebuf(stderr);
+
     /*
      *  Load the start configuration
      */
