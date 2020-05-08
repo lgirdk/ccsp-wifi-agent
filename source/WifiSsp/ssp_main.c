@@ -501,6 +501,9 @@ int main(int argc, char* argv[])
     errno_t                         rc                 = -1;
     
     
+    // Buffer characters till newline for stdout and stderr
+    setlinebuf(stdout);
+    setlinebuf(stderr);
 
     /*
      *  Load the start configuration
