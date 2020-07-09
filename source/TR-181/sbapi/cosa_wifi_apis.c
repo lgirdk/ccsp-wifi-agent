@@ -10419,8 +10419,14 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
 		if(gRadioRestartRequest[0] || gRadioRestartRequest[1]) {
 fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__, gRadioRestartRequest[0], gRadioRestartRequest[1] );		
 			wlanRestart=TRUE;
-			gRadioRestartRequest[0]=FALSE;
-			gRadioRestartRequest[1]=FALSE;
+			if(wlanIndex == 0)
+			{
+				gRadioRestartRequest[0]=FALSE;
+			}
+			else
+			{
+				gRadioRestartRequest[1]=FALSE;
+			}
 		}
 		//<<
 		if(wlanRestart == TRUE)
@@ -11233,6 +11239,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 		CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : %s Calling wifi_setEnable to enable/disable SSID on interface:  %d enable: %d \n",__FUNCTION__,wlanIndex,pCfg->bEnabled));
                 int retStatus = wifi_setApEnable(wlanIndex, pCfg->bEnabled);
 	        if(retStatus == 0) {
+			gRadioRestartRequest[wlanIndex%2]=TRUE;
                     CcspWifiTrace(("RDK_LOG_WARN,WIFI %s wifi_setApEnable success  index %d , %d",__FUNCTION__,wlanIndex,pCfg->bEnabled));
 		 if (pCfg->InstanceNumber == 4) {
 			char passph[128]={0};
@@ -11291,6 +11298,11 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
 #endif
 
         wifi_setSSIDName(wlanIndex, pCfg->SSID);
+        /*Restart Radio needed for 5GHz SSID, in case of 2.4GHz SSID pushSSID function is sufficient*/
+        if(wlanIndex%2 == 1)
+        {
+            gRadioRestartRequest[wlanIndex%2]=TRUE;
+        }
         cfgChange = TRUE;
         CosaDmlWiFi_GetPreferPrivateData(&bEnabled);
         if (bEnabled == TRUE)
