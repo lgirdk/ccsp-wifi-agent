@@ -12696,14 +12696,14 @@ WPS_GetParamBoolValue
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_WIFI_AP               pWifiAp      = (PCOSA_DML_WIFI_AP        )pLinkObj->hContext;
     PCOSA_DML_WIFI_APWPS_FULL       pWifiApWps   = (PCOSA_DML_WIFI_APWPS_FULL)&pWifiAp->WPS;
-    
+    INT  wlanIndex = -1;
+
+    wlanIndex = pWifiAp->AP.Cfg.InstanceNumber -1 ;
     /* check the parameter name and return the corresponding value */
     if (strcmp(ParamName, "Enable") == 0)
     {
 	BOOL enableWps = FALSE;
-	INT  wlanIndex = -1;
 
-	wlanIndex = pWifiAp->AP.Cfg.InstanceNumber -1 ;
 	wifi_getApWpsEnable(wlanIndex, &enableWps);
 	pWifiApWps->Cfg.bEnabled = enableWps;
         /* collect value */
@@ -12721,6 +12721,13 @@ WPS_GetParamBoolValue
     if (strcmp(ParamName, "X_Comcast_com_Configured") == 0)
     {
         /* collect value */
+        char  configState[32] = {0};
+        wifi_getApWpsConfigurationState(wlanIndex, configState);
+        if (strstr(configState,"Not configured") != NULL) {
+            pWifiApWps->Info.X_Comcast_com_Configured = FALSE;
+        } else {
+            pWifiApWps->Info.X_Comcast_com_Configured = TRUE;
+        }
         *pBool = pWifiApWps->Info.X_Comcast_com_Configured;
         return TRUE;
     }
