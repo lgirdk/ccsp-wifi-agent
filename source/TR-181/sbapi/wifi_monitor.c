@@ -853,7 +853,7 @@ int upload_client_telemetry_data(void *arg)
         get_device_flag(stflag, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.CliStatList");
         get_device_flag(rxretryflag, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.RxRetryList");
 	isErrorsReceivedRFCenabled = check_ErrorsReceivedRFC_enabled();
-#if !defined (_XB6_PRODUCT_REQ_) && !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
+#if !defined (_XB6_PRODUCT_REQ_) && !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
         // see if list has changed
 #ifdef WIFI_HAL_VERSION_3
         BOOL enableRadioDetailStats[MAX_NUM_RADIOS] = {FALSE};
@@ -1051,7 +1051,7 @@ int upload_client_telemetry_data(void *arg)
 
 	get_formatted_time(tmp);
 	memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-#if !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_HUB4_PRODUCT_REQ_)
+#if !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_LG_MV1_CELENO_)
         wifi_VAPTelemetry_t telemetry;
         char vap_status[16];
         memset(vap_status,0,16);
@@ -5526,7 +5526,7 @@ int associated_devices_diagnostics(void *arg)
     static wifi_associated_dev3_t *dev_array = NULL;
     static unsigned int num_devs = 0;
 
-#if !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(DUAL_CORE_XB3) && !(defined (_XB7_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_))
+#if !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(DUAL_CORE_XB3) && !(defined (_XB7_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)) && !defined(_LG_MV1_CELENO_)
     unsigned int i = 0;
     static unsigned int current_dev = 0;
     static int last_valid_dev = 0;
@@ -6147,7 +6147,7 @@ int init_wifi_monitor ()
    
     pthread_mutex_lock(&g_apRegister_lock);
     wifi_newApAssociatedDevice_callback_register(device_associated);
-#if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
+#if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
     wifi_apDeAuthEvent_callback_register(device_deauthenticated);
     wifi_apDisassociatedDevice_callback_register(device_disassociated);
 #endif
