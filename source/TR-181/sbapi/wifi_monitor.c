@@ -495,7 +495,7 @@ void upload_client_telemetry_data()
     get_device_flag(trflag, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.TxRxRateList");
     get_device_flag(nrflag, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.NormalizedRssiList");
     get_device_flag(stflag, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.CliStatList");
-#if !defined (_XB6_PRODUCT_REQ_) && !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_)
+#if !defined (_XB6_PRODUCT_REQ_) && !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_LG_MV1_CELENO_)
 	// see if list has changed
 	bool enable24detailstats = false;
 	bool enable5detailstats = false;
@@ -607,7 +607,7 @@ void upload_client_telemetry_data()
 
 	get_formatted_time(tmp);
 	memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-#if !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_HUB4_PRODUCT_REQ_)
+#if !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_LG_MV1_CELENO_)
         wifi_VAPTelemetry_t telemetry;
         char vap_status[16];
         memset(vap_status,0,16);
@@ -2911,7 +2911,7 @@ int init_wifi_monitor ()
    
     pthread_mutex_lock(&g_apRegister_lock);
     wifi_newApAssociatedDevice_callback_register(device_associated);
-#if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
+#if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
     wifi_apDeAuthEvent_callback_register(device_deauthenticated);
 	wifi_apDisassociatedDevice_callback_register(device_disassociated);
 #endif
