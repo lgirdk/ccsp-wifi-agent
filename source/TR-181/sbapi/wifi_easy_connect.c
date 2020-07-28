@@ -51,7 +51,7 @@
 #include "safec_lib_common.h"
 
 #if !defined(_BWG_PRODUCT_REQ_)
-#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_PLATFORM_RASPBERRYPI_)
+#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_LG_MV1_CELENO_)
 static const char *wifi_health_log = "/rdklogs/logs/wifihealth.txt";
 
 extern bool is_device_associated(int ap_index, char *mac);
