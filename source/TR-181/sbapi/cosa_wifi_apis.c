@@ -4999,14 +4999,14 @@ fprintf(stderr, "-- %s %d wifi_setApRadioIndex  wlanIndex = %lu intValue=%d \n",
         //  it should only be brought up once the RouterEnabled=TRUE
         wifiDbgPrintf("%s: found BssHotSpot value = %s \n", __func__, strValue);
 
-#if !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
+#if !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
         BOOL enable = _ansc_atoi(strValue);
         wifi_setApEnableOnLine(wlanIndex,enable);
 #endif
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     } else {
         wifiDbgPrintf("%s: didn't find BssHotSpot setting EnableOnline to FALSE \n", __func__);
-#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
+#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
         wifi_setApEnableOnLine(wlanIndex,0);
 #endif
     }
@@ -5715,13 +5715,13 @@ printf("%s g_Subsytem = %s wlanIndex %lu ulInstance %lu enabled = %s\n",__FUNCTI
         wifiDbgPrintf("%s: found BssHotSpot value = %s \n", __func__, strValue);
         BOOL enable = _ansc_atoi(strValue);
         pCfg->BssHotSpot  = (enable == TRUE) ? TRUE : FALSE;
-#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
+#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
         wifi_setApEnableOnLine(wlanIndex,enable);
 #endif
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     } else {
         wifiDbgPrintf("%s: didn't find BssHotSpot setting EnableOnline to FALSE \n", __func__);
-#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
+#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
         wifi_setApEnableOnLine(wlanIndex,0);
 #endif
     }
@@ -7828,7 +7828,7 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
     CosaDmlWiFiPsmDelInterworkingEntry(); 
 #endif
 
-#if defined(DUAL_CORE_XB3) || defined(CISCO_XB3_PLATFORM_CHANGES) || defined (_XB6_PRODUCT_REQ_) || defined (_COSA_BCM_MIPS_) || defined (_HUB4_PRODUCT_REQ_)
+#if defined(DUAL_CORE_XB3) || defined(CISCO_XB3_PLATFORM_CHANGES) || defined (_XB6_PRODUCT_REQ_) || defined (_COSA_BCM_MIPS_) || defined (_HUB4_PRODUCT_REQ_) || defined(_LG_MV1_CELENO_)
     pthread_t tid4;
 #endif
     // Only do once and store BSSID and MacAddress in memory
@@ -7864,7 +7864,7 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
             for (i = 1; i <= gRadioCount; i++) {
                 sprintf(recName, BssHotSpot, i);               
                 PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, "0");
-#if !defined (_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
+#if !defined (_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
                 wifi_setApEnableOnLine(i-1,0);
 #endif
             }            
@@ -9664,7 +9664,7 @@ CosaDmlWiFiRadioSetTransmitPowerPercent
 
     wifiDbgPrintf("%s: enter wlanIndex %d transmitPowerPercent %d \n", __func__, wlanIndex, transmitPowerPercent);
 
-#if defined(_COSA_BCM_MIPS_)|| defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_) || defined(_INTEL_WAV_)
+#if defined(_COSA_BCM_MIPS_)|| defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_) || defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_)
     wifi_setRadioTransmitPower(wlanIndex, transmitPowerPercent);
 #else
     ULONG curTransmitPower;
@@ -12006,7 +12006,7 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
         CcspWifiTrace(("RDK_LOG_WARN, WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n"));
     }
     if (pCfg->EnableOnline != pStoredCfg->EnableOnline) {
-#if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
+#if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
         wifi_setApEnableOnLine(wlanIndex, pCfg->EnableOnline);  
 #endif
         cfgChange = TRUE;
@@ -12015,7 +12015,7 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
 	//zqiu: 
     if (pCfg->RouterEnabled != pStoredCfg->RouterEnabled) {
 		CcspWifiTrace(("RDK_LOG_WARN,WIFI %s : Calling wifi_setRouterEnable interface: %d SSID :%d \n",__FUNCTION__,wlanIndex,pCfg->RouterEnabled));
-#if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
+#if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
 		wifi_setRouterEnable(wlanIndex, pCfg->RouterEnabled);
 #endif
 		cfgChange = TRUE;
@@ -12197,14 +12197,14 @@ CosaDmlWiFiSsidGetCfg
 
     getDefaultSSID(wlanIndex,pCfg->DefaultSSID);
 
-#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
+#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
     wifi_getApEnableOnLine(wlanIndex, &enabled);
 #else
     wifi_getApEnable(wlanIndex, &enabled);
 #endif
     pCfg->EnableOnline = (enabled == TRUE) ? TRUE : FALSE;
 
-#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
+#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
 	//zqiu:
     wifi_getRouterEnable(wlanIndex, &enabled);
     pCfg->RouterEnabled = (enabled == TRUE) ? TRUE : FALSE;
@@ -13223,7 +13223,7 @@ CosaDmlWiFiApAssociatedDevicesHighWatermarkGetVal
     wifi_getApAssociatedDevicesHighWatermark(wlanIndex,&highWatermark);
 	pCfg->HighWatermark = highWatermark;
 
-#if !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_HUB4_PRODUCT_REQ_)
+#if !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_LG_MV1_CELENO_)
     wifi_VAPTelemetry_t telemetry;
     wifi_getVAPTelemetry(wlanIndex, &telemetry);
     pCfg->TXOverflow = (ULONG)telemetry.txOverflow;
@@ -15984,7 +15984,7 @@ CosaDmlWiFi_startDPP(PCOSA_DML_WIFI_AP pWiFiAP, ULONG staIndex)
 {
 
 #if !defined(_BWG_PRODUCT_REQ_)
-#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_PLATFORM_RASPBERRYPI_)
+#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_LG_MV1_CELENO_)
     if (start_device_provisioning(pWiFiAP, staIndex)  == RETURN_OK) {
        CcspTraceError(("%s:%d: DPP Authentication Request Frame send success\n", __func__, __LINE__));
        return ANSC_STATUS_SUCCESS;
@@ -19972,7 +19972,7 @@ ANSC_STATUS CosaDmlWiFi_startHealthMonitorThread(void)
 ANSC_STATUS CosaDmlWiFi_initEasyConnect(PCOSA_DATAMODEL_WIFI pWifiDataModel)
 {
 #if !defined(_BWG_PRODUCT_REQ_)
-#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
+#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
     if ((init_easy_connect(pWifiDataModel) < 0)) {
         fprintf(stderr, "-- %s %d CosaDmlWiFi_startEasyConnect fail\n", __func__, __LINE__);
         return ANSC_STATUS_FAILURE;
@@ -20431,7 +20431,7 @@ BOOL CosaDmlWiFi_ValidateEasyConnectSingleChannelString(UINT apIndex, const char
 void CosaDmlWiFi_AllPossibleEasyConnectChannels(UINT apIndex, PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta)
 {
 #if !defined(_BWG_PRODUCT_REQ_)
-#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_PLATFORM_RASPBERRYPI_)
+#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_LG_MV1_CELENO_)
     wifi_easy_connect_best_enrollee_channels_t *channels;
     unsigned int i, tmp;
     ULONG op_channel = 0;
