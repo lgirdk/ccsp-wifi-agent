@@ -426,6 +426,14 @@ static void get_uptime(int *uptime)
     *uptime= info.uptime;
 }
 
+/*This function is for LG Celeno MV1 platform*/
+static void enable_reset_radio_flag(int wlanIndex)
+{
+#ifdef _LG_MV1_CELENO_
+	gRadioRestartRequest[wlanIndex%2]=TRUE;
+#endif
+}
+
 #ifdef _COSA_SIM_
 ANSC_STATUS
 CosaDmlWiFiInit
@@ -15769,7 +15777,7 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
         /*Restart Radio needed for 5GHz SSID, in case of 2.4GHz SSID pushSSID function is sufficient*/
         if(wlanIndex%2 == 1)
         {
-            gRadioRestartRequest[wlanIndex%2]=TRUE;
+            enable_reset_radio_flag(wlanIndex);
         }
 
         cfgChange = TRUE;
@@ -16703,8 +16711,16 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     wifi_setApIsolationEnable(wlanIndex, pCfg->IsolationEnable);
     #endif
 
+    if (pCfg->IsolationEnable != pStoredCfg->IsolationEnable) {
+            wifi_setApIsolationEnable(wlanIndex, pCfg->IsolationEnable);
+    }
+
     if (pCfg->SSIDAdvertisementEnabled != pStoredCfg->SSIDAdvertisementEnabled) {
         wifi_setApSsidAdvertisementEnable(wlanIndex, pCfg->SSIDAdvertisementEnabled);
+        if(wlanIndex%2 == 1)
+        {
+            enable_reset_radio_flag(wlanIndex);
+        }
 #if defined(ENABLE_FEATURE_MESHWIFI)
         {
             // notify mesh components that wifi SSID Advertise changed
@@ -18304,6 +18320,8 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         CcspWifiTrace(("RDK_LOG_WARN,%s calling setBasicAuthenticationMode ssid : %s authmode : %s \n", __FUNCTION__, pSsid, authMode));
         wifi_setApBasicAuthenticationMode(wlanIndex, authMode);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
+
+        enable_reset_radio_flag(wlanIndex);
     }
 	//>>Deprecated
     /*
@@ -18369,6 +18387,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
              CcspWifiEventTrace(("RDK_LOG_NOTICE, KeyPassphrase changed \n "));
              CcspWifiTrace(("RDK_LOG_WARN, KeyPassphrase changed \n "));
+             enable_reset_radio_flag(wlanIndex);
         } else {
              CcspWifiTrace(("RDK_LOG_WARN, WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n"));
         }
@@ -18449,6 +18468,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 #endif
 		CcspWifiTrace(("RDK_LOG_WARN, RDKB_WIFI_CONFIG_CHANGED :%s Encryption method changed ,calling setWpaEncryptionMode Index : %d mode : %s \n",__FUNCTION__,wlanIndex,method));
 		wifi_setApWpaEncryptionMode(wlanIndex, method);
+		enable_reset_radio_flag(wlanIndex);
     } 
 
 #if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)
@@ -19177,6 +19197,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         }
 #else
             wifi_setApWpsEnable(wlanIndex, pCfg->bEnabled);
+            enable_reset_radio_flag(wlanIndex);
         
 #endif
 //#endif
@@ -19193,6 +19214,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 	} else if ( pCfg->ConfigMethodsEnabled == (COSA_DML_WIFI_WPS_METHOD_PushButton|COSA_DML_WIFI_WPS_METHOD_Pin) ) {
 	    wifi_setApWpsConfigMethodsEnabled(wlanIndex,"PushButton,Keypad,Label,Display");
 	} 
+	enable_reset_radio_flag(wlanIndex);
     } 
     
     if (pCfg->WpsPushButton != pStoredCfg->WpsPushButton) {
