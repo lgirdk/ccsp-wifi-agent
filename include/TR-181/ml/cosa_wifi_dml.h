@@ -484,6 +484,55 @@ ReceivedSignalLevel_Synchronize
 
  APIs for Object:
 
+    WiFi.Radio.{i}.X_LGI-COM_EnhancedACS.
+
+    *  EnhancedACS_GetParamBoolValue
+    *  EnhancedACS_SetParamBoolValue
+    *  EnhancedACS_Validate
+    *  EnhancedACS_Commit
+    *  EnhancedACS_Rollback
+
+***********************************************************************/
+BOOL
+EnhancedACS_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+EnhancedACS_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+BOOL
+EnhancedACS_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    );
+
+ULONG
+EnhancedACS_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
+EnhancedACS_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
  WiFi.X_RDKCENTRAL-COM_BandSteering.
 
     *  BandSteering_GetParamBoolValue
