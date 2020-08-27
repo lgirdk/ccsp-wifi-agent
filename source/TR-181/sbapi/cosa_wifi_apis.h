@@ -311,6 +311,14 @@ _COSA_DML_WIFI_CALC_OPT
 }
 COSA_DML_WIFI_CALC_OPT, *PCOSA_DML_WIFI_CALC_OPT;
 
+struct
+_COSA_DML_WIFI_RADIO_ENHANCEDACS
+{
+	BOOL                            DFSMoveBack;
+}_struct_pack_;
+
+typedef  struct _COSA_DML_WIFI_RADIO_ENHANCEDACS COSA_DML_WIFI_RADIO_ENHANCEDACS, *PCOSA_DML_WIFI_RADIO_ENHANCEDACS;
+
 /*
  *  Structure definitions for WiFi Radio
  */
@@ -384,6 +392,9 @@ _COSA_DML_WIFI_RADIO_CFG
     /* For X_RDKCENTRAL-COM_DCSEnable */
     BOOL                            X_RDKCENTRAL_COM_DCSEnable;
 	int 							iX_RDKCENTRAL_COM_clientInactivityTimeout;	
+
+    /* For X_LGI-COM_EnhancedACS */
+    COSA_DML_WIFI_RADIO_ENHANCEDACS EnhancedACS;
 }_struct_pack_;
 
 typedef struct _COSA_DML_WIFI_RADIO_CFG COSA_DML_WIFI_RADIO_CFG,  *PCOSA_DML_WIFI_RADIO_CFG;
