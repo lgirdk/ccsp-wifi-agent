@@ -1692,6 +1692,25 @@ INSTMSMT_PH2 -->
 									</object>
 								</objects>
                         </object>
+                        <object>
+                            <name>X_LGI-COM_EnhancedACS</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>EnhancedACS_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>EnhancedACS_SetParamBoolValue</func_SetParamBoolValue>
+                                <func_Validate>EnhancedACS_Validate</func_Validate>
+                                <func_Commit>EnhancedACS_Commit</func_Commit>
+                                <func_Rollback>EnhancedACS_Rollback</func_Rollback>
+                            </functions>
+                            <parameters>
+                                <parameter>
+                                    <name>DFSMoveBack</name>
+                                    <type>boolean</type>
+                                    <syntax>bool</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                            </parameters>
+                        </object>
                     </objects>
                 </object>
 				<object>
