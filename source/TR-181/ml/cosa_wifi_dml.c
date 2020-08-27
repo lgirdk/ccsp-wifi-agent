@@ -5935,6 +5935,97 @@ Stats3_Commit
     return ANSC_STATUS_SUCCESS; 
 }
 
+/***********************************************************************
+
+ APIs for Object:
+
+    WiFi.Radio.{i}.X_LGI-COM_EnhancedACS.
+
+    *  EnhancedACS_GetParamBoolValue
+    *  EnhancedACS_SetParamBoolValue
+    *  EnhancedACS_Validate
+    *  EnhancedACS_Commit
+    *  EnhancedACS_Rollback
+
+***********************************************************************/
+BOOL
+EnhancedACS_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    PCOSA_DML_WIFI_RADIO            pWifiRadio      = hInsContext;
+    PCOSA_DML_WIFI_RADIO_FULL       pWifiRadioFull = &pWifiRadio->Radio;
+    PCOSA_DML_WIFI_RADIO_CFG        pWifiRadioCfg  = &pWifiRadioFull->Cfg;
+    PCOSA_DML_WIFI_RADIO_ENHANCEDACS      pWifiRadioEnhancedACS = &pWifiRadioCfg->EnhancedACS;
+    int wlanIndex = (ULONG) pWifiRadioCfg->InstanceNumber-1;
+
+    if ((wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX)) {
+        return ANSC_STATUS_FAILURE;
+    }
+    /* check the parameter name and return the corresponding value */
+    if (strcmp(ParamName, "DFSMoveBack") == 0) {
+         *pBool = pWifiRadioEnhancedACS->DFSMoveBack;
+         return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL
+EnhancedACS_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+    PCOSA_DATAMODEL_WIFI            pMyObject       = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
+    PCOSA_DML_WIFI_RADIO            pWifiRadio      = hInsContext;
+    PCOSA_DML_WIFI_RADIO_FULL       pWifiRadioFull = &pWifiRadio->Radio;
+    PCOSA_DML_WIFI_RADIO_CFG        pWifiRadioCfg  = &pWifiRadioFull->Cfg;	
+    PCOSA_DML_WIFI_RADIO_ENHANCEDACS      pWifiRadioEnhancedACS = &pWifiRadioCfg->EnhancedACS;
+    int wlanIndex = (ULONG) pWifiRadioCfg->InstanceNumber-1;
+
+    if ((wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX)) {
+        return ANSC_STATUS_FAILURE;
+    }
+    if (strcmp(ParamName, "DFSMoveBack") == 0) {
+        pWifiRadioEnhancedACS->DFSMoveBack = bValue;
+        return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL
+EnhancedACS_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    )
+{
+    return TRUE;
+}
+
+ULONG
+EnhancedACS_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    return ANSC_STATUS_SUCCESS;
+}
+
+ULONG
+EnhancedACS_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    return ANSC_STATUS_SUCCESS;
+}
 
 /***********************************************************************
 
