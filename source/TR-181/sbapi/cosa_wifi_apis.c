@@ -13941,11 +13941,19 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
             CcspWifiTrace(("RDK_LOG_WARN, %s Failed to configure DFS settings!!!\n",__FUNCTION__));
         }
 
-#if defined(_INTEL_WAV_)
-        wlanRestart = TRUE;
-#endif
+#if defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_)
+         wlanRestart = TRUE;
+ #endif
     }
-	
+
+#if defined(_LG_MV1_CELENO_)
+    if (pStoredCfg->EnhancedACS.DFSMoveBack != pCfg->EnhancedACS.DFSMoveBack)
+    {
+        wifi_setRadioDfsMoveBackEnable(wlanIndex, pCfg->EnhancedACS.DFSMoveBack);
+        wlanRestart = TRUE;
+    }
+#endif
+
 	if (pStoredCfg->X_COMCAST_COM_DCSEnable != pCfg->X_COMCAST_COM_DCSEnable )
     {
         wifi_setRadioDCSEnable(wlanIndex,pCfg->X_COMCAST_COM_DCSEnable);
@@ -14980,6 +14988,9 @@ CosaDmlWiFiRadioGetCfg
 	pCfgChannel = &pCfg->Channel;
 	wifi_getRadioChannel(wlanIndex, pCfgChannel);
     
+#if defined(_LG_MV1_CELENO_)
+    wifi_getRadioDfsMoveBackEnable(wlanIndex, &pCfg->EnhancedACS.DFSMoveBack);
+#endif
 
     wifi_getRadioDfsSupport(wlanIndex,&pCfg->X_COMCAST_COM_DFSSupport);
 	wifi_getRadioDfsEnable(wlanIndex, &pCfg->X_COMCAST_COM_DFSEnable);
