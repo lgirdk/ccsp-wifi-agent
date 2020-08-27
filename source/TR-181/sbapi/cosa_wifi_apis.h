@@ -359,6 +359,14 @@ _COSA_DML_WIFI_CALC_OPT
 }
 COSA_DML_WIFI_CALC_OPT, *PCOSA_DML_WIFI_CALC_OPT;
 
+struct
+_COSA_DML_WIFI_RADIO_ENHANCEDACS
+{
+	BOOL                            DFSMoveBack;
+}_struct_pack_;
+
+typedef  struct _COSA_DML_WIFI_RADIO_ENHANCEDACS COSA_DML_WIFI_RADIO_ENHANCEDACS, *PCOSA_DML_WIFI_RADIO_ENHANCEDACS;
+
 /*
  *  Structure definitions for WiFi Radio
  */
@@ -435,6 +443,9 @@ _COSA_DML_WIFI_RADIO_CFG
 #ifdef WIFI_HAL_VERSION_3
     BOOL                            isRadioConfigChanged;
 #endif //WIFI_HAL_VERSION_3
+
+    /* For X_LGI-COM_EnhancedACS */
+    COSA_DML_WIFI_RADIO_ENHANCEDACS EnhancedACS;
 }_struct_pack_;
 
 typedef struct _COSA_DML_WIFI_RADIO_CFG COSA_DML_WIFI_RADIO_CFG,  *PCOSA_DML_WIFI_RADIO_CFG;
