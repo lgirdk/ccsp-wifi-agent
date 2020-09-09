@@ -426,7 +426,7 @@ static void get_uptime(int *uptime)
 }
 
 /*This function is for LG Celeno MV1 platform*/
-static void enable_reset_radio_flag(int wlanIndex)
+void enable_reset_radio_flag(int wlanIndex)
 {
 #ifdef _LG_MV1_CELENO_
 	gRadioRestartRequest[wlanIndex%2]=TRUE;
