@@ -3362,6 +3362,166 @@ INSTMSMT_PH2 -->
 						</object>
 					</objects>
 				</object>
+				<object>
+					<name>X_LGI-COM_BandSteering</name>
+					 <!--<description>Object containing Bandsteering configuration and status.</description> -->
+					<objectType>object</objectType>
+					<functions>
+						<func_GetParamStringValue>LGI_BandSteering_GetParamStringValue</func_GetParamStringValue>
+						<func_SetParamStringValue>LGI_BandSteering_SetParamStringValue</func_SetParamStringValue>
+						<func_Validate>LGI_BandSteering_Validate</func_Validate>
+						<func_Commit>LGI_BandSteering_Commit</func_Commit>
+						<func_Rollback>LGI_BandSteering_Rollback</func_Rollback>
+					</functions>
+					<objects>
+						<object>
+							<name>SSID</name>
+							<!--<description>
+							  Multi-instance object for per-SSID bandsteering settings.
+							  - Instance 1 - First SSID on both bands
+							  - Instance 2 - Second SSID on both bands
+							  - etc.
+							  
+							</description> -->
+							<objectType>staticTable</objectType>
+							<maxInstance>8</maxInstance>
+							<functions>
+								<func_GetEntryCount>LGI_BandSteeringSSID_GetEntryCount</func_GetEntryCount>
+								<func_GetEntry>LGI_BandSteeringSSID_GetEntry</func_GetEntry>
+								<func_GetParamBoolValue>LGI_BandSteeringSSID_GetParamBoolValue</func_GetParamBoolValue>
+								<func_SetParamBoolValue>LGI_BandSteeringSSID_SetParamBoolValue</func_SetParamBoolValue>
+								<func_GetParamIntValue>LGI_BandSteeringSSID_GetParamIntValue</func_GetParamIntValue>
+								<func_SetParamIntValue>LGI_BandSteeringSSID_SetParamIntValue</func_SetParamIntValue>
+								<func_GetParamUlongValue>LGI_BandSteeringSSID_GetParamUlongValue</func_GetParamUlongValue>
+								<func_SetParamUlongValue>LGI_BandSteeringSSID_SetParamUlongValue</func_SetParamUlongValue>
+							</functions>
+							<parameters>
+								<parameter>
+									<name>Enable</name>
+									<!--<description>Enables or disables Bandsteering for this SSID. {{param}} can only be set to true if {{param|#.Mode}} is set to something other than "None".</description> -->
+									<type>boolean</type>
+									<syntax>bool</syntax>
+									<writable>true</writable>
+								</parameter>
+								<parameter>
+									<name>Active</name>
+									<!--<description>
+									  True if bandsteering is active. Bandsteering may be enabled via the {{param|Enable}} parameter but remain inactive ({{param}} is false) in any of the following conditions:
+									  - One of the radios is disabled or inactive
+									  - The SSID is disabled or inactive on one or both bands
+									  - The SSID names do not match across bands
+									  - The SSID security settings do not match across bands
+									  - All required parameters must be configured
+									</description> -->
+									<type>boolean</type>
+									<syntax>bool</syntax>
+								</parameter>
+								<parameter>
+									<name>ClearCapable5G</name>
+									<!--<description>Setting to "true" clears the 5 GHz Capable table. Returns "false" when read.</description> -->
+									<type>boolean</type>
+									<syntax>bool</syntax>
+									<writable>true</writable>
+								</parameter>
+								<parameter>
+									<name>ClearBlacklist24G</name>
+									<!--<description>Setting to "true" clears the 2.4 GHz Blacklist table. Returns "false" when read.</description> -->
+									<type>boolean</type>
+									<syntax>bool</syntax>
+									<writable>true</writable>
+								</parameter>
+								<parameter>
+									<name>RSSIThreshold5GHz</name>
+									<!--<description>
+									  In case of a 5 GHz capable device that sends out a direct probe request on 5 GHz or a broadcast probe request on 5 GHz when associated already, this threshold will define if the device will be added or removed from the 2.4GHzTempBlackListTable (i.e. when the RSSI is lower / worse than this threshold or when the RSSI is higher than the threshold).
+									  - Units: dBm
+									</description> -->
+									<type>int[-100:-1]</type>
+									<syntax>int</syntax>
+									<writable>true</writable>
+								</parameter>
+								<parameter>
+									<name>DeltaThreshold5GHz</name>
+									<!--<description>This delta (in dBm) will be used when comparing the RSSI of the probe request on 5 GHz of an associated client. It can lower the threshold by this value.</description> -->
+									<type>unsignedInt[0:100]</type>
+									<syntax>uint32</syntax>
+									<writable>true</writable>
+								</parameter>
+								<parameter>
+									<name>TempTimeout24GHz</name>
+									<!--<description>Value in milliseconds that defines the time before an entry in the 2.4GHzTempBlackListTable expires.</description> -->
+									<type>unsignedInt[0:100000]</type>
+									<syntax>uint32</syntax>
+									<writable>true</writable>
+								</parameter>
+							</parameters>
+							<objects>
+								<object>
+									<name>Capable5G</name>
+									<!--<description>This table will be filled with the specific client MAC address from the moment a broadcast 5 GHz probe request is received by the gateway. Associating 5 GHz band on the gateway also puts the client in this table, if not already present.</description> -->
+									<objectType>dynamicTable</objectType>
+									<maxInstance>255</maxInstance>
+									<functions>
+										<func_GetEntryCount>LGI_Capable5G_GetEntryCount</func_GetEntryCount>
+										<func_GetEntry>LGI_Capable5G_GetEntry</func_GetEntry>
+										<func_IsUpdated>LGI_Capable5G_IsUpdated</func_IsUpdated>
+										<func_Synchronize>LGI_Capable5G_Synchronize</func_Synchronize>
+										<func_GetParamUlongValue>LGI_Capable5G_GetParamUlongValue</func_GetParamUlongValue>
+										<func_GetParamStringValue>LGI_Capable5G_GetParamStringValue</func_GetParamStringValue>
+									</functions>
+									<parameters>
+										<parameter>
+											<name>MACAddress</name>
+											<!--<description>MAC Address of the client.</description> -->
+											<type>string</type>
+											<syntax>string</syntax>
+										</parameter>
+										<parameter>
+											<name>EntryTime</name>
+											<!--<description>Time when the client was added to this table.</description> -->
+											<type>dateTime</type>
+											<syntax>string</syntax>
+										</parameter>
+									</parameters>
+								</object>
+								<object>
+									<name>Blacklist24G</name>
+									<!--<description>This table will be filled with the specific client entries when the RSSI on 5 GHz is better than the threshold or the threshold minus the delta. If the client is present in this temporary blacklist, it will not be allowed to connect to 2.4 GHz. Each entry has a timeout value specified in BlacklistTimeout.</description> -->
+									<objectType>dynamicTable</objectType>
+									<maxInstance>255</maxInstance>
+									<functions>
+										<func_GetEntryCount>LGI_Blacklist24G_GetEntryCount</func_GetEntryCount>
+										<func_GetEntry>LGI_Blacklist24G_GetEntry</func_GetEntry>
+										<func_IsUpdated>LGI_Blacklist24G_IsUpdated</func_IsUpdated>
+										<func_Synchronize>LGI_Blacklist24G_Synchronize</func_Synchronize>
+										<func_GetParamUlongValue>LGI_Blacklist24G_GetParamUlongValue</func_GetParamUlongValue>
+										<func_GetParamStringValue>LGI_Blacklist24G_GetParamStringValue</func_GetParamStringValue>
+									</functions>
+									<parameters>
+										<parameter>
+											<name>MACAddress</name>
+											<!--<description>MAC Address of the client.</description> -->
+											<type>string</type>
+											<syntax>string</syntax>
+										</parameter>
+										<parameter>
+											<name>EntryTime</name>
+											<!--<description>Time when the client was added to this table.</description> -->
+											<type>dateTime</type>
+											<syntax>string</syntax>
+										</parameter>
+										<parameter>
+											<name>TimeRemaining</name>
+											<!--<description>Time remaining before the client is removed from this table.</description> -->
+											<type>unsignedInt</type>
+											<syntax>uint32</syntax>
+										</parameter>
+									</parameters>
+								</object>
+							</objects>
+						</object>
+					</objects>
+				</object>
 				<object> 
 					<name>X_RDKCENTRAL-COM_ATM</name>
 					<objectType>object</objectType>
