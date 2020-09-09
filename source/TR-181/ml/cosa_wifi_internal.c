@@ -1078,6 +1078,8 @@ CosaWifiInitialize
         CosaWifiRegGetMacFiltInfo(pWifiAp);
     }
 
+    CosaLgiWifiInitialize((ANSC_HANDLE)pMyObject);
+
 	//CosaWifiRegGetATMInfo((ANSC_HANDLE)pMyObject);
 	pATM = (PCOSA_DML_WIFI_ATM)AnscAllocateMemory(sizeof(COSA_DML_WIFI_ATM));
     if ( NULL != pATM )	{		
@@ -1398,6 +1400,8 @@ CosaWifiReInitialize
         }
 #endif /* FEATURE_HOSTAP_AUTHENTICATOR */
 
+    CosaLgiWifiReInitialize((ANSC_HANDLE)pMyObject);
+
     return returnStatus;
 }
 #ifdef WIFI_HAL_VERSION_3
@@ -1629,6 +1633,9 @@ CosaWifiReInitializeRadioAndAp
         }
 #endif /* FEATURE_HOSTAP_AUTHENTICATOR */
 #endif 
+
+    CosaLgiWifiReInitializeRadioAndAp((ANSC_HANDLE)pMyObject);
+
     return returnStatus;
 }
 
@@ -1743,6 +1750,7 @@ CosaWifiRemove
     /* Remove self */
     AnscFreeMemory((ANSC_HANDLE)pMyObject);
 
+    CosaLgiWifiRemove((ANSC_HANDLE)pMyObject);
 	return returnStatus;
 }
 
