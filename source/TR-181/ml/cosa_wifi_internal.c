@@ -968,6 +968,8 @@ CosaWifiInitialize
     if (pWifiAp != NULL)
         CosaWifiRegGetMacFiltInfo(pWifiAp);
 
+    CosaLgiWifiInitialize((ANSC_HANDLE)pMyObject);
+
 	//CosaWifiRegGetATMInfo((ANSC_HANDLE)pMyObject);
 	pATM = (PCOSA_DML_WIFI_ATM)AnscAllocateMemory(sizeof(COSA_DML_WIFI_ATM));
     if ( NULL != pATM )	{		
@@ -1182,7 +1184,8 @@ CosaWifiReInitialize
 		//	pMyObject->pBandSteering->pBSSettings[1].InstanceNumber = 2;
 		//	CosaDmlWiFi_GetBandSteeringSettings( 1, pMyObject->pBandSteering->pBSSettings+1 );
 		//}		
-	
+	CosaLgiWifiReInitialize((ANSC_HANDLE)pMyObject);
+
     EXIT:
     return returnStatus;
 }
@@ -1319,7 +1322,7 @@ CosaWifiReInitializeRadioAndAp
 		//	CosaDmlWiFi_GetBandSteeringSettings( 1, pMyObject->pBandSteering->pBSSettings+1 );
 		//}		
 	}
-	
+	CosaLgiWifiReInitializeRadioAndAp((ANSC_HANDLE)pMyObject);
     return returnStatus;
 }
 /**********************************************************************
@@ -1436,6 +1439,7 @@ CosaWifiRemove
     /* Remove self */
     AnscFreeMemory((ANSC_HANDLE)pMyObject);
 
+    CosaLgiWifiRemove((ANSC_HANDLE)pMyObject);
 	return returnStatus;
 }
 
