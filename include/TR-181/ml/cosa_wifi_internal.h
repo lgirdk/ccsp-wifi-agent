@@ -38,7 +38,7 @@
 #include "cosa_wifi_apis.h"
 #include "poam_irepfo_interface.h"
 #include "sys_definitions.h"
-
+#include "cosa_lgi_wifi_internal.h"
 
 #include <telemetry_busmessage_sender.h>
 
@@ -207,6 +207,7 @@ typedef  struct
 _COSA_DATAMODEL_WIFI                                               
 {
     COSA_DATAMODEL_WIFI_CLASS_CONTENT
+    COSA_DATAMODEL_LGI_WIFI_ADD_CLASS_CONTENT
 #if defined (FEATURE_CSI)        
     ULONG                           ulCSINextInstance;
     QUEUE_HEADER                    CSIList;
