@@ -170,6 +170,8 @@ static ANSC_STATUS CosaDmlWiFi_SetRegionCode(char *code);
 void *updateBootLogTime();
 void CosaDmlWiFi_RemoveSpacesFromString( char *string );
 
+static void CosaDmlWiFi_StringToChannelsList(char *psmString, PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta);
+
 void CosaDmlWiFi_RemoveSpacesFromString( char *string )
 {
     int count = 0, i = 0; 
@@ -19144,7 +19146,7 @@ char *CosaDmlWiFi_ChannelsListToString(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta, c
     return string;
 }
 
-void CosaDmlWiFi_StringToChannelsList(char *psmString, PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta)
+static void CosaDmlWiFi_StringToChannelsList(char *psmString, PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta)
 {
     char *tmp, *ptr;
     char string[128];
