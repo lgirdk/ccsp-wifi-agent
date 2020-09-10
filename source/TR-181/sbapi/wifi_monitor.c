@@ -2992,7 +2992,6 @@ void GetActiveMsmtPlanID(unsigned int *pPlanID)
     {
         memcpy(pPlanID, g_active_msmt.active_msmt.PlanId, PLAN_ID_LENGTH);
     }
-    return NULL;
 }
 
 /*********************************************************************************/
@@ -3015,7 +3014,6 @@ void GetActiveMsmtStepSrcMac(mac_address_t pStepSrcMac)
     {
         memcpy(pStepSrcMac, g_active_msmt.curStepData.SrcMac, sizeof(mac_address_t));
     }
-    return NULL;
 }
 
 /*********************************************************************************/
@@ -3038,7 +3036,6 @@ void GetActiveMsmtStepDestMac(mac_address_t pStepDstMac)
     {
         memcpy(pStepDstMac, g_active_msmt.curStepData.DestMac, sizeof(mac_address_t));
     }
-    return NULL;
 }
 
 
@@ -3411,7 +3408,7 @@ void *startWifiBlast(void *vargp)
 
         snprintf(command,BUFF_LEN_MAX,"echo \"start\" >> %s",PKTGEN_CNTRL_FILE);
         executeCommand(command,result);
-        return;
+        return NULL;
 }
 
 /*********************************************************************************/
@@ -3932,7 +3929,7 @@ void *WiFiBlastClient(void* data)
         frameCountSample = NULL;
     }
     wifi_dbg_print(1, "%s : %d exiting the function\n",__func__,__LINE__);
-    return;
+    return NULL;
 }
 /*********************************************************************************/
 /*                                                                               */
