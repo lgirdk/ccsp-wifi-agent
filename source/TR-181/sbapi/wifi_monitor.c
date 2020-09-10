@@ -3145,7 +3145,6 @@ void GetActiveMsmtPlanID(unsigned int *pPlanID)
     {
         memcpy(pPlanID, g_active_msmt.active_msmt.PlanId, PLAN_ID_LENGTH);
     }
-    return;
 }
 
 /*********************************************************************************/
@@ -3168,7 +3167,6 @@ void GetActiveMsmtStepSrcMac(mac_address_t pStepSrcMac)
     {
         memcpy(pStepSrcMac, g_active_msmt.curStepData.SrcMac, sizeof(mac_address_t));
     }
-    return;
 }
 
 /*********************************************************************************/
@@ -3191,7 +3189,6 @@ void GetActiveMsmtStepDestMac(mac_address_t pStepDstMac)
     {
         memcpy(pStepDstMac, g_active_msmt.curStepData.DestMac, sizeof(mac_address_t));
     }
-    return;
 }
 
 
