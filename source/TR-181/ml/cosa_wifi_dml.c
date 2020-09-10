@@ -138,13 +138,15 @@ extern bool wifi_api_is_device_associated(int ap_index, char *mac);
 static int isHex (char *string);
 static BOOL isHotspotSSIDIpdated = FALSE;
 static BOOL isBeaconRateUpdate[16] = { FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE };
-BOOL IsValidMacAddress(char *mac);
+static BOOL IsValidMacAddress(char *mac);
 ULONG InterworkingElement_Commit(ANSC_HANDLE hInsContext);
 void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associated_dev, BOOL bCallForFullSync, BOOL bCallFromDisConnCB);
 int EVP_DecodeBlock(unsigned char*, unsigned char*, int);
 static void* WiFi_DeleteMacFilterTableThread( void *frArgs );
 int d2i_EC_PUBKEY(void **a, const unsigned char **key, long length);
 ANSC_STATUS CosaDmlWiFi_startDPP(PCOSA_DML_WIFI_AP pWiFiAP, ULONG staIndex);
+
+static ANSC_STATUS CosaDmlWiFi_CheckAndConfigureMFPConfig (BOOLEAN bFeatureMFPConfig);
 
 #if !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
 typedef enum{
@@ -166,7 +168,7 @@ typedef struct  {
 static status dmcli_status = {0};
 static const char *wifi_health_logg = "/rdklogs/logs/wifihealth.txt";
 
-void set_status(dpp_cmd cmd)
+static void set_status(dpp_cmd cmd)
 {
     switch(cmd)
     {
@@ -196,8 +198,7 @@ typedef struct wifi_security_pair {
   COSA_DML_WIFI_SECURITY       TmpModeType;
 } WIFI_SECURITY_PAIR;
 
-
-WIFI_SECURITY_PAIR wifi_sec_type_table[] = {
+static const WIFI_SECURITY_PAIR wifi_sec_type_table[] = {
   { "None",                COSA_DML_WIFI_SECURITY_None },
   { "WEP-64",              COSA_DML_WIFI_SECURITY_WEP_64 },
   { "WEP-128",             COSA_DML_WIFI_SECURITY_WEP_128 },
@@ -209,8 +210,7 @@ WIFI_SECURITY_PAIR wifi_sec_type_table[] = {
   { "WPA-WPA2-Enterprise", COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise }
 };
 
-
-int wifi_sec_type_from_name(char *name, int *type_ptr)
+static int wifi_sec_type_from_name(char *name, int *type_ptr)
 {
   int rc = -1;
   int ind = -1;
@@ -792,7 +792,8 @@ WiFi_GetParamStringValue
 
     return 0;
 }
-void* WiFi_HostSyncThread(void* arg)
+
+static void *WiFi_HostSyncThread(void *arg)
 {
 	UNREFERENCED_PARAMETER(arg);
 	CcspTraceWarning(("RDK_LOG_WARN, %s-%d \n",__FUNCTION__,__LINE__));
@@ -800,7 +801,7 @@ void* WiFi_HostSyncThread(void* arg)
 	return NULL;
 }
 
-void *mfp_concheck_thread(void *vptr_value)
+static void *mfp_concheck_thread(void *vptr_value)
 {
     static BOOL running=0;
     BOOL bval = (BOOL) (intptr_t)vptr_value;
@@ -819,8 +820,7 @@ void *mfp_concheck_thread(void *vptr_value)
     return NULL;
 }
 
-/* CosaDmlWiFi_CheckAndConfigureMFPConfig() */
-ANSC_STATUS CosaDmlWiFi_CheckAndConfigureMFPConfig( BOOLEAN bFeatureMFPConfig )
+static ANSC_STATUS CosaDmlWiFi_CheckAndConfigureMFPConfig( BOOLEAN bFeatureMFPConfig )
 {
 	PCOSA_DATAMODEL_WIFI	pMyObject		= ( PCOSA_DATAMODEL_WIFI )g_pCosaBEManager->hWifi;
     ULONG 					vAPTotalCount   = 0;
@@ -3705,7 +3705,7 @@ Radio_SetParamUlongValue
     return:     TRUE if succeeded.
 
 **********************************************************************/
-BOOL isValidTransmitRate(char *Btr)
+static BOOL isValidTransmitRate(char *Btr)
 {
     BOOL isValid=false;
     if (!Btr) 
@@ -11062,8 +11062,7 @@ WPS_Rollback
 #endif
 #define MAC_ADDR_LEN 17
 
-BOOL
-IsValidMacAddress(char *mac)
+static BOOL IsValidMacAddress(char *mac)
 {
     int iter = 0, len = 0;
 
@@ -13765,7 +13764,8 @@ static void wifi_dpp_dml_dbg_print(int level, char *format, ...)
     fflush(fpg);
 }
 
-int get_channel(const char* char_in, int *channels, int size)
+#if 0
+static int get_channel(const char* char_in, int *channels, int size)
 {
     int count = 0;
     char *tmp = NULL;
@@ -13785,9 +13785,9 @@ int get_channel(const char* char_in, int *channels, int size)
     }
     return count;
 }
+#endif
 
-BOOL
-IsValidChannel(int apIndex, int channel)
+static BOOL IsValidChannel(int apIndex, int channel)
 {
     BOOL ret = FALSE;
     ULONG IsChanHome = 0;
@@ -13886,8 +13886,7 @@ IsValidChannel(int apIndex, int channel)
     return ret;  
 }
 
-ANSC_STATUS
-GetInsNumsByWifiDppSta(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta, ULONG *apIns, ULONG *dppStaIdx, UCHAR *dppVersion)
+static ANSC_STATUS GetInsNumsByWifiDppSta(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta, ULONG *apIns, ULONG *dppStaIdx, UCHAR *dppVersion)
 {
     PCOSA_DATAMODEL_WIFI        pWiFi       = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
     PSINGLE_LINK_ENTRY          pAPLink     = NULL;
@@ -13923,8 +13922,7 @@ GetInsNumsByWifiDppSta(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta, ULONG *apIns, ULO
     return ANSC_STATUS_FAILURE;
 }
 
-PCOSA_DML_WIFI_AP
-GetApInsByDppSta(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta, ULONG *dppStaIdx)
+static PCOSA_DML_WIFI_AP GetApInsByDppSta(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta, ULONG *dppStaIdx)
 {
     PCOSA_DATAMODEL_WIFI        pWiFi       = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
     PSINGLE_LINK_ENTRY          pAPLink     = NULL;
@@ -13968,8 +13966,7 @@ DPP_STA_GetEntryCount
     return COSA_DML_WIFI_DPP_STA_MAX;
 }
 
-BOOL
-DPP_STA_ProvisionStart_Validate(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta)
+static BOOL DPP_STA_ProvisionStart_Validate(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta)
 {
 
 #define LARRAY 32
