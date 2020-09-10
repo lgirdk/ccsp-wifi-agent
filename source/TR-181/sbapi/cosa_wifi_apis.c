@@ -173,6 +173,7 @@ static BOOL updateBootTimeRunning = FALSE;
 void CosaDmlWiFi_RemoveSpacesFromString( char *string );
 
 static void CosaDmlWiFi_StringToChannelsList(char *psmString, PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta);
+static void Update_Hotspot_MacFilt_Entries(BOOL signal_thread);
 
 void CosaDmlWiFi_RemoveSpacesFromString( char *string )
 {
@@ -16948,8 +16949,8 @@ void Update_Hotspot_MacFilt_Entries_Thread_Func(void *pArg)
     }while(check);
 }
 
-void Update_Hotspot_MacFilt_Entries(BOOL signal_thread) {
-
+static void Update_Hotspot_MacFilt_Entries(BOOL signal_thread)
+{
 	pthread_t Update_Hotspot_MacFilt_Entries_Thread;
 	int res;
     pthread_attr_t attr;
