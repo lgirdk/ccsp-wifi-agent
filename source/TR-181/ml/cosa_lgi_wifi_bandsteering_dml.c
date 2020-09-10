@@ -280,8 +280,7 @@ LGI_BandSteeringSSID_SetParamBoolValue
         wifi_setBandSteeringEnable_perSSID(pBandSteeringSSID->ifIndex,bValue);
         retValue = TRUE;
 
-        enable_reset_radio_flag(0);
-        enable_reset_radio_flag(1);
+        enable_reset_both_radio_flag();
     }
     if (strcmp(ParamName, "ClearCapable5G") == 0)
     {
@@ -332,8 +331,7 @@ LGI_BandSteeringSSID_SetParamIntValue
     if (strcmp(ParamName, "RSSIThreshold5GHz") == 0)
     {
         wifi_setBandSteeringRSSIThreshold_perSSID(pBandSteeringSSID->ifIndex, value);
-        enable_reset_radio_flag(0);
-        enable_reset_radio_flag(1);
+        enable_reset_both_radio_flag();
         return TRUE;
     }
 
@@ -383,15 +381,13 @@ LGI_BandSteeringSSID_SetParamUlongValue
     if (strcmp(ParamName, "DeltaThreshold5GHz") == 0)
     {
         wifi_setBandSteeringDeltaThreshold_perSSID(pBandSteeringSSID->ifIndex, value);
-        enable_reset_radio_flag(0);
-        enable_reset_radio_flag(1);
+        enable_reset_both_radio_flag();
         return TRUE;
     }
     if (strcmp(ParamName, "TempTimeout24GHz") == 0)
     {
         wifi_setBandSteeringBlacklistTimeout_perSSID(pBandSteeringSSID->ifIndex, value);
-        enable_reset_radio_flag(0);
-        enable_reset_radio_flag(1);
+        enable_reset_both_radio_flag();
         return TRUE;
     }
 

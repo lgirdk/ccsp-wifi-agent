@@ -2199,6 +2199,7 @@ CosaDmlWiFi_setWebConfig(char *webconfstr, int size,uint8_t ssid);
 #endif
 
 void enable_reset_radio_flag(int wlanIndex);
+void enable_reset_both_radio_flag(void);
 
 ANSC_STATUS 
 CosaDmlWiFi_RadioUpTime(ULONG *TimeInSecs, int radioIndex);
