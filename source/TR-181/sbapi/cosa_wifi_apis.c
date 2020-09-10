@@ -170,7 +170,7 @@ ANSC_STATUS CosaDmlWifi_setBSSTransitionActivated(PCOSA_DML_WIFI_AP_CFG pCfg, UL
 #ifdef WIFI_HAL_VERSION_3
 UINT gRadioRestartRequest = 0; //bitmask radio index to identify which radio should restart
 #else
-BOOL gRadioRestartRequest[2]={FALSE,FALSE};
+BOOL gRadioRestartRequest[3]={FALSE,FALSE,FALSE};
 #endif
 BOOL g_newXH5Gpass=FALSE;
 
@@ -431,6 +431,13 @@ void enable_reset_radio_flag(int wlanIndex)
 {
 #ifdef _LG_MV1_CELENO_
 	gRadioRestartRequest[wlanIndex%2]=TRUE;
+#endif
+}
+
+void enable_reset_both_radio_flag()
+{
+#ifdef _LG_MV1_CELENO_
+	gRadioRestartRequest[2]=TRUE;
 #endif
 }
 
@@ -13786,6 +13793,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
     PCOSA_DML_WIFI_RADIO_CFG        pStoredCfg  = (PCOSA_DML_WIFI_RADIO_CFG)NULL;
     int  wlanIndex;
     BOOL wlanRestart = FALSE;
+    BOOL reset_both_radios = FALSE;
     BOOLEAN bForceDisableFlag = FALSE;
 #if defined(ENABLE_FEATURE_MESHWIFI)
     /* Size: Max(pCfg->OperationalDataTransmitRates + pCfg->BasicDataTransmitRates) +
@@ -14533,16 +14541,22 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
             gRadioRestartRequest = 0;
         }
 #else
-		if(gRadioRestartRequest[0] || gRadioRestartRequest[1]) {
+		if(gRadioRestartRequest[0] || gRadioRestartRequest[1] || gRadioRestartRequest[2]) {
 fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__, gRadioRestartRequest[0], gRadioRestartRequest[1] );		
 			wlanRestart=TRUE;
-			if(wlanIndex == 0)
+			if(gRadioRestartRequest[2] == TRUE)
 			{
 				gRadioRestartRequest[0]=FALSE;
+				gRadioRestartRequest[1]=FALSE;
+				gRadioRestartRequest[2]=FALSE;
+				reset_both_radios = TRUE;
 			}
 			else
 			{
-				gRadioRestartRequest[1]=FALSE;
+				if(wlanIndex == 0)
+					gRadioRestartRequest[0]=FALSE;
+				else
+					gRadioRestartRequest[1]=FALSE;
 			}
 		}
 #endif
@@ -14562,8 +14576,12 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__,
 #if defined(_INTEL_WAV_)
             wifi_applyRadioSettings(wlanIndex);
 #else
-            wifi_initRadio(wlanIndex);
+            if(reset_both_radios)
+                wifi_reset();
+            else
+                wifi_initRadio(wlanIndex);
 #endif
+
 			CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : %s RADIO Restarted !!! \n",__FUNCTION__)); 
             /*TODO RDKB-34680 CID: 135386 Data race condition*/
             pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
@@ -15661,6 +15679,7 @@ CosaDmlWiFiSsidSetCfg
     BOOL bRadiusEnabled = FALSE;
 #endif
     BOOLEAN bForceDisableFlag = FALSE;
+    BOOL bsEnabled = FALSE;
 
 wifiDbgPrintf("%s\n",__FUNCTION__);
 
@@ -15708,7 +15727,13 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
                 retStatus = wifi_setApEnable(wlanIndex, pCfg->bEnabled);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
 	        if(retStatus == 0) {
-                    gRadioRestartRequest[wlanIndex%2] = TRUE;
+#ifdef _LG_MV1_CELENO_
+	            wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
+	            if(bsEnabled)
+	                enable_reset_both_radio_flag();
+	            else
+	                enable_reset_radio_flag(wlanIndex);
+#endif
                     CcspWifiTrace(("RDK_LOG_WARN,WIFI %s wifi_setApEnable success  index %d , %d\n",__FUNCTION__,wlanIndex,pCfg->bEnabled));
 		 if (pCfg->InstanceNumber == 4) {
 			char passph[128]={0};
@@ -15806,10 +15831,18 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
 
         /*Restart Radio needed for 5GHz SSID, in case of 2.4GHz SSID pushSSID function is sufficient*/
-        if(wlanIndex%2 == 1)
+#ifdef _LG_MV1_CELENO_
+        wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
+        if(bsEnabled)
+            enable_reset_both_radio_flag();
+        else
         {
-            enable_reset_radio_flag(wlanIndex);
+            if(wlanIndex%2 == 1)
+            {
+                enable_reset_radio_flag(wlanIndex);
+            }
         }
+#endif
 
         cfgChange = TRUE;
         CosaDmlWiFi_GetPreferPrivateData(&bEnabled);
@@ -18082,6 +18115,7 @@ CosaDmlWiFiApSecSetCfg
     UNREFERENCED_PARAMETER(hContext);
     PCOSA_DML_WIFI_APSEC_CFG pStoredCfg = NULL;
     BOOLEAN bForceDisableFlag = FALSE;
+    BOOL bsEnabled = FALSE;
 wifiDbgPrintf("%s\n",__FUNCTION__);
 
     int wlanIndex = -1;
@@ -18352,7 +18386,13 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         wifi_setApBasicAuthenticationMode(wlanIndex, authMode);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
 
-        enable_reset_radio_flag(wlanIndex);
+#ifdef _LG_MV1_CELENO_
+        wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
+        if(bsEnabled)
+            enable_reset_both_radio_flag();
+        else
+            enable_reset_radio_flag(wlanIndex);
+#endif
     }
 	//>>Deprecated
     /*
@@ -18418,7 +18458,13 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
              CcspWifiEventTrace(("RDK_LOG_NOTICE, KeyPassphrase changed \n "));
              CcspWifiTrace(("RDK_LOG_WARN, KeyPassphrase changed \n "));
-             enable_reset_radio_flag(wlanIndex);
+#ifdef _LG_MV1_CELENO_
+             wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
+             if(bsEnabled)
+                 enable_reset_both_radio_flag();
+             else
+                 enable_reset_radio_flag(wlanIndex);
+#endif
         } else {
              CcspWifiTrace(("RDK_LOG_WARN, WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n"));
         }
