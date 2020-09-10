@@ -55,6 +55,8 @@ static COSA_DML_WIFI_GASSTATS gasStats[GAS_CFG_TYPE_SUPPORTED];
 extern ANSC_HANDLE bus_handle;
 extern char        g_Subsystem[32];
 
+static void destroy_passpoint (void);
+
 static void wifi_passpoint_dbg_print(int level, char *format, ...)
 {
     char buff[2048] = {0};
@@ -639,7 +641,7 @@ int start_passpoint_thread (void)
     return RETURN_OK;
 }
 
-void destroy_passpoint (void)
+static void destroy_passpoint (void)
 {
     queue_destroy(g_passpoint.queue);
     pthread_mutex_destroy(&g_passpoint.lock);
