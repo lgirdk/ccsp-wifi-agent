@@ -174,6 +174,7 @@ void CosaDmlWiFi_RemoveSpacesFromString( char *string );
 
 static void CosaDmlWiFi_StringToChannelsList(char *psmString, PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta);
 static void Update_Hotspot_MacFilt_Entries(BOOL signal_thread);
+static void Load_Hotspot_APIsolation_Settings(void);
 
 void CosaDmlWiFi_RemoveSpacesFromString( char *string )
 {
@@ -16842,7 +16843,7 @@ void Hotspot_APIsolation_Set(int apIns) {
     }
 }
 
-void Load_Hotspot_APIsolation_Settings()
+static void Load_Hotspot_APIsolation_Settings(void)
 {
 	int i;
 
