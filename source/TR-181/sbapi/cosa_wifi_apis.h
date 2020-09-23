@@ -362,6 +362,7 @@ struct
 _COSA_DML_WIFI_RADIO_ENHANCEDACS
 {
 	BOOL                            DFSMoveBack;
+	BOOL                            ExcludeDFS;
 }_struct_pack_;
 
 typedef  struct _COSA_DML_WIFI_RADIO_ENHANCEDACS COSA_DML_WIFI_RADIO_ENHANCEDACS, *PCOSA_DML_WIFI_RADIO_ENHANCEDACS;
