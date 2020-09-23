@@ -2983,6 +2983,12 @@ Radio_SetParamBoolValue
             return  TRUE;
         }
 
+        // Only allow disabling DFS if ExcludeDFS is enabled.
+        if ((pWifiRadioFull->Cfg.EnhancedACS.ExcludeDFS == FALSE) && (bValue == FALSE))
+        {
+            return FALSE;
+        }
+
         /* save update to backup */
         pWifiRadioFull->Cfg.X_COMCAST_COM_DFSEnable = bValue;
         pWifiRadio->bRadioChanged = TRUE;
@@ -4732,6 +4738,10 @@ EnhancedACS_GetParamBoolValue
          *pBool = pWifiRadioEnhancedACS->DFSMoveBack;
          return TRUE;
     }
+    if (AnscEqualString(ParamName, "ExcludeDFS", TRUE)) {
+         *pBool = pWifiRadioEnhancedACS->ExcludeDFS;
+         return TRUE;
+    }
     return FALSE;
 }
 
@@ -4755,6 +4765,16 @@ EnhancedACS_SetParamBoolValue
     }
     if (AnscEqualString(ParamName, "DFSMoveBack", TRUE)) {
         pWifiRadioEnhancedACS->DFSMoveBack = bValue;
+        return TRUE;
+    }
+    if (AnscEqualString(ParamName, "ExcludeDFS", TRUE)) {
+        if (pWifiRadioEnhancedACS->ExcludeDFS != bValue) {
+            // Only allow NOT excluding DFS if DFS is enabled.
+            if ((pWifiRadioFull->Cfg.X_COMCAST_COM_DFSEnable == FALSE) && (bValue == FALSE)) {
+                return FALSE;
+            }
+            pWifiRadioEnhancedACS->ExcludeDFS = bValue;
+        }
         return TRUE;
     }
     return FALSE;
