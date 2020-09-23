@@ -13056,6 +13056,11 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
         wifi_setRadioDfsMoveBackEnable(wlanIndex, pCfg->EnhancedACS.DFSMoveBack);
         wlanRestart = TRUE;
     }
+    if (pStoredCfg->EnhancedACS.ExcludeDFS != pCfg->EnhancedACS.ExcludeDFS)
+    {
+        wifi_setRadioExcludeDfs(wlanIndex, pCfg->EnhancedACS.ExcludeDFS);
+        wlanRestart = TRUE;
+    }
 #endif
 
 	if (pStoredCfg->X_COMCAST_COM_DCSEnable != pCfg->X_COMCAST_COM_DCSEnable )
@@ -13084,6 +13089,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
     if((AnscEqualString(pCfg->RegulatoryDomain, pStoredCfg->RegulatoryDomain, TRUE)) == FALSE)
     {
         wifi_setRadioCountryCode(wlanIndex, pCfg->RegulatoryDomain);
+        wlanRestart = TRUE;
     }
 
     if (pCfg->AutoChannelEnable != pStoredCfg->AutoChannelEnable)
@@ -13970,6 +13976,7 @@ CosaDmlWiFiRadioGetCfg
 
 #if defined(_LG_MV1_CELENO_)
     wifi_getRadioDfsMoveBackEnable(wlanIndex, &pCfg->EnhancedACS.DFSMoveBack);
+    wifi_getRadioExcludeDfs(wlanIndex, &pCfg->EnhancedACS.ExcludeDFS);
 #endif
 
     wifi_getRadioDfsSupport(wlanIndex,&pCfg->X_COMCAST_COM_DFSSupport);
