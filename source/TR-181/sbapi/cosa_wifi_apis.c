@@ -18180,6 +18180,7 @@ void *updateBootLogTime() {
 
 
 INT m_wifi_init() {
+	system("print_uptime \"wifi_hal-init_sequence-started\"");
 	INT ret=wifi_init();
     //Print bootup time when LnF SSID came up from bootup
  
