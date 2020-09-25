@@ -27266,6 +27266,8 @@ ANSC_STATUS txRateStrToUint(char *inputStr, UINT *pTxRate)
 
 INT m_wifi_init() {
 
+    system("print_uptime wifi_hal-init_sequence-started");
+
 #if defined(_XB6_PRODUCT_REQ_) || defined(_SKY_HUB_COMMON_PRODUCT_REQ_)
     CcspWifiTrace(("%s Starting Mesh Stop\n",__FUNCTION__));
     if ( (gWrite_sysevent_fd || !initGSyseventVar()) &&
