@@ -18206,6 +18206,8 @@ void *updateBootLogTime() {
 
 INT m_wifi_init() {
 
+	system("print_uptime \"wifi_hal-init_sequence-started\"");
+
 #if defined(_XB7_PRODUCT_REQ_) && !defined(_INTEL_WAV_)
         system("sysevent set wifi_init start");
 #endif
