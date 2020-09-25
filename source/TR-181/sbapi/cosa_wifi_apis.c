@@ -25241,6 +25241,8 @@ ANSC_STATUS txRateStrToUint(char *inputStr, UINT *pTxRate)
 
 INT m_wifi_init() {
 
+    system("print_uptime \"wifi_hal-init_sequence-started\"");
+
 #if defined(_XB6_PRODUCT_REQ_) 
     CcspWifiTrace(("%s Starting Mesh Stop\n",__FUNCTION__));
     v_secure_system("sysevent set wifi_init start");
