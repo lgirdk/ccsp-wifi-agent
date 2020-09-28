@@ -3686,7 +3686,263 @@ INSTMSMT_PH2 -->
 						</object>
 					</objects>
 				</object>
-				<object> 
+				<object> <!-- 1.X_LGI-COM_ATM -->
+                    <name>X_LGI-COM_ATM</name>
+                    <!--description>Object containing ATM configuration and status.</description-->
+                    <objectType>object</objectType>
+                    <functions>
+                        <func_GetParamStringValue>ATM_Common_GetParamStringValue</func_GetParamStringValue>
+                    </functions>
+                    <parameters>
+                        <parameter>
+                            <name>Capability</name>
+                            <!--description>
+                              Comma delimited list of supported ATM modes:
+                              - GlobalFairness
+                              - WeightedFairness
+                              or
+                              - None
+                              Returns "None" if ATM is not supported by the platform.
+                              Additional algorithms may be added in the future.
+                            </description-->
+                            <type>string</type>
+                            <syntax>string</syntax>
+                        </parameter>
+                    </parameters>
+                    <objects> 
+                        <object> 
+                        <name>Radio</name>
+                        <!--description>Multi-instance object for per-Band ATM settings.Instance 1</description-->
+                        <objectType>staticTable</objectType>
+                        <maxInstance>2</maxInstance>
+                        <functions>
+                            <func_GetEntryCount>ATM_Radio_GetEntryCount</func_GetEntryCount>
+                            <func_GetEntry>ATM_Radio_GetEntry</func_GetEntry>
+                            <func_GetParamBoolValue>ATM_Radio_GetParamBoolValue</func_GetParamBoolValue>
+                            <func_GetParamUlongValue>ATM_Radio_GetParamUlongValue</func_GetParamUlongValue>
+                            <func_SetParamBoolValue>ATM_Radio_SetParamBoolValue</func_SetParamBoolValue>
+                            <func_SetParamUlongValue>ATM_Radio_SetParamUlongValue</func_SetParamUlongValue>
+                            <func_Validate>ATM_Radio_Validate</func_Validate>
+                            <func_Commit>ATM_Radio_Commit</func_Commit>
+                            <func_Rollback>ATM_Radio_Rollback</func_Rollback>
+                        </functions>
+                       <parameters>
+                            <parameter>
+                                <name>Enable</name>
+                                <!--description>Enables or disables the ATM feature.</description-->
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>Mode</name>
+                                <!--description>The current ATM mode which is one of these listed by "Capability".</description-->
+                                <type>string: GlobalFairness(1),WeightedFairness(2)</type>
+                                <syntax>uint32/mapped</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>WaitThreshold</name>
+                                <!--description>This parameter is used to control the time that the ATM Algorithm needs to wait before reallocating the airtime of a recently inactive client to other active clients.</description-->
+                                <type>unsignedInt</type>
+                                <syntax>uint32</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>TrafficDirection</name>
+                                <!--description>The current ATM traffic direction. Enumeration of one of the supported traffic directions listed by "UPLINK", or "DOWNLINK", or "ULDL"  </description-->
+                                <type>string: UpLink(1),DownLink(2),ULDL(3)</type>
+                                <syntax>uint32/mapped</syntax>
+                                <writable>true</writable>
+                            </parameter>
+                            <parameter>
+                                <name>EnableWMMApplication</name>
+                                <!--Enable or disable weighting by WMM Access Category of traffic to/from active clients..</description-->
+                                <type>boolean</type>
+                                <syntax>bool</syntax>
+                                <writable>true</writable>
+                            </parameter>
+		            <parameter>                    
+			        <name>SSIDNumberOfEntries</name>
+				<type>unsignedInt</type>
+                    	        <syntax>uint32</syntax>
+			    </parameter>
+		            <parameter>                    
+			        <name>STANumberOfEntries</name>
+				<type>unsignedInt</type>
+                    	        <syntax>uint32</syntax>
+			    </parameter>
+                        </parameters>
+                            <objects>
+                                <object>
+                                    <name>WMMApplication</name>
+                                    <objectType>object</objectType>
+                                    <functions>
+                                        <func_GetParamUlongValue>ATM_Radio_WMMApplication_GetParamUlongValue</func_GetParamUlongValue>
+                                        <func_SetParamUlongValue>ATM_Radio_WMMApplication_SetParamUlongValue</func_SetParamUlongValue>
+                                    </functions>
+                                    <parameters>
+				        <parameter>
+                                            <name>BKWeight</name>
+                                            <type>unsignedInt[0:100]</type>
+                                            <syntax>uint32</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+				        <parameter>
+                                            <name>BEWeight</name>
+                                            <type>unsignedInt[0:100]</type>
+                                            <syntax>uint32</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+				        <parameter>
+                                            <name>VIWeight</name>
+                                            <type>unsignedInt[0:100]</type>
+                                            <syntax>uint32</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+				        <parameter>
+                                            <name>VOWeight</name>
+                                            <type>unsignedInt[0:100]</type>
+                                            <syntax>uint32</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+                                    </parameters>
+                                </object>
+                               <object>
+                                    <name>SSID</name>
+                                    <objectType>staticTable</objectType>
+                                    <maxInstance>8</maxInstance>
+                                    <functions>
+                                        <func_GetEntryCount>ATM_Radio_SSID_GetEntryCount</func_GetEntryCount>
+                                        <func_GetEntry>ATM_Radio_SSID_GetEntry</func_GetEntry>
+                                        <func_GetParamUlongValue>ATM_Radio_SSID_GetParamUlongValue</func_GetParamUlongValue>
+                                        <func_GetParamStringValue>ATM_Radio_SSID_GetParamStringValue</func_GetParamStringValue>
+                                        <func_SetParamUlongValue>ATM_Radio_SSID_SetParamUlongValue</func_SetParamUlongValue>
+                                        <func_SetParamStringValue>ATM_Radio_SSID_SetParamStringValue</func_SetParamStringValue>
+                                    </functions>
+                                    <parameters>
+                                        <parameter>
+                                            <name>DistributionType</name> -->
+                                            <!--description>Comma separated list of distibution types for SSIDs on this band, for example "0,1,1,1,0,0,0,0". 0 means the dynamic distribution type and 1 the static distribution type.</description-->
+                                            <type>string</type>
+                                            <syntax>string</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+                                        <parameter>
+                                            <name>Weight</name> -->
+                                            <!--description>Comma separated list of weights for SSIDs on this band, for example "70,15,10,5,0,0,0,0"</description-->
+                                           <type>unsignedInt[5:100]</type>
+                                           <syntax>uint32</syntax>
+                                           <writable>true</writable>
+                                        </parameter> 
+                                    </parameters>
+                                </object>
+                                <object>
+                                    <name>STA</name>
+                                    <objectType>writableTable</objectType>
+                                    <maxInstance>100</maxInstance>
+                                    <functions>
+                                        <func_GetEntryCount>ATM_Radio_Sta_GetEntryCount</func_GetEntryCount>
+                                        <func_GetEntry>ATM_Radio_Sta_GetEntry</func_GetEntry>
+                                        <func_AddEntry>ATM_Radio_Sta_AddEntry</func_AddEntry>
+                                        <func_DelEntry>ATM_Radio_Sta_DelEntry</func_DelEntry>
+                                        <func_GetParamUlongValue>ATM_Radio_Sta_GetParamUlongValue</func_GetParamUlongValue>
+                                        <func_GetParamStringValue>ATM_Radio_Sta_GetParamStringValue</func_GetParamStringValue>
+                                        <func_SetParamUlongValue>ATM_Radio_Sta_SetParamUlongValue</func_SetParamUlongValue>
+                                        <func_SetParamStringValue>ATM_Radio_Sta_SetParamStringValue</func_SetParamStringValue>
+                                        <func_Validate>ATM_Radio_Sta_Validate</func_Validate>
+                                        <func_Commit>ATM_Radio_Sta_Commit</func_Commit>
+                                      <func_Rollback>ATM_Radio_Sta_Rollback</func_Rollback>
+                                    </functions>
+                                    <parameters>
+                                        <parameter>
+                                            <name>MACAddress</name>
+                                            <!--description>The MAC address of the STA whose ATM weight needs to be set</description-->
+                                            <type>string</type>
+                                            <syntax>string</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+                                        <parameter>
+                                            <name>Weight</name>
+                                            <!--description>The weight of its corresponding STA</description-->
+                                            <type>unsignedInt</type>
+                                            <syntax>uint32</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+                                    </parameters>
+                                </object>
+                            </objects> 
+                        </object> 
+                        <object>
+                        <name>Stats</name>
+                        <!--description>Multi-instance object for per-Band ATM settings.Instance 1</description-->
+                        <objectType>object</objectType>
+		        <parameters>                    
+		        <parameter>                    
+			    <name>ClientNumberOfEntries</name>
+			    <type>unsignedInt</type>
+                    	    <syntax>uint32</syntax>
+			</parameter>
+			</parameters>
+                            <objects>
+                                <object>
+                                    <name>Client</name>
+                                    <objectType>dynamicTable</objectType>
+                                    <maxInstance>100</maxInstance>
+                                    <functions>
+                                        <func_GetEntryCount>ATM_Stats_Client_GetEntryCount</func_GetEntryCount>
+                                        <func_GetEntry>ATM_Stats_Client_GetEntry</func_GetEntry>
+                                        <func_IsUpdated>ATM_Stats_Client_IsUpdated</func_IsUpdated>
+                                        <func_Synchronize>ATM_Stats_Client_Synchronize</func_Synchronize>
+                                        <func_GetParamUlongValue>ATM_Stats_Client_GetParamUlongValue</func_GetParamUlongValue>
+                                        <func_GetParamStringValue>ATM_Stats_Client_GetParamStringValue</func_GetParamStringValue>
+                                    </functions>
+                                    <parameters>
+                                        <parameter>
+                                            <name>MACAddress</name>
+                                            <!--description>The station MAC address</description-->
+                                            <type>string</type>
+                                            <syntax>string</syntax>
+                                        </parameter>
+                                        <parameter>
+                                            <name>STAWeight</name>
+                                            <!--description>The station weight</description-->
+                                            <type>unsignedInt</type>
+                                            <syntax>uint32</syntax>
+                                        </parameter>
+                                        <parameter>
+                                            <name>SSID</name>
+                                            <!--description>The SSID that the station is connected to</description-->
+                                            <type>string</type>
+                                            <syntax>string</syntax>
+                                        </parameter>
+                                        <parameter>
+                                            <name>SSIDWeight</name>
+                                            <!--description>The weight allocated to this SSID</description-->
+                                            <type>unsignedInt</type>
+                                            <syntax>uint32</syntax>
+                                        </parameter>
+                                        <parameter>
+                                            <name>CurrentPercentAirTime</name>
+                                            <!--description>The  measured airtime of this station across a short measuring window
+                                            </description-->
+                                            <type>unsignedInt</type>
+                                            <syntax>uint32</syntax>
+                                        </parameter>
+                                        <parameter>
+                                            <name>CumulativeAirTime</name>
+                                            <!--description>Cumulative airtime granted to the client since first association.units ms
+                                            </description-->
+                                            <type>unsignedInt</type>
+                                            <syntax>uint32</syntax>
+                                        </parameter>
+                                    </parameters>
+                                </object> 
+                            </objects>
+                           </object> 
+                    </objects> 
+                </object> 
+                <object>
 					<name>X_RDKCENTRAL-COM_ATM</name>
 					<objectType>object</objectType>
 					<functions>
