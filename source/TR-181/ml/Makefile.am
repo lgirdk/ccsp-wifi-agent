@@ -36,3 +36,4 @@ libCcspWifiAgent_ml_la_LDFLAGS = -lccsp_common -lhal_wifi -lsecure_wrapper
 libCcspWifiAgent_ml_la_SOURCES += cosa_lgi_wifi_bandsteering_dml.c cosa_lgi_wifi_internal.c
 libCcspWifiAgent_ml_la_SOURCES += cosa_lgi_wifi_accounting_dml.c
 libCcspWifiAgent_ml_la_SOURCES += cosa_lgi_wifi_radio_stats_dml.c
+libCcspWifiAgent_ml_la_SOURCES += cosa_lgi_wifi_atm_dml.c
