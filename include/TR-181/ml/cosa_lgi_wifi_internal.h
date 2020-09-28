@@ -22,6 +22,7 @@
 #include "sys_definitions.h"
 #include "cosa_lgi_wifi_bandsteering_dml.h"
 #include "ccsp_psm_helper.h"
+#include "cosa_lgi_wifi_atm_dml.h"
 
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
@@ -30,7 +31,8 @@ extern char g_Subsystem[32];
     /*BandSteering*/                                           \
     PCOSA_DML_BANDSTEERING_SSID  pBandSteeringSSIDTable;       \
     ULONG               ulBandSteeringSSIDEntryCount;          \
-
+    /* start of ATM object class content */                    \
+    PCOSA_DML_LG_WIFI_ATM  pAATM;                              \
 
 ANSC_STATUS CosaLgiWifiInitialize  ( ANSC_HANDLE hThisObject );
 ANSC_STATUS CosaLgiWifiReInitialize( ANSC_HANDLE hThisObject );
