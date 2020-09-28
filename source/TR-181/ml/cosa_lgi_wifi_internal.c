@@ -25,6 +25,9 @@ ANSC_STATUS CosaLgiWifiInitialize( ANSC_HANDLE hThisObject )
     ANSC_STATUS           returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_WIFI  pMyObject    = (PCOSA_DATAMODEL_WIFI)hThisObject;
 
+    //Device.WiFi.X_LGI-COM_ATM.
+    PCOSA_DML_LG_WIFI_ATM pAATM     = (PCOSA_DML_LG_WIFI_ATM )NULL;
+	
     //Device.WiFi.X_LGI-COM_BandSteering.
     PCOSA_DML_BANDSTEERING_SSID pBandSteeringSSIDEntry = NULL;
 
@@ -58,6 +61,46 @@ ANSC_STATUS CosaLgiWifiInitialize( ANSC_HANDLE hThisObject )
         }
     }
 
+    //Device.WiFi.X_LGI-COM_ATM.
+    pAATM = (PCOSA_DML_LG_WIFI_ATM)AnscAllocateMemory(sizeof(COSA_DML_LG_WIFI_ATM));
+    if ( NULL != pAATM )
+    {
+        PCOSA_DML_LG_WIFI_ATM_BAND_SETTING pAtmBand = NULL;
+        int  iLoopCount = 0;
+
+        AnscCopyString(pAATM->AtmInfo.AtmCapability, WIFI_ATM_CAPABILITY);
+
+        pAATM->RadioCount = CosaDmlWiFiAtmBand_GetNumberOfBands();
+
+        pAtmBand =(PCOSA_DML_LG_WIFI_ATM_BAND_SETTING)
+            AnscAllocateMemory(sizeof(COSA_DML_LG_WIFI_ATM_BAND_SETTING) * (pAATM->RadioCount));
+
+        /* Free previous allocated memory when fail to allocate memory  */
+        if( NULL == pAtmBand )
+        {
+            AnscFreeMemory(pAATM);
+            return ANSC_STATUS_RESOURCES;
+        }
+
+        /* Load Previous Values for Band Steering Settings */
+        for ( iLoopCount = 0; iLoopCount < pAATM->RadioCount; ++iLoopCount )
+        {
+            /* Instance Number Always from 1 */
+            pAtmBand[ iLoopCount ].InstanceNumber = iLoopCount + 1;
+
+            CosaDmlWiFiAtmBand_GetAtmBand( iLoopCount,
+                &pAtmBand[ iLoopCount ] );
+        }
+
+        pAATM->pAtmBandSetting  = pAtmBand;
+        pMyObject->pAATM        = pAATM;
+    }
+    else
+    {
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+
+
     return  returnStatus;
 }
 
@@ -76,6 +119,18 @@ ANSC_STATUS CosaLgiWifiReInitializeRadioAndAp( ANSC_HANDLE hThisObject )
 {
     ANSC_STATUS                     returnStatus        = ANSC_STATUS_SUCCESS;
 
+    PCOSA_DATAMODEL_WIFI            pMyObject           = (PCOSA_DATAMODEL_WIFI)hThisObject;
+    int                             iLoopCount          = 0;
+
+
+  for ( iLoopCount = 0; iLoopCount < pMyObject->pAATM->RadioCount; ++iLoopCount )
+    {
+        pMyObject->pAATM->pAtmBandSetting[ iLoopCount ].InstanceNumber = iLoopCount + 1;
+        CosaDmlWiFiAtmBand_GetAtmBand( iLoopCount,
+                        &pMyObject->pAATM->pAtmBandSetting[ iLoopCount ] );
+    }
+
+
     return returnStatus;
 }
 
@@ -84,6 +139,15 @@ ANSC_STATUS CosaLgiWifiRemove( ANSC_HANDLE hThisObject )
 {
     ANSC_STATUS                        returnStatus = ANSC_STATUS_SUCCESS;
     PCOSA_DATAMODEL_WIFI               pMyObject    = (PCOSA_DATAMODEL_WIFI)hThisObject;
+
+	  PCOSA_DML_LG_WIFI_ATM           pAATM        = (PCOSA_DML_LG_WIFI_ATM )NULL;
+
+    /* Remove ATM Object */
+    {
+        AnscFreeMemory((ANSC_HANDLE)pAATM->pAtmBandSetting);
+        AnscFreeMemory((ANSC_HANDLE)pAATM);
+    }
+
 
     /*Remove BandSteering Object*/
     if (pMyObject->pBandSteeringSSIDTable != NULL)
