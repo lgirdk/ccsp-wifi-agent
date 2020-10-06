@@ -68,6 +68,7 @@
 #define  COSA_DML_RR_NAME_MacFiltTab                    "MacFilterTable"
 #define  COSA_DML_RR_NAME_MacFiltTabInsNum              "MacFilterTableInsNum"
 
+#define  COSA_DML_AP_ACTIVE_TIMEOUT_SIZE                               17
 
 /* Active Measurement macro's */
 #define MIN_ACTIVE_MSMT_PKT_SIZE 64
@@ -119,6 +120,7 @@ _COSA_DML_WIFI_AP
 #if !defined(_HUB4_PRODUCT_REQ_) && !defined (_XB7_PRODUCT_REQ_)
     COSA_DML_WIFI_DPP_CFG      		DPP;
 #endif
+    CHAR                            ActiveTimeout[COSA_DML_AP_ACTIVE_TIMEOUT_SIZE];
 }
 COSA_DML_WIFI_AP, *PCOSA_DML_WIFI_AP;
 

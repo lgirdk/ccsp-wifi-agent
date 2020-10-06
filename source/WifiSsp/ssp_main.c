@@ -650,6 +650,46 @@ int main(int argc, char* argv[])
         fprintf(fd,"1");
         fclose(fd);
     }
+    char*                           pParamNames[]      = {"Device.WiFi.AccessPoint.15.X_LGI-COM_ActiveTimeout"};
+    parameterValStruct_t**          ppReturnVal        = NULL;
+    parameterInfoStruct_t**         ppReturnValNames   = NULL;
+    parameterAttributeStruct_t**    ppReturnvalAttr    = NULL;
+    ULONG                           ulReturnValCount   = 0;
+
+    //get the timeout parameter
+    CcspCcMbi_GetParameterValues(
+        DSLH_MPA_ACCESS_CONTROL_ACS,
+        pParamNames,
+        1,
+        &ulReturnValCount,
+        &ppReturnVal,
+        NULL);
+
+    if (ulReturnValCount > 0 &&
+        strlen(ppReturnVal[0]->parameterValue) > 0)
+    {
+        int iMin, iHour, iDay, iMonth, iYear, iGnIndex24=15, iGnIndex50=16;
+        char strCronCmd[256];
+
+        //remove the current entry from crontab, if any
+        system("sed -i '/Device.WiFi.SSID./d' /var/spool/cron/crontabs/root");
+
+        //setup the crontab entry
+        sscanf(ppReturnVal[0]->parameterValue,"%d/%d/%d-%d:%d", &iDay, &iMonth, &iYear, &iHour, &iMin);
+        sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false' >> /var/spool/cron/crontabs/root",
+            iMin, iHour, iDay, iMonth, iGnIndex24);
+
+        //add the crontab entry
+        system(strCronCmd);
+
+        //setup the next crontab entry
+        sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false' >> /var/spool/cron/crontabs/root",
+            iMin, iHour, iDay, iMonth, iGnIndex50);
+
+        //add the crontab entry
+        system(strCronCmd);
+    }
+    free_parameterValStruct_t(bus_handle, ulReturnValCount, ppReturnVal);
 
     printf("Entering Wifi loop\n");
     struct sysinfo l_sSysInfo;
