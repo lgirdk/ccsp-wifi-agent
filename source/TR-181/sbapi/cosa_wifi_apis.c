@@ -3401,7 +3401,9 @@ static char *l2netBridgeName = "dmsb.l2net.%d.Name";
 #endif
 static char *l2netBridge = "dmsb.l2net.%d.Members.WiFi";
 static char *l2netVlan   = "dmsb.l2net.%d.Vid";
+#if defined (_BWG_PRODUCT_REQ_)
 static char *XfinityNewl2netVlan   = "dmsb.l2net.%d.XfinityNewVid";
+#endif
 static char *l2netl3InstanceNum = "dmsb.atom.l2net.%d.l3net";
 static char *l3netIpAddr = "dmsb.atom.l3net.%d.V4Addr";
 static char *l3netIpSubNet = "dmsb.atom.l3net.%d.V4SubnetMask";
