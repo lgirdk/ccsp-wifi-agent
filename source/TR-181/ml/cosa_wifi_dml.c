@@ -95,6 +95,8 @@ extern ULONG g_currentBsUpdate;
 #define MacFilter "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.MacFilter.%d"
 #define MacFilterList2 "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.MacFilterList"
 
+#define PATH_X_LGI_COM_ACTIVETIMEOUT "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%lu.X_LGI-COM_ActiveTimeout"
+
 # define WEPKEY_TYPE_SET 3
 # define KEYPASSPHRASE_SET 2
 # define MFPCONFIG_OPTIONS_SET 3
@@ -148,6 +150,7 @@ int EVP_DecodeBlock(unsigned char*, unsigned char*, int);
 static void* WiFi_DeleteMacFilterTableThread( void *frArgs );
 int d2i_EC_PUBKEY(void **a, const unsigned char **key, long length);
 ANSC_STATUS CosaDmlWiFi_startDPP(PCOSA_DML_WIFI_AP pWiFiAP, ULONG staIndex);
+static BOOL Validate_SSID_Timeout (char *pString);
 
 static ANSC_STATUS CosaDmlWiFi_CheckAndConfigureMFPConfig (BOOLEAN bFeatureMFPConfig);
 
@@ -8989,6 +8992,31 @@ AccessPoint_GetParamStringValue
         return 0;
 
     }
+
+    if (strcmp(ParamName, "X_LGI-COM_ActiveTimeout") == 0)
+    {
+        char strName[100];
+        char *strValue = NULL;
+
+        snprintf(strName, sizeof(strName), PATH_X_LGI_COM_ACTIVETIMEOUT, pLinkObj->InstanceNumber);
+
+        if( CCSP_SUCCESS == PSM_Get_Record_Value2(bus_handle, g_Subsystem, strName, NULL, &strValue))
+        {
+            if (AnscSizeOfString(strValue) < *pUlSize)
+            {
+                AnscCopyString(pValue, strValue);
+                return TRUE;
+            }
+            else
+            {
+                *pUlSize = AnscSizeOfString(strValue)+1;
+                return FALSE;
+            }
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+            return TRUE;
+        }
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
@@ -9880,6 +9908,60 @@ AccessPoint_SetParamStringValue
         return TRUE;
     }
 	
+    if (strcmp(ParamName, "X_LGI-COM_ActiveTimeout") == 0)
+    {
+        char strName[100];
+
+        AnscCopyString(pWifiAp->ActiveTimeout, pString);
+
+        if( Validate_SSID_Timeout(pString) == false )
+        {
+            fprintf(stderr, "Invalid SSID Timeout value: %s\n", pString);
+            return FALSE;
+        }
+
+        snprintf(strName, sizeof(strName), PATH_X_LGI_COM_ACTIVETIMEOUT, pLinkObj->InstanceNumber);
+
+        if( CCSP_SUCCESS != PSM_Set_Record_Value2(bus_handle, g_Subsystem, strName, ccsp_string, pWifiAp->ActiveTimeout) )
+        {
+            fprintf(stderr, "PSM_Set_Record_Value2 failed to set %s\n", strName);
+            return FALSE;
+        }
+        else
+        {
+            int    iGnIndex24 = 15, iGnIndex50 = 16;
+
+            //remove the current entry from crontab, if any
+            system("sed -i '/Device.WiFi.SSID./d' /var/spool/cron/crontabs/root");
+
+            if (pString[0] != '\0')
+            {
+                int iMin, iHour, iDay, iMonth, iYear;
+                char strCronCmd[256];
+
+                //parse the time date values
+                sscanf(pString,"%d/%d/%d-%d:%d", &iDay, &iMonth, &iYear, &iHour, &iMin);
+
+                //prepare the crontab entry
+                sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false' >> /var/spool/cron/crontabs/root",
+                    iMin, iHour, iDay, iMonth, iGnIndex24);
+
+                //add the crontab entry
+                system(strCronCmd);
+
+                //prepare the next crontab entry
+                sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false' >> /var/spool/cron/crontabs/root",
+                    iMin, iHour, iDay, iMonth, iGnIndex50);
+
+                //add the next crontab entry
+                system(strCronCmd);
+            }
+        }
+
+        pWifiAp->bApChanged = TRUE;
+        return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -10268,6 +10350,31 @@ AccessPoint_Rollback
     return ANSC_STATUS_SUCCESS;
 }
 
+static BOOL Validate_SSID_Timeout (char *pString)
+{
+     BOOL ret = TRUE;
+     ULONG MAX_VALID_YR = 9999;
+     ULONG MIN_VALID_YR = 1800;
+     ULONG iMin=0, iHour=0, iDay=0, iMonth=0, iYear=0;
+     if (pString[0] != '\0')
+     {
+            if (sscanf(pString,"%lu/%lu/%lu-%lu:%lu", &iDay, &iMonth, &iYear, &iHour, &iMin) == 5)
+            {
+                if ((iYear > MAX_VALID_YR || iYear < MIN_VALID_YR)||
+                    (iMonth < 1 || iMonth > 12)||
+                    (iDay < 1 || iDay > 31)||
+                    (iHour > 24)||
+                    (iMin > 60))
+                      ret = FALSE;
+            }
+            else
+            {
+                fprintf(stderr, "Validate_SSID_Timeout is incorrect:%s\n", pString);
+                ret = FALSE;
+            }
+     }
+     return ret;
+}
 
 /***********************************************************************
 
