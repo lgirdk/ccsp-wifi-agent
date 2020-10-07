@@ -663,19 +663,34 @@ int main(int argc, char* argv[])
         char strCronCmd[256];
 
         //remove the current entry from crontab, if any
+#if defined(_LG_MV1_CELENO_)
+        system("rpcclient 192.168.254.253 'sed -i \"/Device.WiFi.SSID./d\" /var/spool/cron/crontabs/root'");
+        system("rpcclient 192.168.254.253 'sed -i \'/Device.WiFi.Radio./d\' /var/spool/cron/crontabs/root'");
+#else
         system("sed -i '/Device.WiFi.SSID./d' /var/spool/cron/crontabs/root");
+#endif
 
         //setup the crontab entry
         sscanf(ppReturnVal[0]->parameterValue,"%d/%d/%d-%d:%d", &iDay, &iMonth, &iYear, &iHour, &iMin);
+#if defined(_LG_MV1_CELENO_)
+        snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient 192.168.254.253 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
+            iMin, iHour, iDay, iMonth, iGnIndex24);
+#else
         sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false' >> /var/spool/cron/crontabs/root",
             iMin, iHour, iDay, iMonth, iGnIndex24);
+#endif
 
         //add the crontab entry
         system(strCronCmd);
 
         //setup the next crontab entry
+#if defined(_LG_MV1_CELENO_)
+        snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient 192.168.254.253 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
+            iMin, iHour, iDay, iMonth, iGnIndex50);
+#else
         sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false' >> /var/spool/cron/crontabs/root",
             iMin, iHour, iDay, iMonth, iGnIndex50);
+#endif
 
         //add the crontab entry
         system(strCronCmd);
