@@ -77,6 +77,8 @@
 
 #endif
 
+#include "cosa_lgi_wifi_radio_stats_dml.h" //LGI ADD
+
 //#include "secure_wrapper.h"
 
 #define  COSA_DML_WIFI_MAX_MAC_FILTER_NUM           50
@@ -616,6 +618,11 @@ _COSA_DML_WIFI_RADIO_STATS
     ULONG                           StatisticsStartTime;
 	ULONG							LastSampling;
 	COSA_DML_WIFI_RADIO_STATS_RSL	RslInfo;
+        // LGI ADD BEGIN
+        ULONG                           ChannelCount;
+        ULONG                           ChannelStatsUpdateTime;
+        PCOSA_DML_CHANNEL_STATS         ChannelStats;
+        // LGI ADD END
 }_struct_pack_;
 
 typedef  struct _COSA_DML_WIFI_RADIO_STATS COSA_DML_WIFI_RADIO_STATS, *PCOSA_DML_WIFI_RADIO_STATS;
