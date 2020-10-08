@@ -474,6 +474,10 @@ CosaWifiInitialize
                     pWifiRadio->Radio.Cfg.InstanceNumber = uIndex + 1;
                 }				
             }
+            pWifiRadio->Stats.ChannelStats = NULL;
+            pWifiRadio->Stats.ChannelCount = 0;
+            pWifiRadio->Stats.ChannelStatsUpdateTime = 0;
+
          }
     }
     
