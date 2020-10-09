@@ -3913,8 +3913,8 @@ INSTMSMT_PH2 -->
                                         <parameter>
                                             <name>SSID</name>
                                             <!--description>The SSID that the station is connected to</description-->
-                                            <type>string</type>
-                                            <syntax>string</syntax>
+                                            <type>unsignedInt</type>
+                                            <syntax>uint32</syntax>
                                         </parameter>
                                         <parameter>
                                             <name>SSIDWeight</name>
