@@ -1285,119 +1285,95 @@ ATM_Band_Get_StaWeight
 			break;
 		}
 	}
-
 	return staWeight;
 }
 
 ANSC_STATUS
-ATM_Band_Get_Statistics
-    (
-        PCOSA_DML_LG_WIFI_ATM_BAND_SETTING   pBand,
-        PULONG                                  pulCount,
-        PCOSA_DML_LG_WIFI_ATM_STAT          *ppConf,
-        ULONG                                   bandIndex
-    )
+ATM_Band_Get_Statistics()
 {
-	int apIndex, staIndex, iStaIndex, jStaIndex, staTotal = 0;
-	int bandWeight[MAX_NUM_OF_BSS_ON_BAND] = {0};
-	char ssid[ATM_MAX_SSID_LENGTH][MAX_NUM_OF_BSS_ON_BAND]= {{0}};
-	char bandWeights[24];
-	UINT staSize[MAX_NUM_OF_BSS_ON_BAND]={0};
-	BOOL enabled[MAX_NUM_OF_BSS_ON_BAND]={FALSE};
-	wifi_associated_dev_t *sta[MAX_NUM_OF_BSS_ON_BAND]={NULL}, *ps = NULL;
+	PCOSA_DATAMODEL_WIFI      pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
+	PCOSA_DML_LG_WIFI_ATM     pAATM     = pMyObject->pAATM;
 	PCOSA_DML_LG_WIFI_ATM_STAT pStat = NULL;
-	wifi_station_airtime *pStationSirtime = NULL;
+	int bandWeight[MAX_NUM_OF_BSS_ON_BAND] = {0};
+	char bandWeights[24];
+	ULONG count24g = 0;
+	ULONG count5g = 0;
+	int staTotal = 0;
+	int ssidIndex = 0;
+	int i = 0;
+	int index5g = 0;
+	int SSID_INDEX_Prefix_5g = 32;/*As per wifi hal*/
 
-	for(apIndex = bandIndex - 1; apIndex <= 15 ; apIndex = apIndex + 2)
+	if(NULL == pAATM)
+		return 0;
+
+	wlan_ATM_report_t *pStationAirtime = NULL;
+
+	wifi_getAtmStationAirtime(&pStationAirtime, &staTotal);
+
+	if(pStationAirtime == NULL)
+		return 0;
+
+	if(staTotal == 0)
+		return ANSC_STATUS_SUCCESS;
+
+	pStat= (PCOSA_DML_LG_WIFI_ATM_STAT)AnscAllocateMemory(staTotal * sizeof(COSA_DML_LG_WIFI_ATM_STAT));
+	if( NULL == pStat )
+		return ANSC_STATUS_RESOURCES;
+
+	for(i=0; i < staTotal; i++)
 	{
-		wifi_getApEnable(apIndex, &enabled[apIndex/2]);
-		if (enabled[apIndex/2] == FALSE)
-			continue;
 
-		wifi_getApName(apIndex, ssid[apIndex/2]);
+		strcpy(pStat[i].StationMAC, pStationAirtime[i].nMac);
 
-		wifi_getApAssociatedDeviceDiagnosticResult(apIndex, &sta[apIndex/2], &staSize[apIndex/2]);
-		if(sta[apIndex/2] && staSize[apIndex/2]>0)
+		ssidIndex = pStationAirtime[i].nConnectBSS;
+
+		if(ssidIndex<8) /*24g index 0~7*/
 		{
-			staTotal += staSize[apIndex/2];
+			pStat[i].StationWeight = ATM_Band_Get_StaWeight(&pAATM->pAtmBandSetting[0], pStat[i].StationMAC);
+			wifi_getAtmBandWeights(0, bandWeights, sizeof(bandWeights));
+			pStat[i].SSID = (ssidIndex*2)+1; /*0~7 index mapped to 1,3,5,7,....15 for Radio 0 SSIDs*/
+
+			sscanf(bandWeights,"%d,%d,%d,%d,%d,%d,%d,%d", &bandWeight[0], &bandWeight[1], &bandWeight[2], &bandWeight[3],
+					&bandWeight[4], &bandWeight[5], &bandWeight[6], &bandWeight[7]);
+			pStat[i].SSIDWeight = bandWeight[ssidIndex];
 		}
-	}
-
-	if (staTotal > 0)
-	{
-		wifi_getAtmBandWeights(bandIndex - 1, bandWeights, sizeof(bandWeights));
-		sscanf(bandWeights,"%d,%d,%d,%d,%d,%d,%d,%d", &bandWeight[0], &bandWeight[1], &bandWeight[2], &bandWeight[3],
-				&bandWeight[4], &bandWeight[5], &bandWeight[6], &bandWeight[7]);
-
-		pStat= (PCOSA_DML_LG_WIFI_ATM_STAT)AnscAllocateMemory(staTotal * sizeof(COSA_DML_LG_WIFI_ATM_STAT));
-		if(pStat== NULL)
+		else /*5G index 32+0~7*/
 		{
-			return ANSC_STATUS_FAILURE;
-		}
+			pStat[i].StationWeight = ATM_Band_Get_StaWeight(&pAATM->pAtmBandSetting[1], pStat[i].StationMAC);
 
-		pStationSirtime = AnscAllocateMemory(staTotal * sizeof(wifi_station_airtime));
-		if(pStationSirtime == NULL)
-		{
-			AnscFreeMemory(pStat);
-			return ANSC_STATUS_FAILURE;
-		}
+			wifi_getAtmBandWeights(1, bandWeights, sizeof(bandWeights));
+			pStat[i].SSID = (ssidIndex-SSID_INDEX_Prefix_5g)*2;
+			/*why 32? This is as per wifi hal Setting to differentiate between 2.4 and 5 Ghz index,
+			  in hal parserWeightData() +32 added for 5G radio */
+			sscanf(bandWeights,"%d,%d,%d,%d,%d,%d,%d,%d", &bandWeight[0], &bandWeight[1], &bandWeight[2], &bandWeight[3],
+					&bandWeight[4], &bandWeight[5], &bandWeight[6], &bandWeight[7]);
+			index5g = ssidIndex-SSID_INDEX_Prefix_5g;
 
-		*pulCount = staTotal;
-		iStaIndex = 0;
-		for(apIndex = bandIndex - 1; apIndex <= 15 ; apIndex = apIndex + 2)
-		{
-			if (enabled[apIndex/2] == FALSE)
-				continue;
-
-			if(sta[apIndex/2] && staSize[apIndex/2]>0)
+			if(index5g < 0 || index5g > 7)
 			{
-				for(staIndex=0, ps=sta[apIndex/2]; staIndex < staSize[apIndex/2]; staIndex++, ps++)
-				{
-					sprintf(pStat[iStaIndex].StationMAC, "%02X:%02X:%02X:%02X:%02X:%02X",
-							ps->cli_MACAddress[0], ps->cli_MACAddress[1],
-							ps->cli_MACAddress[2], ps->cli_MACAddress[3],
-							ps->cli_MACAddress[4], ps->cli_MACAddress[5]);
-
-					pStat[iStaIndex].SSID = apIndex+1;
-
-					pStat[iStaIndex].StationWeight = ATM_Band_Get_StaWeight(pBand, pStat[iStaIndex].StationMAC);
-
-					pStat[iStaIndex].SSIDWeight = bandWeight[apIndex/2];
-					iStaIndex = iStaIndex + 1;
-				}
-				free(sta[apIndex/2]);
+				printf("5G index out of Range\n");
+				pStat[i].SSIDWeight = 0;
 			}
-
-			memset( pStationSirtime, 0, staTotal * sizeof(wifi_station_airtime));
-			wifi_getAtmStationAirtime(ssid[apIndex/2], pStationSirtime, staTotal);
-
-			for (jStaIndex = 0; jStaIndex < staTotal; jStaIndex++)
+			else
 			{
-				if (pStationSirtime[jStaIndex].mac == NULL)
-				{
-					break;
-				}
-				else
-				{
-					for (staIndex = 0; staIndex < staTotal; staIndex++)
-					{
-						if (!strcasecmp(pStat[jStaIndex].StationMAC, pStationSirtime[staIndex].mac))
-						{
-							pStat[staIndex].MeasuredAirTime = pStationSirtime[jStaIndex].total_airtime;
-
-						}
-					}
-				}
+				pStat[i].SSIDWeight = bandWeight[(ssidIndex-SSID_INDEX_Prefix_5g)];
 			}
 		}
 
-		if(pStationSirtime != NULL)
-		{
-			AnscFreeMemory(pStationSirtime);
-		}
+		pStat[i].MeasuredAirTime = atol(pStationAirtime[i].nSTAConfigAirTimeDL);
+		pStat[i].TotalAirTime = atol(pStationAirtime[i].nSTATotalAirTimeDL);
+
+	}
+	pAATM->BandAtmStatCount = staTotal;
+	pAATM->pBandAtmStat = pStat;
+	pMyObject->pAATM = pAATM;
+
+	if(pStationAirtime != NULL)
+	{
+		AnscFreeMemory(pStationAirtime);
 	}
 
-	*ppConf = pStat;
 	return ANSC_STATUS_SUCCESS;
 }
 
@@ -1442,11 +1418,13 @@ ATM_Stats_Client_GetEntryCount
         ANSC_HANDLE                 hInsContext
     )
 {
-	PCOSA_DML_LG_WIFI_ATM_BAND_SETTING pAtmBandSetting = ( PCOSA_DML_LG_WIFI_ATM_BAND_SETTING )hInsContext;
-	if (pAtmBandSetting == NULL)
-		return 0;
+        PCOSA_DATAMODEL_WIFI            pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
+        PCOSA_DML_LG_WIFI_ATM        pAATM     = pMyObject->pAATM;
 
-	return pAtmBandSetting->BandAtmStatCount;
+        if(NULL != pAATM)
+                return pAATM->BandAtmStatCount;
+        else
+                return 0;
 }
 /**********************************************************************
 
@@ -1486,15 +1464,18 @@ ATM_Stats_Client_GetEntry
         ULONG*                      pInsNumber
     )
 {
-	PCOSA_DML_LG_WIFI_ATM_BAND_SETTING pAtmBandSetting = ( PCOSA_DML_LG_WIFI_ATM_BAND_SETTING )hInsContext;
+        PCOSA_DATAMODEL_WIFI            pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
+        PCOSA_DML_LG_WIFI_ATM        pAATM     = pMyObject->pAATM;
 
-	if (NULL != pAtmBandSetting && nIndex < pAtmBandSetting->BandAtmStatCount)
-	{
-		*pInsNumber  = nIndex + 1;
-		return  &pAtmBandSetting->pBandAtmStat[nIndex];
-	}
-	return NULL; /* return the handle */
 
+        if( ( NULL != pAATM ) && ( nIndex < pAATM->BandAtmStatCount ) )
+        {
+                *pInsNumber = nIndex + 1;
+
+                return ( &pAATM->pBandAtmStat[ nIndex ] ); /* return the handle */
+        }
+
+        return NULL; /* return the NULL for invalid index */
 }
 /**********************************************************************
 
@@ -1554,30 +1535,23 @@ ATM_Stats_Client_Synchronize
         ANSC_HANDLE                 hInsContext
     )
 {
+	PCOSA_DATAMODEL_WIFI            pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
+	PCOSA_DML_LG_WIFI_ATM        pAATM     = pMyObject->pAATM;
+
 	ANSC_STATUS                           ret = ANSC_STATUS_SUCCESS;
 
-	PCOSA_DML_LG_WIFI_ATM_BAND_SETTING pBand = ( PCOSA_DML_LG_WIFI_ATM_BAND_SETTING )hInsContext;
-
-	if(NULL == pBand)
+	if(NULL == pAATM)
 		return 0;
 
-	if (pBand->pBandAtmStat)
+	if(pAATM->pBandAtmStat)
 	{
-		AnscFreeMemory(pBand->pBandAtmStat);
-		pBand->pBandAtmStat = NULL;
-		pBand->BandAtmStatCount = 0;
+		AnscFreeMemory(pAATM->pBandAtmStat);
+		pAATM->pBandAtmStat = NULL;
+		pAATM->BandAtmStatCount = 0;
 	}
-	ret = ATM_Band_Get_Statistics(pBand, &pBand->BandAtmStatCount,
-			&pBand->pBandAtmStat, pBand->InstanceNumber);
-
-	if ( ret != ANSC_STATUS_SUCCESS )
-	{
-		pBand->pBandAtmStat = NULL;
-		pBand->BandAtmStatCount = 0;
-	}
+	ret = ATM_Band_Get_Statistics();
 
 	return ret;
-
 }
 /**********************************************************************
 
