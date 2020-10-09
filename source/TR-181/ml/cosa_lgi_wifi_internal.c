@@ -71,6 +71,8 @@ ANSC_STATUS CosaLgiWifiInitialize( ANSC_HANDLE hThisObject )
         AnscCopyString(pAATM->AtmInfo.AtmCapability, WIFI_ATM_CAPABILITY);
 
         pAATM->RadioCount = CosaDmlWiFiAtmBand_GetNumberOfBands();
+        pAATM->BandAtmStatCount = 0;
+        pAATM->pBandAtmStat = NULL;
 
         pAtmBand =(PCOSA_DML_LG_WIFI_ATM_BAND_SETTING)
             AnscAllocateMemory(sizeof(COSA_DML_LG_WIFI_ATM_BAND_SETTING) * (pAATM->RadioCount));
