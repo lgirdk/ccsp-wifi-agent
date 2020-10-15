@@ -1763,6 +1763,37 @@ INSTMSMT_PH2 -->
                                     <writable>true</writable>
                                 </parameter>
                             </parameters>
+                            <objects>
+                                <object>
+                                    <name>Weight</name>
+                                    <objectType>object</objectType>
+                                    <functions>
+                                    </functions>
+                                    <parameters>
+                                    </parameters>
+                                    <objects>
+                                        <object>
+                                            <name>Channel</name>
+                                            <objectType>staticTable</objectType>
+                                            <maxInstance>140</maxInstance>
+                                            <functions>
+                                                <func_GetEntryCount>Channel_GetEntryCount</func_GetEntryCount>
+                                                <func_GetEntry>Channel_GetEntry</func_GetEntry>
+                                                <func_GetParamUlongValue>Channel_GetParamUlongValue</func_GetParamUlongValue>
+                                                <func_SetParamUlongValue>Channel_SetParamUlongValue</func_SetParamUlongValue>
+                                            </functions>
+                                            <parameters>
+                                                <parameter>
+                                                    <name>ChannelWeight</name>
+                                                    <type>unsignedInt[0:100]</type>
+                                                    <syntax>uint32</syntax>
+                                                    <writable>true</writable>
+                                                </parameter>
+                                            </parameters>
+                                        </object>
+                                    </objects>
+                                </object>
+                            </objects>
                         </object>
                     </objects>
                 </object>
