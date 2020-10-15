@@ -14145,6 +14145,11 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
         wifi_setRadioExcludeDfs(wlanIndex, pCfg->EnhancedACS.ExcludeDFS);
         wlanRestart = TRUE;
     }
+    if (memcmp(pStoredCfg->EnhancedACS.ChannelWeights, pCfg->EnhancedACS.ChannelWeights, sizeof(pCfg->EnhancedACS.ChannelWeights)))
+    {
+        wifi_setRadioChannelWeights(wlanIndex, pCfg->EnhancedACS.ChannelWeights);
+        wlanRestart = TRUE;
+    }
 #endif
 
 	if (pStoredCfg->X_COMCAST_COM_DCSEnable != pCfg->X_COMCAST_COM_DCSEnable )
@@ -15195,6 +15200,8 @@ CosaDmlWiFiRadioGetCfg
 #if defined(_LG_MV1_CELENO_)
     wifi_getRadioDfsMoveBackEnable(wlanIndex, &pCfg->EnhancedACS.DFSMoveBack);
     wifi_getRadioExcludeDfs(wlanIndex, &pCfg->EnhancedACS.ExcludeDFS);
+    memset(pCfg->EnhancedACS.ChannelWeights, 0, sizeof(pCfg->EnhancedACS.ChannelWeights));
+    wifi_getRadioChannelWeights(wlanIndex, pCfg->EnhancedACS.ChannelWeights);
 #endif
 
     wifi_getRadioDfsSupport(wlanIndex,&pCfg->X_COMCAST_COM_DFSSupport);
