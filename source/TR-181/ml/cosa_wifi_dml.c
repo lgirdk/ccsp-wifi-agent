@@ -4146,7 +4146,7 @@ Radio_SetParamUlongValue
         wifiRadioSecondaryChannelUpdate(wlanIndex, wifiRadioOperParam, pWifiRadioFull->Cfg.ExtensionChannel);
         ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s Channel : %d\n", __FUNCTION__, wifiRadioOperParam->channel);
 #else //WIFI_HAL_VERSION_3
-        if ( pWifiRadioFull->Cfg.Channel == uValue )
+        if ( pWifiRadioFull->Cfg.Channel == uValue && !pWifiRadioFull->Cfg.AutoChannelEnable )
         {
             return  TRUE;
         }
@@ -5967,6 +5967,171 @@ EnhancedACS_Rollback
     )
 {
     return ANSC_STATUS_SUCCESS;
+}
+
+ULONG
+Channel_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DML_WIFI_RADIO            pWifiRadio      = hInsContext;
+    PCOSA_DML_WIFI_RADIO_FULL       pWifiRadioFull = &pWifiRadio->Radio;
+    PCOSA_DML_WIFI_RADIO_CFG        pWifiRadioCfg  = &pWifiRadioFull->Cfg;
+    int wlanIndex = (ULONG) pWifiRadioCfg->InstanceNumber-1;
+    ULONG entryCount = 0;
+    if ((wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX)) {
+        return 0;
+    }
+    if (wlanIndex == 0) {
+        entryCount = 3;
+    } else {
+        entryCount = 19;
+    }
+    return entryCount;
+}
+static const int channels24G[] = {1, 6, 11};
+static const int channels5G[] = {36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140};
+
+ANSC_HANDLE
+Channel_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    )
+{
+    PCOSA_DML_WIFI_RADIO            pWifiRadio      = hInsContext;
+    PCOSA_DML_WIFI_RADIO_FULL       pWifiRadioFull = &pWifiRadio->Radio;
+    PCOSA_DML_WIFI_RADIO_CFG        pWifiRadioCfg  = &pWifiRadioFull->Cfg;
+    PCOSA_DML_WIFI_RADIO_ENHANCEDACS      pWifiRadioEnhancedACS = &pWifiRadioCfg->EnhancedACS;
+    int wlanIndex = (ULONG) pWifiRadioCfg->InstanceNumber-1;
+
+    if ((wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX)) {
+        return (ANSC_HANDLE)NULL;
+    }
+
+    if (wlanIndex == 0) {
+        *pInsNumber = channels24G[nIndex];
+    } else {
+        *pInsNumber = channels5G[nIndex];
+    }
+    return (ANSC_HANDLE)&pWifiRadioEnhancedACS->ChannelWeights[nIndex];
+}
+
+static BOOL isDFSChannel(ULONG channel) {
+    switch (channel) {
+        case 52:
+        case 56:
+        case 60:
+        case 64:
+        case 100:
+        case 104:
+        case 108:
+        case 112:
+        case 116:
+        case 120:
+        case 124:
+        case 128:
+        case 132:
+        case 136:
+        case 140:
+            return TRUE;
+        default:
+            return FALSE;
+    }
+}
+
+static BOOL isWeatherChannel(ULONG channel) {
+    switch (channel) {
+        case 116:
+        case 120:
+        case 124:
+        case 128:
+            return TRUE;
+        default:
+            return FALSE;
+    }
+}
+
+static ANSC_STATUS GetInsNumsByWifiChannelWeight( ULONG* pWeight, ULONG *channel, BOOL *excludeDFS, COSA_DML_WIFI_CHAN_BW *bandwidth)
+{
+    PCOSA_DATAMODEL_WIFI        pWiFi       = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
+    PCOSA_DML_WIFI_RADIO            pWifiRadio      = NULL;
+    PCOSA_DML_WIFI_RADIO_FULL       pWifiRadioFull = NULL;
+    PCOSA_DML_WIFI_RADIO_CFG        pWifiRadioCfg  = NULL;
+    PCOSA_DML_WIFI_RADIO_ENHANCEDACS      pWifiRadioEnhancedACS = NULL;
+    ULONG wlanIndex;
+    int i, uIndex;
+
+    for( uIndex = 0; uIndex < pWiFi->RadioCount; uIndex++)
+    {
+        pWifiRadio = pWiFi->pRadio+uIndex;
+        pWifiRadioFull = &pWifiRadio->Radio;
+        pWifiRadioCfg  = &pWifiRadioFull->Cfg;
+        pWifiRadioEnhancedACS = &pWifiRadioCfg->EnhancedACS;
+        wlanIndex = (ULONG) pWifiRadioCfg->InstanceNumber-1;
+        if ((wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX)) {
+            return ANSC_STATUS_FAILURE;
+        }
+        for (i = 0; i < sizeof(pWifiRadioEnhancedACS->ChannelWeights) / sizeof(pWifiRadioEnhancedACS->ChannelWeights[0]); ++i) {
+            if (pWeight == &pWifiRadioEnhancedACS->ChannelWeights[i]) {
+                *channel = (wlanIndex == 0)? channels24G[i]: channels5G[i];
+                *excludeDFS = pWifiRadioEnhancedACS->ExcludeDFS;
+                *bandwidth = pWifiRadioCfg->OperatingChannelBandwidth;
+                return ANSC_STATUS_SUCCESS;
+            }
+        }
+    }
+
+    CcspTraceError(("%s:%d:FAILED\n",__func__, __LINE__));
+    return ANSC_STATUS_FAILURE;
+}
+
+BOOL
+Channel_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    ULONG*      pWeight  = (ULONG*)hInsContext;
+    ULONG channel = 0;
+    BOOL excludeDFS = FALSE;
+    COSA_DML_WIFI_CHAN_BW bandwidth;
+
+    if (strcmp(ParamName, "ChannelWeight") == 0)
+    {
+        GetInsNumsByWifiChannelWeight(pWeight, &channel, &excludeDFS, &bandwidth);
+        if ((excludeDFS && isDFSChannel(channel)) || isWeatherChannel(channel)
+            || (bandwidth == COSA_DML_WIFI_CHAN_BW_80M && (channel == 132 || channel == 136 || channel == 140))
+            || (bandwidth == COSA_DML_WIFI_CHAN_BW_40M && channel == 140)) {
+            *puLong = 0;
+        } else {
+            *puLong = *pWeight;
+        }
+        return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL
+Channel_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    )
+{
+    ULONG*      pWeight  = (ULONG*)hInsContext;
+
+    if (strcmp(ParamName, "ChannelWeight") == 0)
+    {
+        *pWeight = uValue;
+        return TRUE;
+    }
+    return FALSE;
 }
 
 /***********************************************************************
