@@ -770,6 +770,13 @@ WiFi_GetParamStringValue
         }
         return 0;
     }
+    //LGI add begin
+    if (AnscEqualString(ParamName, "X_LGI-COM_ReservedSSIDNames", TRUE))
+    {
+        AnscCopyString(pValue,pMyObject->ReservedSSIDNames);
+        return 0;
+    }
+    //LGI add end
 
     return 0;
 }
@@ -1491,6 +1498,26 @@ WiFi_SetParamStringValue
         return FALSE;
 #endif
     }
+    //LGI add begin
+    rc = strcmp_s("X_LGI-COM_ReservedSSIDNames", strlen("X_LGI-COM_ReservedSSIDNames"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
+    {
+        if(isReservedSSID(pMyObject->ReservedSSIDNames,pString)) //Check already in the list
+        {
+            return TRUE;
+        }
+
+        if(ANSC_STATUS_SUCCESS == CosaDmlWiFi_SetWiFiReservedSSIDNames((ANSC_HANDLE)pMyObject,pString))
+        {
+            return TRUE;
+        }
+        else
+        {
+            return FALSE;
+        }
+    }
+    //LGI add end
  
     return FALSE;	
 }
@@ -6052,15 +6079,11 @@ SSID_Validate
             return FALSE;
         }
     }*/
-	//Commenting below validation as this should be done at interface level -RDKB-5203
-	/*
     if (!IsSsidHotspot(pWifiSsid->SSID.Cfg.InstanceNumber))
     {
-        if (strcasestr(pWifiSsid->SSID.Cfg.SSID, "xfinityWiFi")
-                || strcasestr(pWifiSsid->SSID.Cfg.SSID, "xfinity")
-                || strcasestr(pWifiSsid->SSID.Cfg.SSID, "CableWiFi"))
+        if(isReservedSSID(pMyObject->ReservedSSIDNames,pWifiSsid->SSID.Cfg.SSID) || pWifiSsid->SSID.Cfg.SSID[0] == ' ')
         {
-            AnscTraceError(("SSID '%s' contains preserved name for Hotspot\n", pWifiSsid->SSID.Cfg.SSID));
+            AnscTraceError(("SSID '%s' contains preserved name\n", pWifiSsid->SSID.Cfg.SSID));
             CosaDmlWiFiSsidGetSSID(pWifiSsid->SSID.Cfg.InstanceNumber, pWifiSsid->SSID.Cfg.SSID);
             AnscTraceError(("SSID is treated as a special case and will be rolled back even for snmp to old value '%s' \n", pWifiSsid->SSID.Cfg.SSID));
             AnscCopyString(pReturnParamName, "SSID");
@@ -6068,7 +6091,6 @@ SSID_Validate
             return FALSE;
         }
     }
-    */
  
     pSLinkEntry = AnscQueueGetFirstEntry(&pMyObject->SsidQueue);
     

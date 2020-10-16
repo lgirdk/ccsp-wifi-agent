@@ -3325,6 +3325,7 @@ static PCOSA_DATAMODEL_WIFI            pMyObject = NULL;
 static PCOSA_DML_WIFI_SSID_BRIDGE  pBridgeVlanCfg = NULL;
 
 static char *FactoryReset    	= "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.FactoryReset";
+static char *ReservedSSIDNames       = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.ReservedSSIDNames";
 static char *FactoryResetSSID    	= "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.%d.FactoryResetSSID";
 static char *ValidateSSIDName        = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.ValidateSSIDName";
 static char *FixedWmmParams        = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.FixedWmmParamsValues";
@@ -3528,6 +3529,54 @@ static int gWifi_sysevent_fd = 0;
 static token_t gWifi_sysEtoken = TOKEN_NULL;
 #endif
 
+int isReservedSSID(char *ReservedNames, char *ssid)
+{
+        char *tmp = NULL;
+        char name[512] = {0};
+        char *save_str = NULL;
+
+        strncpy(name, ReservedNames, sizeof(name)-1);
+        tmp=strtok_r(name, ",", &save_str);
+        while (tmp != NULL)
+        {
+            if(strcasecmp(ssid,tmp) == 0 )
+            {
+                //Already this string is in the reservered names.
+                return 1;
+            }
+            tmp = strtok_r(NULL, ",", &save_str);
+        }
+
+        return 0;
+}
+
+void checkforbiddenSSID(int index)
+{
+#if defined(_COSA_INTEL_USG_ATOM_) && defined(_LG_MV1_CELENO_)
+    int retPsmGet = CCSP_SUCCESS;
+    char SSID[33] = {0};
+    char *strValue  = NULL;
+
+    wifi_getSSIDName(index, SSID);
+    retPsmGet = PSM_Get_Record_Value2( bus_handle, g_Subsystem, ReservedSSIDNames, NULL, &strValue );
+    if (retPsmGet == CCSP_SUCCESS)
+    {
+        if(isReservedSSID(strValue, SSID))
+        {
+            memset(SSID,0,sizeof(SSID));
+            if((!wifi_getDefaultSsid(index, SSID)) && (strlen(SSID) > 0)){
+                wifi_setSSIDName(index, SSID);
+            } else {
+                AnscTraceError(("%s Failed to revert SSID to default\n", __FUNCTION__));
+            }
+        }
+        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc( strValue );
+    } else {
+        AnscTraceError(("%spsm set failed for Reserved name\n", __FUNCTION__));
+    }
+#endif //Applicable only for MV1
+}
+
 void configWifi(BOOLEAN redirect)
 {
 	char   dst_pathname_cr[64]  =  {0};
@@ -3648,12 +3697,19 @@ void getDefaultSSID(int wlanIndex, char *DefaultSSID)
 		}
 	}
 #else
+#if _LG_MV1_CELENO_
+	if(wifi_getDefaultSsid(wlanIndex, DefaultSSID))
+	{
+		printf("Error in getting wifi default SSID name in:%s\n",__FUNCTION__);
+	}
+#else
 	PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
     if (strValue != NULL)
     {
 	    strcpy(DefaultSSID,strValue);
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     }
+#endif
 #endif
 }
 
@@ -3684,12 +3740,19 @@ void getDefaultPassphase(int wlanIndex, char *DefaultPassphrase)
 	   	}
 	}
 #else
+#if _LG_MV1_CELENO_
+        if(wifi_getDefaultPassword(wlanIndex, DefaultPassphrase))
+	{
+		printf("Error in getting wifi default password in:%s\n",__FUNCTION__);
+	}
+#else
 	PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
     if (strValue != NULL)
     {
 	    strcpy(DefaultPassphrase,strValue);
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     }
+#endif
 #endif
 }
 
@@ -4158,6 +4221,54 @@ printf("%s: deleting records for index %d \n", __FUNCTION__, i);
     return ANSC_STATUS_SUCCESS;
 }
 */
+//LGI add begin
+ANSC_STATUS
+CosaDmlWiFi_SetWiFiReservedSSIDNames
+    (
+        ANSC_HANDLE phContext,
+        char *ReservedName
+    )
+{
+
+    PCOSA_DATAMODEL_WIFI    pMyObject = ( PCOSA_DATAMODEL_WIFI )phContext;
+    char tempBuf[512] = {0};
+    int retPsmSet = CCSP_SUCCESS;
+    
+    snprintf(tempBuf, sizeof(tempBuf)-1,"%s,%s",pMyObject->ReservedSSIDNames, ReservedName);
+    strncpy(pMyObject->ReservedSSIDNames,tempBuf,sizeof(pMyObject->ReservedSSIDNames)-1);
+    
+    retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, ReservedSSIDNames,ccsp_string,tempBuf);
+    if (retPsmSet != CCSP_SUCCESS) {
+        return ANSC_STATUS_FAILURE;
+    }
+    //Radio resart is required to check the current SSID
+    gRadioRestartRequest[2] = TRUE;
+    
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlWiFi_GetWiFiReservedSSIDNames( char  *ReservedNames )
+{
+        int retPsmGet = CCSP_SUCCESS;
+        char *strValue  = NULL;
+
+
+        retPsmGet = PSM_Get_Record_Value2( bus_handle, g_Subsystem, ReservedSSIDNames, NULL, &strValue );
+        if (retPsmGet == CCSP_SUCCESS)
+        {
+                snprintf(ReservedNames,511,"%s",strValue);
+                ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc( strValue );
+        }
+        else
+        {
+                CcspTraceInfo(("%s Failed to get PSM\n", __FUNCTION__ ));
+                return ANSC_STATUS_FAILURE;
+        }
+        return ANSC_STATUS_SUCCESS;
+}
+//LGI add end
+
 ANSC_STATUS
 CosaDmlWiFiGetFactoryResetPsmData
     (
@@ -7609,6 +7720,7 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
     CosaDmlWiFi_GetAssocCountThresholdValue(&(pMyObject->iX_RDKCENTRAL_COM_AssocCountThreshold));
     CosaDmlWiFi_GetAssocMonitorDurationValue(&(pMyObject->iX_RDKCENTRAL_COM_AssocMonitorDuration));
     CosaDmlWiFi_GetAssocGateTimeValue(&(pMyObject->iX_RDKCENTRAL_COM_AssocGateTime));
+    CosaDmlWiFi_GetWiFiReservedSSIDNames(pMyObject->ReservedSSIDNames); //LGI addition for forbidden ssid DM
    
     if (!updateBootTimeRunning) { 
         pthread_attr_t attr;
@@ -11501,6 +11613,9 @@ CosaDmlWiFiSsidGetCfg
 { 
     ANSC_STATUS                     returnStatus   = ANSC_STATUS_SUCCESS;
     int wlanIndex = 0;
+    char rec[128];
+    char *sval = NULL;
+    BOOL bValue = 0;
 #if defined(DMCLI_SUPPORT_TO_ADD_DELETE_VAP)
     int wlan_ret = 0;
 #endif
@@ -11574,6 +11689,18 @@ CosaDmlWiFiSsidGetCfg
     //_ansc_sprintf(pCfg->WiFiRadioName, "wifi%d",wlanRadioIndex);
     wifi_getRadioIfName(wlanRadioIndex, pCfg->WiFiRadioName);
 
+//LGI add begin
+//Need to check for Primary and guest except hotspot
+    snprintf(rec, sizeof(rec), BssHotSpot, pCfg->InstanceNumber);
+    if (PSM_Get_Record_Value2(bus_handle, g_Subsystem, rec, NULL, &sval) == CCSP_SUCCESS) {
+       bValue = (1 == atoi(sval)) ? FALSE : TRUE;
+       ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(sval);
+    } else {
+        AnscTraceError(("%s: fail to get PSM record !\n", __FUNCTION__));
+    }
+       if(bValue)
+           checkforbiddenSSID(wlanIndex);
+//LGI add end
     wifi_getSSIDName(wlanIndex, pCfg->SSID);
 
     getDefaultSSID(wlanIndex,pCfg->DefaultSSID);
