@@ -10941,7 +10941,7 @@ WPS_GetParamStringValue
     // LGI ADD - START
     if(AnscEqualString(ParamName, "X_LGI-COM_WpsStatus", TRUE))
     {
-	char strbuf[512] = {0};
+	char strbuf[64] = {0};
         CosaDmlWiFi_getWpsStatus((pWifiAp->AP.Cfg.InstanceNumber -1), strbuf);
         if ( AnscSizeOfString(strbuf) < *pUlSize)
         {
@@ -15719,7 +15719,7 @@ AssociatedDevice1_GetEntry
 **********************************************************************/
 static ULONG AssociatedDevice1PreviousVisitTime;
 
-#define WIFI_AssociatedDevice_TIMEOUT   20 /*unit is second*/
+#define WIFI_AssociatedDevice_TIMEOUT   10 /*unit is second*/
 
 BOOL
 AssociatedDevice1_IsUpdated
@@ -15742,15 +15742,14 @@ AssociatedDevice1_IsUpdated
 //	return FALSE;
 //<<
     ticket=AnscGetTickInSeconds();
-//>>zqiu
-//remove WIFI_AssociatedDevice_TIMEOUT restriction
-//    if ( ticket < (pWifiAp->AssociatedDevice1PreviousVisitTime + WIFI_AssociatedDevice_TIMEOUT ) )
-//	return FALSE;
-//    else {
+
+    if ( ticket < (pWifiAp->AssociatedDevice1PreviousVisitTime + WIFI_AssociatedDevice_TIMEOUT ) )
+	return FALSE;
+    else {
     	pWifiAp->AssociatedDevice1PreviousVisitTime =  ticket;
     	return TRUE;
-//    }
-//<<
+    }
+
 #if 0
     if ( ( AnscGetTickInSeconds() - AssociatedDevice1PreviousVisitTime ) < WIFI_AssociatedDevice_TIMEOUT )
         return FALSE;
@@ -15797,7 +15796,7 @@ AssociatedDevice1_Synchronize
     PCOSA_DML_WIFI_SSID             pWifiSsid    = (PCOSA_DML_WIFI_SSID           )NULL;
     PSINGLE_LINK_ENTRY              pSLinkEntry  = (PSINGLE_LINK_ENTRY            )NULL;
     UCHAR                           PathName[64] = {0};
-
+#if 0
     /*release data allocated previous time*/
     if (pWifiAp->AssocDeviceCount)
     {
@@ -15805,7 +15804,8 @@ AssociatedDevice1_Synchronize
         pWifiAp->AssocDevices = NULL;
         pWifiAp->AssocDeviceCount = 0;
     }
-    
+#endif
+
     pSLinkEntry = AnscQueueGetFirstEntry(&pMyObject->SsidQueue);
     
     while ( pSLinkEntry )
@@ -15824,8 +15824,15 @@ AssociatedDevice1_Synchronize
     
     if ( pSLinkEntry )
     {
+        // LGI  ADD BEGIN : keep previous reading in case of error
+        PCOSA_DML_WIFI_AP_ASSOC_DEVICE  pAssocDevices    = NULL;
+        ULONG                           AssocDeviceCount = -1;
+        // LGI ADD END
+
+
         pWifiSsid = pSSIDLinkObj->hContext;
-        pWifiAp->AssocDevices = CosaDmlWiFiApGetAssocDevices
+        //pWifiAp->AssocDevices = CosaDmlWiFiApGetAssocDevices
+        pAssocDevices = CosaDmlWiFiApGetAssocDevices
         (
             (ANSC_HANDLE)pMyObject->hPoamWiFiDm, 
 #if !defined(_COSA_INTEL_USG_ATOM_) && !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
@@ -15833,12 +15840,45 @@ AssociatedDevice1_Synchronize
 #else
             pWifiSsid->SSID.StaticInfo.Name, 
 #endif
-            &pWifiAp->AssocDeviceCount
+            //&pWifiAp->AssocDeviceCount
+            &AssocDeviceCount
         );
         
+        // LGI ADD BEGIN, keep previous reading in case of error
+        // Only release previous data if new reading was successful
+        // AssocDeviceCount will be 0 when no clients connected and -1 in case of HAL error
+        if ( pAssocDevices || AssocDeviceCount == 0 )
+        {
+            /*release data allocated previous time*/
+            if (pWifiAp->AssocDeviceCount)
+            {
+                AnscFreeMemory(pWifiAp->AssocDevices);
+                pWifiAp->AssocDevices = NULL;
+                pWifiAp->AssocDeviceCount = 0;
+            }
+
+            pWifiAp->AssocDevices = pAssocDevices;
+            pWifiAp->AssocDeviceCount = AssocDeviceCount;
+        }
+        // LGI ADD END
+
         return ANSC_STATUS_SUCCESS;
     }
     
+     // LGI ADD BEGIN
+    else
+    {
+        // This should not happen in runtime normally as SSID list is fixed
+        // Handling as a precaution - release previously allocated memory
+        if (pWifiAp->AssocDeviceCount)
+        {
+            AnscFreeMemory(pWifiAp->AssocDevices);
+            pWifiAp->AssocDevices = NULL;
+            pWifiAp->AssocDeviceCount = 0;
+        }
+    }
+    // LGI ADD END
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -16063,14 +16103,14 @@ AssociatedDevice1_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_COMCAST-COM_BytesSent", TRUE))
+    if( AnscEqualString(ParamName, "X_COMCAST-COM_BytesSent", TRUE) || ( AnscEqualString(ParamName, "BytesSent", TRUE))) // LGI ADD
     {
         /* collect value */
         *puLong = pWifiApDev->BytesSent;
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "X_COMCAST-COM_BytesReceived", TRUE))
+    if( AnscEqualString(ParamName, "X_COMCAST-COM_BytesReceived", TRUE)  || ( AnscEqualString(ParamName, "BytesReceived", TRUE))) // LGI ADD
     {
         /* collect value */
         *puLong = pWifiApDev->BytesReceived;
