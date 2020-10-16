@@ -1032,9 +1032,9 @@ _COSA_DML_WIFI_APWPS_CFG
     ULONG                           ConfigMethodsEnabled;   /* Bitmask of COSA_DML_WIFI_WPS_METHOD */
     /* USGv2 Extensions */
     int                             WpsPushButton;
-    BOOLEAN                         X_CISCO_COM_ActivatePushButton;
-    char                            X_CISCO_COM_ClientPin[64];
-    BOOLEAN                         X_CISCO_COM_CancelSession;
+    BOOLEAN                         X_LGI_COM_ActivatePushButton;
+    char                            X_LGI_COM_ClientPin[64];
+    BOOLEAN                         X_LGI_COM_CancelSession;
 }_struct_pack_;
 
 typedef struct _COSA_DML_WIFI_APWPS_CFG COSA_DML_WIFI_APWPS_CFG,  *PCOSA_DML_WIFI_APWPS_CFG;
@@ -1044,7 +1044,7 @@ struct
 _COSA_DML_WIFI_APWPS_INFO
 {
     ULONG                           ConfigMethodsSupported; /* Bitmask of COSA_DML_WIFI_WPS_METHOD */
-    char                            X_CISCO_COM_Pin[64];
+    char                            X_LGI_COM_Pin[64];
     BOOL                            X_Comcast_com_Configured;
 }_struct_pack_;
 
