@@ -1301,6 +1301,25 @@ CosaDmlWiFi_GetInterworkingInternetAvailable
     );
 
 ANSC_STATUS
+CosaDmlWiFi_SetWiFiReservedSSIDNames
+    (
+        ANSC_HANDLE phContext,
+        char *ReservedName
+    );
+
+int isReservedSSID
+    (
+        char *ReservedNames,
+        char *ssid
+    );
+
+ANSC_STATUS
+CosaDmlWiFi_GetWiFiReservedSSIDNames
+    ( 
+        char *ReservedNames 
+    );
+
+ANSC_STATUS
 CosaDmlWiFi_GetPreferPrivateData
     (
        BOOL *value
