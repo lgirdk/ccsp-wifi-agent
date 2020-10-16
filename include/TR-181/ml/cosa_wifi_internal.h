@@ -198,6 +198,7 @@ COSA_DML_WIFI_BANDSTEERING, *PCOSA_DML_WIFI_BANDSTEERING;
         COSA_DML_WIFI_GASCFG            GASCfg[1];                  \	
         COSA_DML_WIFI_GASSTATS          GASStats[1];                  \	
         char                            *GASConfiguration;                  \
+        char                            ReservedSSIDNames[512];                  \
 	
 typedef  struct
 _COSA_DATAMODEL_WIFI                                               
