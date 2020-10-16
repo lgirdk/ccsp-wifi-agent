@@ -14047,18 +14047,18 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     // looks like hostapd_cli allows for settings a timeout when the pin is set
     // would need to expand or create a new API that could handle both.
     // Either ClientPin or ActivatePushButton should be set
-    if (strlen(pCfg->X_CISCO_COM_ClientPin) > 0) {
-		wifi_setApWpsEnrolleePin(wlanIndex,pCfg->X_CISCO_COM_ClientPin);
-    } else if (pCfg->X_CISCO_COM_ActivatePushButton == TRUE) {
+    if (strlen(pCfg->X_LGI_COM_ClientPin) > 0) {
+		wifi_setApWpsEnrolleePin(wlanIndex,pCfg->X_LGI_COM_ClientPin);
+    } else if (pCfg->X_LGI_COM_ActivatePushButton == TRUE) {
         wifi_setApWpsButtonPush(wlanIndex);
-    } else if (pCfg->X_CISCO_COM_CancelSession == TRUE) {
+    } else if (pCfg->X_LGI_COM_CancelSession == TRUE) {
         wifi_cancelApWPS(wlanIndex);
     }
 
     // reset Pin and Activation
-    memset(pCfg->X_CISCO_COM_ClientPin, 0, sizeof(pCfg->X_CISCO_COM_ClientPin));
-    pCfg->X_CISCO_COM_ActivatePushButton = FALSE;
-    pCfg->X_CISCO_COM_CancelSession = FALSE;
+    memset(pCfg->X_LGI_COM_ClientPin, 0, sizeof(pCfg->X_LGI_COM_ClientPin));
+    pCfg->X_LGI_COM_ActivatePushButton = FALSE;
+    pCfg->X_LGI_COM_CancelSession = FALSE;
 #if !defined(DMCLI_SUPPORT_TO_ADD_DELETE_VAP)
     memcpy(&sWiFiDmlApWpsStored[wlanIndex].Cfg, pCfg, sizeof(COSA_DML_WIFI_APWPS_CFG));
 #else
@@ -14131,9 +14131,9 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     
     /* USGv2 Extensions */
     // These may be write only parameters
-    memset(pCfg->X_CISCO_COM_ClientPin, 0, sizeof(pCfg->X_CISCO_COM_ClientPin));
-    pCfg->X_CISCO_COM_ActivatePushButton = FALSE;
-    pCfg->X_CISCO_COM_CancelSession = FALSE;
+    memset(pCfg->X_LGI_COM_ClientPin, 0, sizeof(pCfg->X_LGI_COM_ClientPin));
+    pCfg->X_LGI_COM_ActivatePushButton = FALSE;
+    pCfg->X_LGI_COM_CancelSession = FALSE;
     
     return ANSC_STATUS_SUCCESS;
 }
@@ -14165,7 +14165,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     // Read Only parameter
     // pInfo->ConfigMethodsSupported
 
-    unsigned int pin = _ansc_atoi(pInfo->X_CISCO_COM_Pin);
+    unsigned int pin = _ansc_atoi(pInfo->X_LGI_COM_Pin);
     wifi_setApWpsDevicePIN(wlanIndex, pin);
 
 #if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
@@ -14214,7 +14214,7 @@ PCOSA_DML_WIFI_APWPS_INFO   pInfo
 
     wifi_getApWpsDevicePIN(wlanIndex, &pin);
 
-    sprintf(pInfo->X_CISCO_COM_Pin, "%08d", pin);
+    sprintf(pInfo->X_LGI_COM_Pin, "%08d", pin);
 
     wifi_getApWpsConfigurationState(wlanIndex, configState);
     if (strstr(configState,"Not configured") != NULL) {
@@ -15545,6 +15545,22 @@ CosaDmlWiFi_setRadioBeaconPeriod(INT radioIndex, UINT BeaconPeriod)
     }
 	return ANSC_STATUS_SUCCESS;
 }
+
+// LGI ADD - START
+ANSC_STATUS
+CosaDmlWiFi_getWpsStatus(INT apIndex, CHAR *output)
+{
+    int ret = 0;
+    ret = wifi_getWpsStatus(apIndex,output);
+
+    if (ret != 0) {
+        CcspWifiTrace(("RDK_LOG_ERROR,\n%s :wifi_getWpsStatus returned fail response\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    return ANSC_STATUS_SUCCESS;
+} // LGI ADD - END
+
 
 ANSC_STATUS 
 CosaDmlWiFi_getChanUtilThreshold(INT radioInstance, PUINT ChanUtilThreshold)
