@@ -205,6 +205,7 @@ COSA_DML_WIFI_BANDSTEERING, *PCOSA_DML_WIFI_BANDSTEERING;
         BOOLEAN                         b2G80211axEnabled;          \
         BOOLEAN                         bDFS;          \
         BOOLEAN                         bDFSAtBootUp;          \
+        char                            ReservedSSIDNames[512];                  \
 	
 typedef  struct
 _COSA_DATAMODEL_WIFI                                               
