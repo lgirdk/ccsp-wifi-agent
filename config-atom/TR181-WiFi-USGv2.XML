@@ -3121,7 +3121,7 @@ INSTMSMT_PH2 -->
 		                    <name>Stats</name>
 		                    <objectType>object</objectType>
 		                    <functions>
-		                        <func_GetParamUlongValue>Stats_GetParamUlongValue</func_GetParamUlongValue>
+		                        <func_GetParamUlongValue>AssociatedDevice1_GetParamUlongValue</func_GetParamUlongValue>
                                 <func_SetParamBoolValue>Stats_SetParamBoolValue</func_SetParamBoolValue>
                                 <func_GetParamBoolValue>Stats_GetParamBoolValue</func_GetParamBoolValue>
 		                    </functions>
