@@ -2761,18 +2761,18 @@ INSTMSMT_PH2 -->
                                     <writable>true</writable>
                                 </parameter>
                                 <parameter>
-                                    <name>X_CISCO_COM_Pin</name>
+                                    <name>X_LGI-COM_Pin</name>
                                     <type>string</type>
                                     <syntax>string</syntax>
                                 </parameter>
                                 <parameter>
-                                    <name>X_CISCO_COM_ActivatePushButton</name>
+                                    <name>X_LGI-COM_ActivatePushButton</name>
                                     <type>boolean</type>
                                     <syntax>bool</syntax>
                                     <writable>true</writable>
                                 </parameter>
                                 <parameter>
-                                    <name>X_CISCO_COM_ClientPin</name>
+                                    <name>X_LGI-COM_ClientPin</name>
                                     <type>string</type>
                                     <syntax>string</syntax>
                                     <writable>true</writable>
@@ -2783,10 +2783,15 @@ INSTMSMT_PH2 -->
                                     <syntax>bool</syntax>
                                 </parameter>
                                 <parameter>
-                                    <name>X_CISCO_COM_CancelSession</name>
+                                    <name>X_LGI-COM_CancelSession</name>
                                     <type>boolean</type>
                                     <syntax>bool</syntax>
                                     <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>X_LGI-COM_WpsStatus</name>
+                                    <type>string</type>
+                                    <syntax>string</syntax>
                                 </parameter>
                             </parameters>
                         </object>
