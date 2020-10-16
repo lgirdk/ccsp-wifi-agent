@@ -874,6 +874,13 @@ WiFi_GetParamStringValue
         }
         return 0;
     }
+    //LGI add begin
+    if (strcmp(ParamName, "X_LGI-COM_ReservedSSIDNames") == 0)
+    {
+        AnscCopyString(pValue,pMyObject->ReservedSSIDNames);
+        return 0;
+    }
+    //LGI add end
 
     return 0;
 }
@@ -1648,6 +1655,36 @@ WiFi_SetParamStringValue
         return FALSE;
 #endif
     }
+    //LGI add begin
+    rc = strcmp_s("X_LGI-COM_ReservedSSIDNames", strlen("X_LGI-COM_ReservedSSIDNames"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
+    {
+        /*
+           Commas are used as separators for the lists of reserved SSIDs,
+           therefore we need to enforce a rule that no reserved SSID can
+           contain a comma. This also protects against attempts to set a
+           list of SSIDs in one SPV (which is not supported - reserved
+           SSIDs need to be added one at a time).
+        */
+        if (strchr (pString, ',') != NULL)
+        {
+            return FALSE;
+        }
+
+        if (isReservedSSID (pMyObject->ReservedSSIDNames, pString)) //Check already in the list
+        {
+            return TRUE;
+        }
+
+        if (CosaDmlWiFi_SetWiFiReservedSSIDNames ((ANSC_HANDLE) pMyObject, pString) == ANSC_STATUS_SUCCESS)
+        {
+            return TRUE;
+        }
+
+        return FALSE;
+    }
+    //LGI add end
  
     rc = strcmp_s("X_RDK_VapData", strlen("X_RDK_VapData"), ParamName, &ind);
     ERR_CHK(rc);
@@ -7323,15 +7360,11 @@ SSID_Validate
             return FALSE;
         }
     }*/
-	//Commenting below validation as this should be done at interface level -RDKB-5203
-	/*
     if (!IsSsidHotspot(pWifiSsid->SSID.Cfg.InstanceNumber))
     {
-        if (strcasestr(pWifiSsid->SSID.Cfg.SSID, "xfinityWiFi")
-                || strcasestr(pWifiSsid->SSID.Cfg.SSID, "xfinity")
-                || strcasestr(pWifiSsid->SSID.Cfg.SSID, "CableWiFi"))
+        if(isReservedSSID(pMyObject->ReservedSSIDNames,pWifiSsid->SSID.Cfg.SSID) || pWifiSsid->SSID.Cfg.SSID[0] == ' ')
         {
-            AnscTraceError(("SSID '%s' contains preserved name for Hotspot\n", pWifiSsid->SSID.Cfg.SSID));
+            AnscTraceError(("SSID '%s' contains preserved name\n", pWifiSsid->SSID.Cfg.SSID));
             CosaDmlWiFiSsidGetSSID(pWifiSsid->SSID.Cfg.InstanceNumber, pWifiSsid->SSID.Cfg.SSID);
             AnscTraceError(("SSID is treated as a special case and will be rolled back even for snmp to old value '%s' \n", pWifiSsid->SSID.Cfg.SSID));
             AnscCopyString(pReturnParamName, "SSID");
@@ -7339,7 +7372,6 @@ SSID_Validate
             return FALSE;
         }
     }
-    */
  
     pSLinkEntry = AnscQueueGetFirstEntry(&pMyObject->SsidQueue);
     while ( pSLinkEntry )
