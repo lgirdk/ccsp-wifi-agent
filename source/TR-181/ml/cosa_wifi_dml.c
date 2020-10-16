@@ -10399,10 +10399,10 @@ WPS_GetParamBoolValue
         return TRUE;
     }
 
-    if (strcmp(ParamName, "X_CISCO_COM_ActivatePushButton") == 0)
+    if (strcmp(ParamName, "X_LGI-COM_ActivatePushButton") == 0)
     {
         /* collect value */
-        *pBool = pWifiApWps->Cfg.X_CISCO_COM_ActivatePushButton;
+        *pBool = pWifiApWps->Cfg.X_LGI_COM_ActivatePushButton;
         return TRUE;
     }
 
@@ -10420,10 +10420,10 @@ WPS_GetParamBoolValue
         return TRUE;
     }
 
-    if (strcmp(ParamName, "X_CISCO_COM_CancelSession") == 0)
+    if (strcmp(ParamName, "X_LGI-COM_CancelSession") == 0)
     {
         /* collect value */
-        *pBool = pWifiApWps->Cfg.X_CISCO_COM_CancelSession;
+        *pBool = pWifiApWps->Cfg.X_LGI_COM_CancelSession;
         return TRUE;
     }
 
@@ -10760,29 +10760,52 @@ WPS_GetParamStringValue
         }
     }
 
-    if (strcmp(ParamName, "X_CISCO_COM_Pin") == 0)
+    if (strcmp(ParamName, "X_LGI-COM_Pin") == 0)
     {
-        if (*pUlSize <= AnscSizeOfString(pWifiApWps->Info.X_CISCO_COM_Pin))
+        if (*pUlSize <= AnscSizeOfString(pWifiApWps->Info.X_LGI_COM_Pin))
         {
-            *pUlSize = AnscSizeOfString(pWifiApWps->Info.X_CISCO_COM_Pin) + 1;
+            *pUlSize = AnscSizeOfString(pWifiApWps->Info.X_LGI_COM_Pin) + 1;
             return 1;
         }
 
-        AnscCopyString(pValue, pWifiApWps->Info.X_CISCO_COM_Pin);
+        AnscCopyString(pValue, pWifiApWps->Info.X_LGI_COM_Pin);
         return 0;
     }
 
-    if (strcmp(ParamName, "X_CISCO_COM_ClientPin") == 0)
+    if (strcmp(ParamName, "X_LGI-COM_ClientPin") == 0)
     {
-        if (*pUlSize <= AnscSizeOfString(pWifiApWps->Cfg.X_CISCO_COM_ClientPin))
+        if (*pUlSize <= AnscSizeOfString(pWifiApWps->Cfg.X_LGI_COM_ClientPin))
         {
-            *pUlSize = AnscSizeOfString(pWifiApWps->Cfg.X_CISCO_COM_ClientPin) + 1;
+            *pUlSize = AnscSizeOfString(pWifiApWps->Cfg.X_LGI_COM_ClientPin) + 1;
             return 1;
         }
 
-        AnscCopyString(pValue, pWifiApWps->Cfg.X_CISCO_COM_ClientPin);
+        AnscCopyString(pValue, pWifiApWps->Cfg.X_LGI_COM_ClientPin);
         return 0;
     }
+
+    // LGI ADD - START
+    if (strcmp(ParamName, "X_LGI-COM_WpsStatus") == 0)
+    {
+        char strbuf[512];
+        int len;
+
+        strbuf[0] = 0;
+        CosaDmlWiFi_getWpsStatus((pWifiAp->AP.Cfg.InstanceNumber -1), strbuf);
+
+        len = strlen(strbuf);
+        if (len < *pUlSize)
+        {
+            memcpy(pValue, strbuf, len + 1);
+            return 0;
+        }
+        else
+        {
+           *pUlSize = len + 1;
+           return 1;
+        }
+    }
+    // LGI ADD - END
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
@@ -10837,16 +10860,16 @@ WPS_SetParamBoolValue
         pWifiApWps->Cfg.bEnabled = bValue;
         return TRUE;
     }
-    if (strcmp(ParamName, "X_CISCO_COM_ActivatePushButton") == 0)
+    if (strcmp(ParamName, "X_LGI-COM_ActivatePushButton") == 0)
     {
         /* save update to backup */
-        pWifiApWps->Cfg.X_CISCO_COM_ActivatePushButton = bValue;
+        pWifiApWps->Cfg.X_LGI_COM_ActivatePushButton = bValue;
         return TRUE;
     }
-    if (strcmp(ParamName, "X_CISCO_COM_CancelSession") == 0)
+    if (strcmp(ParamName, "X_LGI-COM_CancelSession") == 0)
     {
         /* save update to backup */
-        pWifiApWps->Cfg.X_CISCO_COM_CancelSession = bValue;
+        pWifiApWps->Cfg.X_LGI_COM_CancelSession = bValue;
         return TRUE;
     }
 
@@ -11055,12 +11078,12 @@ WPS_SetParamStringValue
         return TRUE;
     }
 
-    if (strcmp(ParamName, "X_CISCO_COM_ClientPin") == 0)
+    if (strcmp(ParamName, "X_LGI-COM_ClientPin") == 0)
     {
-        if (AnscSizeOfString(pString) > sizeof(pWifiApWps->Cfg.X_CISCO_COM_ClientPin) - 1)
+        if (AnscSizeOfString(pString) > sizeof(pWifiApWps->Cfg.X_LGI_COM_ClientPin) - 1)
             return FALSE;
 
-        AnscCopyString(pWifiApWps->Cfg.X_CISCO_COM_ClientPin, pString);
+        AnscCopyString(pWifiApWps->Cfg.X_LGI_COM_ClientPin, pString);
         return TRUE;
     }
 
@@ -11112,14 +11135,14 @@ WPS_Validate
     PCOSA_DML_WIFI_APWPS_FULL       pWifiApWps   = (PCOSA_DML_WIFI_APWPS_FULL)&pWifiAp->WPS;
     INT  			    wlanIndex    =  -1;
     // Only one of these may be set at a given time
-    if ( ( (pWifiApWps->Cfg.X_CISCO_COM_ActivatePushButton == TRUE) &&
-         ( (strlen(pWifiApWps->Cfg.X_CISCO_COM_ClientPin) > 0) ||
-           (pWifiApWps->Cfg.X_CISCO_COM_CancelSession == TRUE) ) ) ||
-         ( (strlen(pWifiApWps->Cfg.X_CISCO_COM_ClientPin) > 0) &&
-           (pWifiApWps->Cfg.X_CISCO_COM_CancelSession == TRUE) ) ) 
+    if ( ( (pWifiApWps->Cfg.X_LGI_COM_ActivatePushButton == TRUE) &&
+         ( (strlen(pWifiApWps->Cfg.X_LGI_COM_ClientPin) > 0) ||
+           (pWifiApWps->Cfg.X_LGI_COM_CancelSession == TRUE) ) ) ||
+         ( (strlen(pWifiApWps->Cfg.X_LGI_COM_ClientPin) > 0) &&
+           (pWifiApWps->Cfg.X_LGI_COM_CancelSession == TRUE) ) )
     {
-	AnscCopyString(pReturnParamName, "X_CISCO_COM_ActivatePushButton");
-	*puLength = AnscSizeOfString("X_CISCO_COM_ActivatePushButton");
+	AnscCopyString(pReturnParamName, "X_LGI_COM_ActivatePushButton");
+	*puLength = AnscSizeOfString("X_LGI_COM_ActivatePushButton");
         return FALSE;
     }
 
