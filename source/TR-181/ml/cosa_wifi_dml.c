@@ -875,6 +875,18 @@ WiFi_GetParamStringValue
         return 0;
     }
 
+    if (strcmp(ParamName, "X_LGI-COM_ReservedSSIDNames") == 0)
+    {
+        AnscCopyString(pValue,pMyObject->ReservedSSIDNames);
+        return 0;
+    }
+
+    if (strcmp(ParamName, "X_LGI-COM_DefaultReservedSSID") == 0)
+    {
+        AnscCopyString(pValue,DefaultReservedSSIDNames);
+        return 0;
+    }
+
     return 0;
 }
 
@@ -1647,6 +1659,30 @@ WiFi_SetParamStringValue
 #else
         return FALSE;
 #endif
+    }
+
+    rc = strcmp_s("X_LGI-COM_ReservedSSIDNames", strlen("X_LGI-COM_ReservedSSIDNames"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
+    {
+        char *token = NULL;
+
+        token = strtok(pString, ",");
+
+        while (token != NULL)
+        {
+            if (!isReservedSSID(pMyObject->ReservedSSIDNames, token)) //Check already in the list
+            {
+                if (CosaDmlWiFi_SetWiFiReservedSSIDNames((ANSC_HANDLE) pMyObject, token) != ANSC_STATUS_SUCCESS)
+                {
+                    return FALSE;
+                }
+            }
+
+            token = strtok(NULL, ",");
+        }
+
+        return TRUE;
     }
  
     rc = strcmp_s("X_RDK_VapData", strlen("X_RDK_VapData"), ParamName, &ind);
@@ -7323,15 +7359,12 @@ SSID_Validate
             return FALSE;
         }
     }*/
-	//Commenting below validation as this should be done at interface level -RDKB-5203
-	/*
+
     if (!IsSsidHotspot(pWifiSsid->SSID.Cfg.InstanceNumber))
     {
-        if (strcasestr(pWifiSsid->SSID.Cfg.SSID, "xfinityWiFi")
-                || strcasestr(pWifiSsid->SSID.Cfg.SSID, "xfinity")
-                || strcasestr(pWifiSsid->SSID.Cfg.SSID, "CableWiFi"))
+        if(isReservedSSID(pMyObject->ReservedSSIDNames,pWifiSsid->SSID.Cfg.SSID) || pWifiSsid->SSID.Cfg.SSID[0] == ' ')
         {
-            AnscTraceError(("SSID '%s' contains preserved name for Hotspot\n", pWifiSsid->SSID.Cfg.SSID));
+            AnscTraceError(("SSID '%s' contains preserved name\n", pWifiSsid->SSID.Cfg.SSID));
             CosaDmlWiFiSsidGetSSID(pWifiSsid->SSID.Cfg.InstanceNumber, pWifiSsid->SSID.Cfg.SSID);
             AnscTraceError(("SSID is treated as a special case and will be rolled back even for snmp to old value '%s' \n", pWifiSsid->SSID.Cfg.SSID));
             AnscCopyString(pReturnParamName, "SSID");
@@ -7339,7 +7372,6 @@ SSID_Validate
             return FALSE;
         }
     }
-    */
  
     pSLinkEntry = AnscQueueGetFirstEntry(&pMyObject->SsidQueue);
     while ( pSLinkEntry )

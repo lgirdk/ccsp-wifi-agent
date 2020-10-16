@@ -274,6 +274,18 @@
             <syntax>string</syntax>
             <writable>true</writable>
         </parameter>
+        <parameter>
+            <name>X_LGI-COM_ReservedSSIDNames</name>
+            <type>string(512)</type>
+            <syntax>string</syntax>
+            <writable>true</writable>
+        </parameter>
+        <parameter>
+            <name>X_LGI-COM_DefaultReservedSSID</name>
+            <type>string(512)</type>
+            <syntax>string</syntax>
+            <writable>false</writable>
+        </parameter>
 	</parameters>
 	<objects>
         <object>
