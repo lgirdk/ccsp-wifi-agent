@@ -19943,8 +19943,9 @@ CosaDmlWiFiApGetAssocDevices
     )
 {
     int wlanIndex = -1; //???
+    int radioIndex = 0;
     BOOL enabled = FALSE;
-    wifi_associated_dev3_t *wifi_associated_dev_array = NULL, *ps = NULL;
+    wifi_associated_dev2_t *wifi_associated_dev_array = NULL, *ps = NULL;
     COSA_DML_WIFI_AP_ASSOC_DEVICE *pWifiApDev = NULL, *pd = NULL;
     ULONG i = 0;
     UINT array_size = 0;
@@ -19965,7 +19966,7 @@ CosaDmlWiFiApGetAssocDevices
         return NULL;
     }
 	//hal would allocate the array
-	diagStatus = wifi_getApAssociatedDeviceDiagnosticResult3(wlanIndex, &wifi_associated_dev_array, &array_size);
+	diagStatus = wifi_getApAssociatedDeviceDiagnosticResult2(wlanIndex, &wifi_associated_dev_array, &array_size);
 	if(wifi_associated_dev_array && array_size>0 && diagStatus == RETURN_OK) {
 		*pulCount = array_size;
 		//zqiu: TODO: to search the MAC in exsting pWifiApDev Array to find the match, and count Disassociations/AuthenticationFailures and Active
@@ -19991,6 +19992,7 @@ CosaDmlWiFiApGetAssocDevices
 			pd->DataFramesSentNoAck 	= ps->cli_DataFramesSentNoAck;
 			pd->BytesSent 				= ps->cli_BytesSent;
 			pd->BytesReceived 			= ps->cli_BytesReceived;
+#if 0
                         pd->PacketsSent                         = ps->cli_PacketsSent;
                         pd->PacketsReceived                     = ps->cli_PacketsReceived;
                         pd->ErrorsSent                          = ps->cli_ErrorsSent;
@@ -19998,12 +20000,13 @@ CosaDmlWiFiApGetAssocDevices
                         pd->FailedRetransCount                  = ps->cli_FailedRetransCount;
                         pd->RetryCount                          = ps->cli_RetryCount;
                         pd->MultipleRetryCount                  = ps->cli_MultipleRetryCount;
-
+#endif
 			pd->RSSI		 		= ps->cli_RSSI;
 			pd->MinRSSI 				= ps->cli_MinRSSI;
 			pd->MaxRSSI 				= ps->cli_MaxRSSI;
 			pd->Disassociations			= 0;	//???
 			pd->AuthenticationFailures	= 0;	//???
+#if 0
 			pd->maxUplinkRate   = ps->cli_MaxDownlinkRate;
 			pd->maxDownlinkRate = ps->cli_MaxUplinkRate;
                         //RDKB-28981--
@@ -20027,6 +20030,7 @@ CosaDmlWiFiApGetAssocDevices
                                 cli_stats = NULL;
                         }
                         //--RDKB-28981
+#endif
 
                         //Fetching CapStream via monitor.c
                         monStatus = monitor_apis_param_send(wlanIndex, pd);
@@ -20040,7 +20044,7 @@ CosaDmlWiFiApGetAssocDevices
 	} else {
         if (wifi_associated_dev_array != NULL) {
             // the count is greater than 0, but we have corrupted data in the structure
-            CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s DiagnosticResult3 data is corrupted - dropping\n",__FUNCTION__));
+            CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s DiagnosticResult2 data is corrupted - dropping\n",__FUNCTION__));
             free(wifi_associated_dev_array);
             wifi_associated_dev_array =  NULL;
         }
