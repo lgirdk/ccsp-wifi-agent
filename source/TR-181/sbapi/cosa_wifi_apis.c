@@ -8288,7 +8288,6 @@ CosaDmlWiFiFactoryReset
 
         fprintf(stderr, "-- wifi_setLED off\n");
 		wifi_setLFSecurityKeyPassphrase();
-        m_wifi_init();
 #if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)
         wifi_pushSsidAdvertisementEnable(0, false);
         wifi_pushSsidAdvertisementEnable(1, false);
@@ -8311,6 +8310,8 @@ CosaDmlWiFiFactoryReset
 	CosaDmlWiFiCheckAndConfigureLEDS( );
 #endif /* _HUB4_PRODUCT_REQ_ */
     }
+    // As restart removed from the Hal layer, forcing the restart here
+    m_wifi_init();
 
     // Set FixedWmmParams to TRUE on Factory Reset so that we won't override the data.
     // There were two required changes.  Set to 3 so that we know neither needs to be applied
