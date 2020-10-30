@@ -1127,11 +1127,9 @@ CosaWifiReInitialize
         {
             return ANSC_STATUS_RESOURCES;
         }
-	#if defined(_CBR_PRODUCT_REQ_)
+
 	wifi_getRadioIfName(uRadioIndex, PathName);
-	#else
-	sprintf(PathName, "wifi%d", uRadioIndex);
-	#endif
+
         //if Device.WiFi.SSID.1.LowerLayers(Device.WiFi.Radio.1. (Device.WiFi.Radio.1.Name (wifi0)))  == wifi0
 #if !defined(DMCLI_SUPPORT_TO_ADD_DELETE_VAP)
         if (AnscEqualString(pWifiSsid->SSID.Cfg.WiFiRadioName, PathName, TRUE)) {
