@@ -8167,7 +8167,6 @@ CosaDmlWiFiFactoryReset
 
         fprintf(stderr, "-- wifi_setLED off\n");
 		wifi_setLFSecurityKeyPassphrase();
-        m_wifi_init();
 #if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)
 #ifdef WIFI_HAL_VERSION_3
         for (UINT apIndex = 0; apIndex < getTotalNumberVAPs(); ++apIndex)
@@ -8200,6 +8199,8 @@ CosaDmlWiFiFactoryReset
 	CosaDmlWiFiCheckAndConfigureLEDS( );
 #endif /* _HUB4_PRODUCT_REQ_ */
     }
+    // As restart removed from the Hal layer, forcing the restart here
+    m_wifi_init();
 
 #if defined(WIFI_HAL_VERSION_3)
     /* configure wpa3 personal modes as a default security mode if  the RFC is true*/
