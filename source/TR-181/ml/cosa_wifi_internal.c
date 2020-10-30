@@ -1318,11 +1318,7 @@ CosaWifiReInitialize
         {
             return ANSC_STATUS_RESOURCES;
         }
-	#if defined(_CBR_PRODUCT_REQ_)
 	wifi_getRadioIfName(uRadioIndex, PathName);
-	#else
-	snprintf(PathName, sizeof(PathName), "wifi%lu", uRadioIndex);
-	#endif
         pWifiSsid->SSID.Cfg.WiFiRadioName[sizeof(pWifiSsid->SSID.Cfg.WiFiRadioName) - 1] = '\0';
         pWifiRadio->Radio.StaticInfo.Name[sizeof(pWifiRadio->Radio.StaticInfo.Name) - 1] = '\0';
         //if Device.WiFi.SSID.1.LowerLayers(Device.WiFi.Radio.1. (Device.WiFi.Radio.1.Name (wifi0)))  == wifi0
