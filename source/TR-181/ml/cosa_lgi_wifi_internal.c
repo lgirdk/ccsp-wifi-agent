@@ -111,7 +111,14 @@ ANSC_STATUS CosaLgiWifiReInitialize( ANSC_HANDLE hThisObject )
 {
     ANSC_STATUS           returnStatus = ANSC_STATUS_SUCCESS;
 
-    // Nothing to do yet
+    PCOSA_DATAMODEL_WIFI            pMyObject           = (PCOSA_DATAMODEL_WIFI)hThisObject;
+    int                             iLoopCount          = 0;
+
+    for ( iLoopCount = 0; iLoopCount < pMyObject->pAATM->RadioCount; ++iLoopCount )
+    {
+        pMyObject->pAATM->pAtmBandSetting[ iLoopCount ].InstanceNumber = iLoopCount + 1;
+        CosaDmlWiFiAtmBand_GetAtmBand( iLoopCount, &pMyObject->pAATM->pAtmBandSetting[ iLoopCount ] );
+    }
 
     return  returnStatus;
 }
