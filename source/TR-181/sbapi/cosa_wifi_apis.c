@@ -5660,77 +5660,6 @@ CosaDmlWiFiGetAccessPointPsmData
     }
 
     if (!g_wifidb_rfc) {
-    rc = sprintf_s(recName, sizeof(recName), WmmEnable, ulInstance);
-    if(rc < EOK)
-    {
-        ERR_CHK(rc);
-    }
-    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
-    if (retPsmGet == CCSP_SUCCESS) {
-        BOOL enable = _ansc_atoi(strValue);
-        pCfg->WMMEnable = enable;
-        if (enabled == TRUE) {
-            wifi_setApWmmEnable(wlanIndex, enable);
-        }
-        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
-    }
-    } else {
-        pCfg->WMMEnable = pcfg->wmm_enabled;
-        if (enabled == TRUE) {
-            wifi_setApWmmEnable(wlanIndex, pCfg->WMMEnable);
-        }
-    }
-
-    if (!g_wifidb_rfc) {
-    memset(recName, 0, sizeof(recName));
-    snprintf(recName, sizeof(recName), UAPSDEnable, ulInstance);
-    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
-    if (retPsmGet == CCSP_SUCCESS) {
-        BOOL enable = _ansc_atoi(strValue);
-        pCfg->UAPSDEnable = enable;
-        if (enabled == TRUE) {
-            wifi_setApWmmUapsdEnable(wlanIndex, enable);
-        }
-        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
-    }
-    } else {
-        pCfg->UAPSDEnable = pcfg->uapsd_enabled;
-        if (enabled == TRUE) {
-            wifi_setApWmmUapsdEnable(wlanIndex, pCfg->UAPSDEnable);
-        }
-    }
-    // For Backwards compatibility with 1.3 versions, the PSM value for NoAck must be 1
-    // When set/get from the PSM to DML the value must be interperted to the opposite
-    // 1->0 and 0->1
-
-    if (!g_wifidb_rfc) {
-    memset(recName, 0, sizeof(recName));
-    snprintf(recName, sizeof(recName), WmmNoAck, ulInstance);
-    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
-    if (retPsmGet == CCSP_SUCCESS) {
-        intValue = _ansc_atoi(strValue);
-        pCfg->WmmNoAck = !intValue;
-
-        if (enabled == TRUE) {
-            wifi_setApWmmOgAckPolicy(wlanIndex, 0, intValue);
-			wifi_setApWmmOgAckPolicy(wlanIndex, 1, intValue);
-			wifi_setApWmmOgAckPolicy(wlanIndex, 2, intValue);
-			wifi_setApWmmOgAckPolicy(wlanIndex, 3, intValue);
-        }
-        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
-    }
-    } else {
-        pCfg->WmmNoAck = pcfg->wmm_noack;
-
-        if (enabled == TRUE) {
-            wifi_setApWmmOgAckPolicy(wlanIndex, 0, !pCfg->WmmNoAck);
-                        wifi_setApWmmOgAckPolicy(wlanIndex, 1, !pCfg->WmmNoAck);
-                        wifi_setApWmmOgAckPolicy(wlanIndex, 2, !pCfg->WmmNoAck);
-                        wifi_setApWmmOgAckPolicy(wlanIndex, 3, !pCfg->WmmNoAck);
-        }
-    }
-
-    if (!g_wifidb_rfc) {
     memset(recName, 0, sizeof(recName));
     snprintf(recName, sizeof(recName), BssMaxNumSta, ulInstance);
     retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
@@ -16976,20 +16905,26 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     }
     // These should be pushed when the SSID is up
     //  They are currently set from ApGetCfg when it call GetAccessPointPsmData
-    #if 0 
-    wifi_setApWmmEnable(wlanIndex,pCfg->WMMEnable);
-    wifi_setApWmmUapsdEnable(wlanIndex, pCfg->UAPSDEnable);        
 
-    {
-	// Ic and Og policies set the same for first GA release
-	wifi_setApWmmOgAckPolicy(wlanIndex, 0, pCfg->WmmNoAck);
-	wifi_setApWmmOgAckPolicy(wlanIndex, 1, pCfg->WmmNoAck);
-	wifi_setApWmmOgAckPolicy(wlanIndex, 2, pCfg->WmmNoAck);
-	wifi_setApWmmOgAckPolicy(wlanIndex, 3, pCfg->WmmNoAck);
+    if (pCfg->WMMEnable != pStoredCfg->WMMEnable) {
+        wifi_setApWmmEnable(wlanIndex,pCfg->WMMEnable);
+        enable_reset_radio_flag(wlanIndex);
     }
-    wifi_setApMaxAssociatedDevices(wlanIndex, pCfg->BssMaxNumSta);
-    wifi_setApIsolationEnable(wlanIndex, pCfg->IsolationEnable);
-    #endif
+
+    if (pCfg->UAPSDEnable != pStoredCfg->UAPSDEnable) {
+        wifi_setApWmmUapsdEnable(wlanIndex, pCfg->UAPSDEnable);
+        if(wlanIndex%2 == 0)/*UAPSDEnable Not supported by 5G Radio so avoid Radio reset for 5G*/
+            enable_reset_radio_flag(wlanIndex);
+    }
+
+    if (pCfg->WmmNoAck != pStoredCfg->WmmNoAck) {
+        // Ic and Og policies set the same for first GA release
+        wifi_setApWmmOgAckPolicy(wlanIndex, 0, pCfg->WmmNoAck);
+        wifi_setApWmmOgAckPolicy(wlanIndex, 1, pCfg->WmmNoAck);
+        wifi_setApWmmOgAckPolicy(wlanIndex, 2, pCfg->WmmNoAck);
+        wifi_setApWmmOgAckPolicy(wlanIndex, 3, pCfg->WmmNoAck);
+        enable_reset_radio_flag(wlanIndex);
+    }
 
     if (pCfg->IsolationEnable != pStoredCfg->IsolationEnable) {
             wifi_setApIsolationEnable(wlanIndex, pCfg->IsolationEnable);
@@ -17467,6 +17402,17 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     pCfg->BSSTransitionImplemented = (pCfg->bEnabled == TRUE) ? TRUE : FALSE;
 
     CosaDmlWiFiGetAccessPointPsmData(pCfg);
+
+    /*Get the WMM related values from Hal*/
+    wifi_getApWmmEnable(wlanIndex, &enabled);
+    pCfg->WMMEnable = (enabled == TRUE) ? TRUE : FALSE;
+
+    wifi_getApWmmUapsdEnable(wlanIndex, &enabled);
+    pCfg->UAPSDEnable = (enabled == TRUE) ? TRUE : FALSE;
+
+    wifi_getApWmmOgAckPolicy(wlanIndex, &enabled);
+    pCfg->WmmNoAck = (enabled == TRUE)? 1 : 0;
+
     CcspTraceWarning(("X_RDKCENTRAL-COM_BSSTransitionActivated_Get:<%d>\n", pCfg->BSSTransitionActivated));
 
     /* USGv2 Extensions */
