@@ -14843,6 +14843,15 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__,
 #endif
 #endif
     }
+    else
+    {
+      /*Update the RadioStoredCfg even if Applysettings not set*/
+       memcpy(&sWiFiDmlRadioStoredCfg[pCfg->InstanceNumber-1], pCfg, sizeof(COSA_DML_WIFI_RADIO_CFG));
+      /*Set the radio reset flag*/
+       if(wlanRestart)
+           enable_reset_radio_flag(wlanIndex);
+    }
+
     return ANSC_STATUS_SUCCESS;
 #endif //WIFI_HAL_VERSION_3
 }
