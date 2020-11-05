@@ -16518,31 +16518,24 @@ CosaDmlWiFiSsidGetStats
     }
 
     int result = 0;
-    result = wifi_getBasicTrafficStats(wlanIndex, &basicStats);
-    if (result == 0) {
-        pStats->BytesSent = basicStats.wifi_BytesSent;
-        pStats->BytesReceived = basicStats.wifi_BytesReceived;
-        pStats->PacketsSent = basicStats.wifi_PacketsSent; 
-        pStats->PacketsReceived = basicStats.wifi_PacketsReceived;
-    }
-
-    result = wifi_getWifiTrafficStats(wlanIndex, &errorStats);
-    if (result == 0) {
-        pStats->ErrorsSent                         = errorStats.wifi_ErrorsSent;
-        pStats->ErrorsReceived                     = errorStats.wifi_ErrorsReceived;
-        pStats->UnicastPacketsSent                 = errorStats.wifi_UnicastPacketsSent;
-        pStats->UnicastPacketsReceived             = errorStats.wifi_UnicastPacketsReceived;
-        pStats->DiscardPacketsSent                 = errorStats.wifi_DiscardedPacketsSent;
-        pStats->DiscardPacketsReceived             = errorStats.wifi_DiscardedPacketsReceived;
-        pStats->MulticastPacketsSent               = errorStats.wifi_MulticastPacketsSent;
-        pStats->MulticastPacketsReceived           = errorStats.wifi_MulticastPacketsReceived;
-        pStats->BroadcastPacketsSent               = errorStats.wifi_BroadcastPacketsSent;
-        pStats->BroadcastPacketsReceived           = errorStats.wifi_BroadcastPacketsRecevied;
-        pStats->UnknownProtoPacketsReceived        = errorStats.wifi_UnknownPacketsReceived;
-    }
 
     result = wifi_getSSIDTrafficStats2(wlanIndex, &transStats);
     if (result == 0) {
+        pStats->BytesSent                          = transStats.ssid_BytesSent;
+        pStats->BytesReceived                      = transStats.ssid_BytesReceived;
+        pStats->PacketsSent                        = transStats.ssid_PacketsSent;
+        pStats->PacketsReceived                    = transStats.ssid_PacketsReceived;
+        pStats->ErrorsSent                         = transStats.ssid_ErrorsSent;
+        pStats->ErrorsReceived                     = transStats.ssid_ErrorsReceived;
+        pStats->UnicastPacketsSent                 = transStats.ssid_UnicastPacketsSent;
+        pStats->UnicastPacketsReceived             = transStats.ssid_UnicastPacketsReceived;
+        pStats->DiscardPacketsSent                 = transStats.ssid_DiscardedPacketsSent;
+        pStats->DiscardPacketsReceived             = transStats.ssid_DiscardedPacketsReceived;
+        pStats->MulticastPacketsSent               = transStats.ssid_MulticastPacketsSent;
+        pStats->MulticastPacketsReceived           = transStats.ssid_MulticastPacketsReceived;
+        pStats->BroadcastPacketsSent               = transStats.ssid_BroadcastPacketsSent;
+        pStats->BroadcastPacketsReceived           = transStats.ssid_BroadcastPacketsRecevied;
+        pStats->UnknownProtoPacketsReceived        = transStats.ssid_UnknownPacketsReceived;
         pStats->RetransCount                       = transStats.ssid_RetransCount;
         pStats->FailedRetransCount                 = transStats.ssid_FailedRetransCount;
         pStats->RetryCount	                       = transStats.ssid_RetryCount;
@@ -16550,6 +16543,7 @@ CosaDmlWiFiSsidGetStats
         pStats->ACKFailureCount                    = transStats.ssid_ACKFailureCount;
         pStats->AggregatedPacketCount              = transStats.ssid_AggregatedPacketCount;
     }
+
     return ANSC_STATUS_SUCCESS;
 }
 
