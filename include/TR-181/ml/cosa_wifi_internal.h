@@ -105,6 +105,7 @@ _COSA_DML_WIFI_AP
 {
     COSA_DML_WIFI_AP_FULL           AP;
     COSA_DML_WIFI_APSEC_FULL        SEC;
+    COSA_DML_WIFI_APACCT_FULL       ACCT;
     COSA_DML_WIFI_APWPS_FULL        WPS;
     COSA_DML_WIFI_AP_MF_CFG         MF;
     BOOLEAN                         bApChanged;
