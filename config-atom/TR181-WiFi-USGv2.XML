@@ -2733,6 +2733,73 @@ INSTMSMT_PH2 -->
                             </objects>
                         </object>
                         <object>
+                            <name>Accounting</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>Accounting_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_GetParamIntValue>Accounting_GetParamIntValue</func_GetParamIntValue>
+                                <func_GetParamUlongValue>Accounting_GetParamUlongValue</func_GetParamUlongValue>
+                                <func_GetParamStringValue>Accounting_GetParamStringValue</func_GetParamStringValue>
+                                <func_SetParamBoolValue>Accounting_SetParamBoolValue</func_SetParamBoolValue>
+                                <func_SetParamIntValue>Accounting_SetParamIntValue</func_SetParamIntValue>
+                                <func_SetParamUlongValue>Accounting_SetParamUlongValue</func_SetParamUlongValue>
+                                <func_SetParamStringValue>Accounting_SetParamStringValue</func_SetParamStringValue>
+                                <func_Validate>Accounting_Validate</func_Validate>
+                                <func_Commit>Accounting_Commit</func_Commit>
+                                <func_Rollback>Accounting_Rollback</func_Rollback>
+                            </functions>
+                            <parameters>
+                                <parameter>
+                                    <name>Enable</name>
+                                    <type>boolean</type>
+                                    <syntax>bool</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>ServerIPAddr</name>
+                                    <type>string(45)</type>
+                                    <syntax>string</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>ServerPort</name>
+                                    <type>unsignedInt</type>
+                                    <syntax>uint32</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>Secret</name>
+                                    <type>string(63)</type>
+                                    <syntax>string</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>SecondaryServerIPAddr</name>
+                                    <type>string(45)</type>
+                                    <syntax>string</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>SecondaryServerPort</name>
+                                    <type>unsignedInt</type>
+                                    <syntax>uint32</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>SecondarySecret</name>
+                                    <type>string(63)</type>
+                                    <syntax>string</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>InterimInterval</name>
+                                    <type>unsignedInt</type>
+                                    <syntax>uint32</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                            </parameters>
+                        </object>
+                        <object>
                             <name>WPS</name>
                             <objectType>object</objectType>
                             <functions>

@@ -155,6 +155,7 @@ ANSC_STATUS CosaDmlWiFiApMfPushCfg(PCOSA_DML_WIFI_AP_MF_CFG pCfg, ULONG wlanInde
 ANSC_STATUS CosaDmlWiFiApWpsApplyCfg(PCOSA_DML_WIFI_APWPS_CFG pCfg, ULONG index);
 ANSC_STATUS CosaDmlWiFiApSecPushCfg(PCOSA_DML_WIFI_APSEC_CFG pCfg, ULONG instanceNumber);
 ANSC_STATUS CosaDmlWiFiApSecApplyCfg(PCOSA_DML_WIFI_APSEC_CFG pCfg, ULONG instanceNumber);
+ANSC_STATUS CosaDmlWiFiApAcctApplyCfg(PCOSA_DML_WIFI_APACCT_CFG pCfg, ULONG instanceNumber);
 ANSC_STATUS CosaDmlWiFiApSecApplyWepCfg(PCOSA_DML_WIFI_APSEC_CFG pCfg, ULONG instanceNumber);
 ANSC_STATUS CosaDmlWiFiApPushCfg (PCOSA_DML_WIFI_AP_CFG pCfg);
 ANSC_STATUS CosaDmlWiFiApPushMacFilter(QUEUE_HEADER *pMfQueue, ULONG wlanIndex);
@@ -1673,11 +1674,14 @@ COSA_DML_WIFI_AP_FULL sWiFiDmlApStoredCfg[WIFI_INDEX_MAX];
 COSA_DML_WIFI_AP_FULL sWiFiDmlApRunningCfg[WIFI_INDEX_MAX];
 COSA_DML_WIFI_APSEC_FULL  sWiFiDmlApSecurityStored[WIFI_INDEX_MAX];
 COSA_DML_WIFI_APSEC_FULL  sWiFiDmlApSecurityRunning[WIFI_INDEX_MAX];
+static COSA_DML_WIFI_APACCT_FULL sWiFiDmlApAcctStored[WIFI_INDEX_MAX];
+static COSA_DML_WIFI_APACCT_FULL sWiFiDmlApAcctRunning[WIFI_INDEX_MAX];
 COSA_DML_WIFI_APWPS_FULL sWiFiDmlApWpsStored[WIFI_INDEX_MAX];
 COSA_DML_WIFI_APWPS_FULL sWiFiDmlApWpsRunning[WIFI_INDEX_MAX];
 PCOSA_DML_WIFI_AP_MF_CFG  sWiFiDmlApMfCfg[WIFI_INDEX_MAX];
 static BOOLEAN sWiFiDmlApStatsEnableCfg[WIFI_INDEX_MAX];
 static BOOLEAN sWiFiDmlRestartHostapd = FALSE;
+static BOOLEAN sWiFiDmlRestartVap[16] = { FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE };
 BOOLEAN sWiFiDmlvApStatsFeatureEnableCfg = TRUE;
 QUEUE_HEADER *sWiFiDmlApMfQueue[WIFI_INDEX_MAX];
 #ifdef WIFI_HAL_VERSION_3
@@ -13183,6 +13187,7 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d false\n", __func__, __LINE__, 
                 PCOSA_DML_WIFI_APSEC_FULL pStoredApSecEntry = &sWiFiDmlApSecurityStored[i];
                 PCOSA_DML_WIFI_APSEC_CFG pStoredApSecCfg = &sWiFiDmlApSecurityStored[i].Cfg;
                 PCOSA_DML_WIFI_APWPS_CFG pStoredApWpsCfg = &sWiFiDmlApWpsStored[i].Cfg;
+                PCOSA_DML_WIFI_APACCT_CFG pStoredApAcctCfg = &sWiFiDmlApAcctStored[i].Cfg;
 
                 PCOSA_DML_WIFI_SSID_CFG pRunningSsidCfg = &sWiFiDmlSsidRunningCfg[i];
                 PCOSA_DML_WIFI_APSEC_FULL pRunningApSecEntry = &sWiFiDmlApSecurityRunning[i];
@@ -13190,7 +13195,7 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d false\n", __func__, __LINE__, 
                 PCOSA_DML_WIFI_APSEC_CFG pRunningApSecCfg = &sWiFiDmlApSecurityRunning[i].Cfg;
 #endif
                 PCOSA_DML_WIFI_APWPS_CFG pRunningApWpsCfg = &sWiFiDmlApWpsRunning[i].Cfg;
-
+                PCOSA_DML_WIFI_APACCT_CFG pRunningApAcctCfg = &sWiFiDmlApAcctRunning[i].Cfg;
                 BOOL up;
 				//zqiu:>>
 				char status[64]={0};
@@ -13251,6 +13256,7 @@ fprintf(stderr, "----# %s %d 	pStoredSsidCfg->EnableOnline=%d  pStoredSsidCfg->R
 					// push mac filters
                     CosaDmlWiFiApMfPushCfg(sWiFiDmlApMfCfg[i], i);					
                     CosaDmlWiFiApPushMacFilter(sWiFiDmlApMfQueue[i], i);
+                    CosaDmlWiFiApAcctApplyCfg(pStoredApAcctCfg, pStoredApCfg->InstanceNumber);
                     // push security and restart hostapd
                     CosaDmlWiFiApSecPushCfg(pStoredApSecCfg, pStoredApCfg->InstanceNumber);
 #if !defined(_INTEL_WAV_)
@@ -13323,6 +13329,7 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d true\n", __func__, __LINE__, i
 
                     if ( memcmp(pStoredApSecEntry,pRunningApSecEntry,sizeof(COSA_DML_WIFI_APSEC_FULL)) != 0 ||
                          memcmp(pStoredApWpsCfg, pRunningApWpsCfg, sizeof(COSA_DML_WIFI_APWPS_CFG)) != 0  ||
+                         memcmp(pStoredApAcctCfg, pRunningApAcctCfg, sizeof(COSA_DML_WIFI_APACCT_CFG)) != 0  ||
                          sWiFiDmlWepChg[i] == TRUE ||
                          sWiFiDmlUpdatedAdvertisement[i] == TRUE ||
                          wpsChange == TRUE )
@@ -13332,6 +13339,7 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d true\n", __func__, __LINE__, i
                         sWiFiDmlUpdatedAdvertisement[i] = FALSE;
                     }
                     CosaDmlWiFiApWpsApplyCfg(pStoredApWpsCfg,i);
+                    CosaDmlWiFiApAcctApplyCfg(pStoredApAcctCfg,i);
 
 #if defined(ENABLE_FEATURE_MESHWIFI)
                     // Notify Mesh components of an AP config change
@@ -18776,6 +18784,172 @@ ANSC_STATUS CosaDmlWiFiApSecsetMFPConfig( int vAPIndex, CHAR *pMfpConfig )
 
 	CcspTraceInfo(("%s Fail to set MFPConfig = [%d,%s]\n",__FUNCTION__, vAPIndex, ( pMfpConfig ) ?  pMfpConfig : "NULL" ));
 	return ANSC_STATUS_FAILURE;
+}
+
+ANSC_STATUS
+CosaDmlWiFiApAcctGetEntry
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pSsid,
+        PCOSA_DML_WIFI_APACCT_FULL   pEntry
+    )
+{
+    ANSC_STATUS                     returnStatus   = ANSC_STATUS_SUCCESS;
+    int wlanIndex;
+
+    wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
+
+    if (!pEntry)
+    {
+        CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : pEntry is NULL \n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    CosaDmlWiFiApAcctGetCfg((ANSC_HANDLE)hContext, pSsid, &pEntry->Cfg);
+    wifi_getIndexFromName(pSsid, &wlanIndex);
+    if (wlanIndex == -1)
+    {
+        CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : pSsid = %s Couldn't find wlanIndex \n",__FUNCTION__, pSsid));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    memcpy(&sWiFiDmlApAcctStored[wlanIndex], pEntry, sizeof(COSA_DML_WIFI_APACCT_FULL));
+    memcpy(&sWiFiDmlApAcctRunning[wlanIndex], pEntry, sizeof(COSA_DML_WIFI_APACCT_FULL));
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlWiFiApAcctGetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pSsid,
+        PCOSA_DML_WIFI_APACCT_CFG    pCfg
+    )
+{
+    ANSC_STATUS                     returnStatus   = ANSC_STATUS_SUCCESS;
+    int wlanIndex;
+
+    wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
+    if (!pCfg)
+    {
+        CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : pEntry is NULL \n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    wifi_getIndexFromName(pSsid, &wlanIndex);
+    if (wlanIndex == -1)
+    {
+        CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : pSsid = %s Couldn't find wlanIndex \n",__FUNCTION__, pSsid));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    wifi_getRADIUSAcctEnable(wlanIndex, &pCfg->bEnabled);
+    wifi_getApSecurityAcctServer(wlanIndex, pCfg->AcctServerIPAddr, &pCfg->AcctServerPort, pCfg->AcctSecret);
+    wifi_getApSecuritySecondaryAcctServer(wlanIndex, pCfg->SecondaryAcctServerIPAddr, &pCfg->SecondaryAcctServerPort, pCfg->SecondaryAcctSecret);
+    wifi_getApSecurityAcctInterimInterval(wlanIndex, &pCfg->InterimInterval);
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlWiFiApAcctSetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pSsid,
+        PCOSA_DML_WIFI_APACCT_CFG    pCfg
+    )
+{
+    ANSC_STATUS                     returnStatus   = ANSC_STATUS_SUCCESS;
+    PCOSA_DML_WIFI_APACCT_CFG pStoredCfg = NULL;
+    int wlanIndex = -1;
+
+    wifiDbgPrintf("%s\n",__FUNCTION__);
+    if (!pCfg)
+    {
+        CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : pCfg is NULL \n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    wifi_getIndexFromName(pSsid, &wlanIndex);
+    if (wlanIndex == -1)
+    {
+        // Error could not find index
+        CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : could not find index wlanIndex(-1)  \n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    pStoredCfg = &sWiFiDmlApAcctStored[wlanIndex].Cfg;
+    if ( pCfg->bEnabled != pStoredCfg->bEnabled )
+    {
+        if (RETURN_OK != wifi_setRADIUSAcctEnable(wlanIndex, pCfg->bEnabled))
+        {
+            CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : could not enable RADUIS account\n",__FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+        }
+    }
+
+    if (strcmp(pCfg->AcctServerIPAddr, pStoredCfg->AcctServerIPAddr) !=0 ||
+        pCfg->AcctServerPort != pStoredCfg->AcctServerPort ||
+        strcmp(pCfg->AcctSecret, pStoredCfg->AcctSecret) !=0)
+    {
+        if (RETURN_OK != wifi_setApSecurityAcctServer(wlanIndex, pCfg->AcctServerIPAddr, pCfg->AcctServerPort, pCfg->AcctSecret) )
+        {
+            CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : could not set RADUIS account security server\n",__FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+        }
+    }
+
+    if (strcmp(pCfg->SecondaryAcctServerIPAddr, pStoredCfg->SecondaryAcctServerIPAddr) !=0 ||
+        pCfg->SecondaryAcctServerPort != pStoredCfg->SecondaryAcctServerPort ||
+        strcmp(pCfg->SecondaryAcctSecret, pStoredCfg->SecondaryAcctSecret) !=0)
+    {
+        if (RETURN_OK != wifi_setApSecuritySecondaryAcctServer(wlanIndex, pCfg->SecondaryAcctServerIPAddr, pCfg->SecondaryAcctServerPort, pCfg->SecondaryAcctSecret))
+        {
+            CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : could not set RADUIS account security secondary server\n",__FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+        }
+    }
+
+    if ( pCfg->InterimInterval != pStoredCfg->InterimInterval )
+    {
+        if (RETURN_OK != wifi_setApSecurityAcctInterimInterval( wlanIndex, pCfg->InterimInterval ))
+        {
+            CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : could not set RADUIS account InterimInterval\n",__FUNCTION__));
+            return ANSC_STATUS_FAILURE;
+        }
+    }
+    memcpy(&sWiFiDmlApAcctStored[wlanIndex].Cfg, pCfg, sizeof(COSA_DML_WIFI_APACCT_CFG));
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+ANSC_STATUS
+CosaDmlWiFiApAcctApplyCfg
+    (
+        PCOSA_DML_WIFI_APACCT_CFG    pCfg,
+        ULONG                       index
+    )
+{
+    ANSC_STATUS                     returnStatus   = ANSC_STATUS_SUCCESS;
+    PCOSA_DML_WIFI_APWPS_CFG    pRunningCfg = &sWiFiDmlApAcctRunning[index].Cfg;
+
+    wifiDbgPrintf("%s[%d] wlanIndex %d\n",__FUNCTION__, __LINE__, index);
+    if (!pCfg)
+    {
+        CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : pCfg is NULL \n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    if (memcmp(pCfg, pRunningCfg, sizeof(COSA_DML_WIFI_APACCT_CFG)) != 0) {
+        sWiFiDmlRestartVap[index] = TRUE;
+        sWiFiDmlRestartHostapd = TRUE;
+        wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
+    }
+
+    memcpy(pRunningCfg, pCfg, sizeof(COSA_DML_WIFI_APACCT_CFG));
+
+    return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
