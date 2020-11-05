@@ -1021,6 +1021,31 @@ _COSA_DML_WIFI_APSEC_FULL
 
 typedef  struct _COSA_DML_WIFI_APSEC_FULL COSA_DML_WIFI_APSEC_FULL, *PCOSA_DML_WIFI_APSEC_FULL;
 
+/*
+ *  Structure definitions for WiFi AP Accounting
+ */
+struct
+_COSA_DML_WIFI_APACCT_CFG
+{
+    BOOLEAN                         bEnabled;
+    CHAR                            AcctServerIPAddr[45];
+    ULONG                           AcctServerPort;
+    char                            AcctSecret[64];
+    CHAR                            SecondaryAcctServerIPAddr[45];
+    ULONG                           SecondaryAcctServerPort;
+    char                            SecondaryAcctSecret[64];
+    ULONG                           InterimInterval;
+}_struct_pack_;
+
+typedef  struct _COSA_DML_WIFI_APACCT_CFG COSA_DML_WIFI_APACCT_CFG,  *PCOSA_DML_WIFI_APACCT_CFG;
+
+struct
+_COSA_DML_WIFI_APACCT_FULL
+{
+    COSA_DML_WIFI_APACCT_CFG         Cfg;
+}_struct_pack_;
+
+typedef  struct _COSA_DML_WIFI_APACCT_FULL COSA_DML_WIFI_APACCT_FULL, *PCOSA_DML_WIFI_APACCT_FULL;
 
 /*
  *  Structure definitions for WiFi AP WPS
@@ -1955,6 +1980,37 @@ CosaDmlWiFiApSecGetCfg
         ANSC_HANDLE                 hContext,
         char*                       pSsid,
         PCOSA_DML_WIFI_APSEC_CFG    pCfg
+    );
+
+ANSC_STATUS
+CosaDmlWiFiApAcctGetEntry
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pSsid,
+        PCOSA_DML_WIFI_APACCT_FULL   pEntry
+    );
+
+ANSC_STATUS
+CosaDmlWiFiApAcctSetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pSsid,
+        PCOSA_DML_WIFI_APACCT_CFG    pCfg
+    );
+
+ANSC_STATUS
+CosaDmlWiFiApAcctGetCfg
+    (
+        ANSC_HANDLE                 hContext,
+        char*                       pSsid,
+        PCOSA_DML_WIFI_APACCT_CFG    pCfg
+    );
+
+ANSC_STATUS
+CosaDmlWiFiApAcctApplyCfg
+    (
+        PCOSA_DML_WIFI_APACCT_CFG    pCfg,
+        ULONG                       index
     );
 
 ANSC_STATUS
