@@ -15829,13 +15829,6 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
         wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
         if(bsEnabled)
             enable_reset_both_radio_flag();
-        else
-        {
-            if(wlanIndex%2 == 1)
-            {
-                enable_reset_radio_flag(wlanIndex);
-            }
-        }
 #endif
 
         cfgChange = TRUE;
@@ -18139,7 +18132,7 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
 #endif //WIFI_HAL_VERSION_3
  //wifi_getApSecurityRadiusServerIPAddr(wlanIndex,&pCfg->RadiusServerIPAddr); //bug
     //wifi_getApSecurityRadiusServerPort(wlanIndex, &pCfg->RadiusServerPort);
-#if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)
+#if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_)
     wifi_getApSecurityWpaRekeyInterval(wlanIndex,  (unsigned int *) &pCfg->RekeyingInterval);
 #endif 
 #if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
@@ -18581,8 +18574,6 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
              wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
              if(bsEnabled)
                  enable_reset_both_radio_flag();
-             else
-                 enable_reset_radio_flag(wlanIndex);
 #endif
         } else {
              CcspWifiTrace(("RDK_LOG_WARN, WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n"));
@@ -18668,11 +18659,12 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 		enable_reset_radio_flag(wlanIndex);
     } 
 
-#if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)
+#if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_)
     if ( pCfg->RekeyingInterval != pStoredCfg->RekeyingInterval) {
 		CcspWifiTrace(("RDK_LOG_WARN,%s calling setWpaRekeyInterval  \n",__FUNCTION__));
         wifi_setApSecurityWpaRekeyInterval(wlanIndex,  pCfg->RekeyingInterval);
         gRestartRadiusRelay = TRUE;
+        enable_reset_radio_flag(wlanIndex);
     }
 #endif
 
