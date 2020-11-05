@@ -8924,6 +8924,32 @@ static ANSC_STATUS setRadiusAuthIntervalintoPSM (int index, UINT val)
     return ANSC_STATUS_SUCCESS;
 }
 
+#if defined(_LG_MV1_CELENO_)
+static void wait_for_ethernet1_up (void)
+{
+    char buf[128];
+    parameterValStruct_t varStruct =
+    {
+        .parameterName = "Device.Ethernet.Link.1.Status",
+        .parameterValue = buf,
+    };
+    int timeout;
+    int len;
+
+    for (timeout = 240; timeout > 0; timeout -= 5)
+    {
+        len = sizeof(buf);
+        if ((COSAGetParamValueByPathName (g_MessageBusHandle, &varStruct, &len) == 0) && (strcasecmp (buf, "Up") == 0))
+        {
+            printf ("%s is up. Proceeding with wifi initialisation...\n", "Device.Ethernet.Link.1.Status");
+            break;
+        }
+
+        sleep (5);
+    }
+}
+#endif
+
 ANSC_STATUS
 CosaDmlWiFiInit
     (
@@ -8992,9 +9018,12 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
 
         firstTime = FALSE;
 
-#if defined (_COSA_BCM_MIPS_) || defined (_PLATFORM_RASPBERRYPI_)|| defined (_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_) || defined(_INTEL_WAV_)
+#if defined (_COSA_BCM_MIPS_) || defined (_PLATFORM_RASPBERRYPI_)|| defined (_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_) || defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_)
 		//Scott: Broadcom hal needs wifi_init to be called when we are started up
 		//wifi_setLFSecurityKeyPassphrase();
+#if defined(_LG_MV1_CELENO_)
+        wait_for_ethernet1_up();
+#endif
 		m_wifi_init();
 #endif
 
