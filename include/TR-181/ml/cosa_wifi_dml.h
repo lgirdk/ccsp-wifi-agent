@@ -1087,6 +1087,110 @@ Security_Rollback
 
  APIs for Object:
 
+    WiFi.AccessPoint.{i}.Accounting.
+
+    *  Accounting_GetParamBoolValue
+    *  Accounting_GetParamIntValue
+    *  Accounting_GetParamUlongValue
+    *  Accounting_GetParamStringValue
+    *  Accounting_SetParamBoolValue
+    *  Accounting_SetParamIntValue
+    *  Accounting_SetParamUlongValue
+    *  Accounting_SetParamStringValue
+    *  Accounting_Validate
+    *  Accounting_Commit
+    *  Accounting_Rollback
+
+***********************************************************************/
+BOOL
+Accounting_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+Accounting_GetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int*                        pInt
+    );
+
+BOOL
+Accounting_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      pUlong
+    );
+
+ULONG
+Accounting_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+BOOL
+Accounting_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+BOOL
+Accounting_SetParamIntValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        int                         value
+    );
+
+BOOL
+Accounting_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValuepUlong
+    );
+
+BOOL
+Accounting_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       strValue
+    );
+
+BOOL
+Accounting_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    );
+
+ULONG
+Accounting_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
+Accounting_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
     WiFi.AccessPoint.{i}.WPS.
 
     *  WPS_GetParamBoolValue
