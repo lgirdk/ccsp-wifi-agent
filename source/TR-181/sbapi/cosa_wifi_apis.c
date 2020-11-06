@@ -9433,6 +9433,56 @@ static void *CosaDmlWiFiFactoryResetRadioAndApThread(void *arg)
     return(NULL);
 }
 
+#define WIFI_DM_COMP  "eRT.com.cisco.spvtg.ccsp.wifi"
+#define WIFI_DM_BUS   "/com/cisco/spvtg/ccsp/wifi"
+
+void MacFiltTab_CleanAll (void)
+{
+    PCOSA_DATAMODEL_WIFI        pWiFi = NULL;
+    PSINGLE_LINK_ENTRY          pAPLink;
+    PCOSA_CONTEXT_LINK_OBJECT   pAPLinkObj;
+    PCOSA_DML_WIFI_AP           pWifiAp;
+    PCOSA_DML_WIFI_AP_MF_CFG    pWifiApMf;
+    PCOSA_DML_WIFI_AP_FULL      pWifiApFull;
+    PSINGLE_LINK_ENTRY          pSListEntry;
+    PCOSA_CONTEXT_LINK_OBJECT   pCxtLink;
+
+    if (g_pCosaBEManager->hWifi)
+    {
+        pWiFi = (PCOSA_DATAMODEL_WIFI) g_pCosaBEManager->hWifi;
+    }
+
+    if (pWiFi)
+    {
+        for (pAPLink = AnscQueueGetFirstEntry(&pWiFi->AccessPointQueue); pAPLink != NULL; pAPLink = AnscQueueGetNextEntry(pAPLink))
+        {
+            pAPLinkObj = ACCESS_COSA_CONTEXT_LINK_OBJECT(pAPLink);
+
+            if (!pAPLinkObj)
+            {
+                continue;
+            }
+
+            pWifiAp = (PCOSA_DML_WIFI_AP) pAPLinkObj->hContext;
+            pWifiApMf = (PCOSA_DML_WIFI_APWPS_FULL) &pWifiAp->MF;
+            pWifiApMf->bEnabled = false;                            // default value for MAC filter Enabled
+            pWifiApMf->FilterAsBlackList = false;                   // default value for MAC filter FilterAsBlackList
+            pWifiApFull = (PCOSA_DML_WIFI_AP_FULL) &pWifiAp->AP;
+            pSListEntry = AnscSListGetFirstEntry (&pWifiApFull->MacFilterList);
+
+            while (pSListEntry)
+            {
+                char recName[256];
+
+                pCxtLink = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSListEntry);
+                pSListEntry = AnscSListGetNextEntry(pSListEntry);
+                sprintf (recName, "Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.", pAPLinkObj->InstanceNumber, pCxtLink->InstanceNumber);
+                Cosa_DelEntry (WIFI_DM_COMP,WIFI_DM_BUS, recName);
+            }
+        }
+    }
+}
+
 ANSC_STATUS
 CosaDmlWiFi_FactoryReset()
 {
