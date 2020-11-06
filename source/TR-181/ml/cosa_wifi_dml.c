@@ -1280,6 +1280,7 @@ static void wifiFactoryReset(void *frArgs)
 	ULONG apIndex_2    =indexes & 0xff;
 
 	CosaDmlWiFi_FactoryResetRadioAndAp(radioIndex,radioIndex_2, apIndex, apIndex_2);
+	MacFiltTab_CleanAll();
 #endif
 }
 
