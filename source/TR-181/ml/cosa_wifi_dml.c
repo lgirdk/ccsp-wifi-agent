@@ -9091,7 +9091,13 @@ Security_GetParamStringValue
             return 0;
     }
 
-    if( AnscEqualString(ParamName, "X_CISCO_COM_WEPKey", TRUE) || AnscEqualString(ParamName, "X_COMCAST-COM_WEPKey", TRUE))
+    if( AnscEqualString(ParamName, "X_CISCO_COM_WEPKey", TRUE))
+    {
+        AnscCopyString(pValue, "");
+        return 0;
+    }
+
+    if( AnscEqualString(ParamName, "X_COMCAST-COM_WEPKey", TRUE))
     {
         if (pWifiApSec->Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WEP_64 )
         {
@@ -9144,7 +9150,13 @@ Security_GetParamStringValue
         return 0;
     }
 
-    if(AnscEqualString(ParamName, "KeyPassphrase", TRUE) || AnscEqualString(ParamName, "X_COMCAST-COM_KeyPassphrase", TRUE))
+    if(AnscEqualString(ParamName, "KeyPassphrase", TRUE) )
+    {
+        AnscCopyString(pValue, "");
+        return 0;
+    }
+
+    if(AnscEqualString(ParamName, "X_COMCAST-COM_KeyPassphrase", TRUE))
     {
 	//XH 5G
 	if (pWifiAp->AP.Cfg.InstanceNumber == 4 ) {
