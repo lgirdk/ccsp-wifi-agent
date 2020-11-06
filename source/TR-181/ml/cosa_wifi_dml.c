@@ -900,8 +900,10 @@ WiFi_SetParamBoolValue
     PCOSA_DATAMODEL_WIFI            pMyObject     = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
 
     if(AnscEqualString(ParamName, "X_CISCO_COM_FactoryReset", TRUE))
-    {
-        CosaDmlWiFi_FactoryReset();
+    {   if (bValue)
+        {
+            CosaDmlWiFi_FactoryReset();
+        }
         return TRUE;
     }
 
