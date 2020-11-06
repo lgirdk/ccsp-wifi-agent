@@ -2249,6 +2249,8 @@ validateDefReportingPeriod(ULONG period);
 
 void RemoveInvalidMacFilterListFromPsm();
 
+void MacFiltTab_CleanAll (void);
+
 #if !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
 void CosaDmlWifi_getDppConfigFromPSM(PANSC_HANDLE phContext);
 #endif // !defined(_HUB4_PRODUCT_REQ_)
