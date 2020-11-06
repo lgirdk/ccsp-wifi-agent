@@ -1003,7 +1003,10 @@ WiFi_SetParamBoolValue
 
     if (strcmp(ParamName, "X_CISCO_COM_FactoryReset") == 0)
     {
-        CosaDmlWiFi_FactoryReset();
+        if (bValue)
+        {
+            CosaDmlWiFi_FactoryReset();
+        }
         return TRUE;
     }
 
