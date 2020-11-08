@@ -311,6 +311,7 @@ void Cosa_BackgroundCommit
 	)
 {
     PCOMMIT_PARAMS params = malloc(sizeof(COMMIT_PARAMS));
+    void           *handle;
     if (!params) {
         printf("!!!!!Failed snmp background commit malloc\n");
         return;
@@ -318,6 +319,9 @@ void Cosa_BackgroundCommit
     params->pDestComp = pDestComp;
     params->pDestPath = pDestPath;
     params->bSet = bSet;
-    AnscCreateTask(commitThread, USER_DEFAULT_TASK_STACK_SIZE, USER_DEFAULT_TASK_PRIORITY, (void*)params, "SNMPWifiCustomCommitThread");
+    handle = AnscCreateTask(commitThread, USER_DEFAULT_TASK_STACK_SIZE, USER_DEFAULT_TASK_PRIORITY, (void*)params, "SNMPWifiCustomCommitThread");
+#ifdef _ANSC_LINUX
+    pthread_detach((pthread_t)handle);
+#endif
 //    AnscSpawnTask(commitThread, (void*)params, "SNMPBackgroundCommitThread");
 }
