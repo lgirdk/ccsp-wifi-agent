@@ -3627,6 +3627,9 @@ INSTMSMT_PH2 -->
 								<func_SetParamIntValue>LGI_BandSteeringSSID_SetParamIntValue</func_SetParamIntValue>
 								<func_GetParamUlongValue>LGI_BandSteeringSSID_GetParamUlongValue</func_GetParamUlongValue>
 								<func_SetParamUlongValue>LGI_BandSteeringSSID_SetParamUlongValue</func_SetParamUlongValue>
+								<func_Validate>LGI_BandSteeringSSID_Validate</func_Validate>
+								<func_Commit>LGI_BandSteeringSSID_Commit</func_Commit>
+								<func_Rollback>LGI_BandSteeringSSID_Rollback</func_Rollback>
 							</functions>
 							<parameters>
 								<parameter>
