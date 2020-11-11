@@ -413,14 +413,14 @@ ATM_Radio_SetParamBoolValue
 	if( AnscEqualString(ParamName, "Enable", TRUE))
 	{
 		pAtmBandCfg->BandAtmEnable = bValue;
-		pWiFiAtm->bATMChanged = 1;
+		pAtmBandCfg->bATMChanged = 1;
 		return TRUE;
 	}
 
 	if( AnscEqualString(ParamName, "EnableWMMApplication", TRUE))
 	{
 		pAtmBandCfg->BandEnableWMMApplication = bValue;
-		pWiFiAtm->bATMChanged = 1;
+		pAtmBandCfg->bATMChanged = 1;
 		return TRUE;
 	}
 
@@ -444,7 +444,7 @@ ATM_Radio_SetParamUlongValue
 		if (ulValuep == GLOBALFAIRNESS || ulValuep == WEIGHTEDFAIRNESS)
 		{
 			pAtmBandCfg->BandAtmMode = ulValuep;
-			pWiFiAtm->bATMChanged = 1;
+			pAtmBandCfg->bATMChanged = 1;
 			return TRUE;
 		}
 	}
@@ -452,7 +452,7 @@ ATM_Radio_SetParamUlongValue
 	if (AnscEqualString(ParamName, "WaitThreshold", TRUE))
         {
 		pAtmBandCfg->BandAtmWaitThreshold = ulValuep;
-		pWiFiAtm->bATMChanged = 1;
+		pAtmBandCfg->bATMChanged = 1;
 		return TRUE;
 	}
 
@@ -462,7 +462,7 @@ ATM_Radio_SetParamUlongValue
 		if (ulValuep >= UPLINK && ulValuep<= UPLINK_DOWNLINK)
 		{ 
 			pAtmBandCfg->BandAtmDirection = ulValuep;
-			pWiFiAtm->bATMChanged = 1;
+			pAtmBandCfg->bATMChanged = 1;
 			return TRUE;
 		}
 
@@ -479,7 +479,18 @@ ATM_Radio_Validate
         ULONG*                      puLength
     )
 {
-	/* Do nothing right now */
+    PCOSA_DML_LG_WIFI_ATM_BAND_SETTING pAtmBandCfg  = ( PCOSA_DML_LG_WIFI_ATM_BAND_SETTING )hInsContext;
+    bool  bPlumeNativeAtmBsControl = FALSE;
+    if( pAtmBandCfg->BandAtmEnable )
+    {
+        /* To Make Native ATM feature unconfigurable when Plume native ATM/BS control is enabled. */
+        Cdm_GetParamBool( "Device.X_LGI-COM_SON.NativeAtmBsControl", &bPlumeNativeAtmBsControl );
+        if( bPlumeNativeAtmBsControl )
+        {
+            _ansc_strcpy(pReturnParamName, "Enable");
+            return 0;
+        }
+    }
 	return TRUE;
 }
 
@@ -494,10 +505,10 @@ ATM_Radio_Commit
 	PCOSA_DML_LG_WIFI_ATM_BAND_SETTING pAtmBandCfg  = (PCOSA_DML_LG_WIFI_ATM_BAND_SETTING)hInsContext;
 
 	/* Set the ATM Current Options */
-	if ( TRUE == pWiFiAtm->bATMChanged)
+	if ( TRUE == pAtmBandCfg->bATMChanged)
 	{
 		CosaDmlWiFiAtmBand_SetAtmBand( pAtmBandCfg->InstanceNumber - 1, pAtmBandCfg );
-		pWiFiAtm->bATMChanged= 0;
+		pAtmBandCfg->bATMChanged= 0;
 	}
 
 	return ANSC_STATUS_SUCCESS;
@@ -524,8 +535,6 @@ ATM_Radio_Rollback
 
 		CosaDmlWiFiAtmBand_GetAtmBand( iLoopCount, &pWiFiAtm->pAtmBandSetting[ iLoopCount ] );
 	}
-
-	pWiFiAtm->bATMChanged= 0;
 
 	return 0;
 }
@@ -608,7 +617,7 @@ ATM_Radio_WMMApplication_SetParamUlongValue
 			return FALSE;
 
 		pAtmBandCfg->RadioAtmWmmAppl.BkWeight = ulValuep;
-		pWiFiAtm->bATMChanged = 1;
+		pAtmBandCfg->bATMChanged = 1;
 	}
 
 	if (AnscEqualString(ParamName, "BEWeight", TRUE))
@@ -621,7 +630,7 @@ ATM_Radio_WMMApplication_SetParamUlongValue
 			return FALSE;
 
 		pAtmBandCfg->RadioAtmWmmAppl.BeWeight = ulValuep;
-		pWiFiAtm->bATMChanged = 1;
+		pAtmBandCfg->bATMChanged = 1;
 	}
 
 	if (AnscEqualString(ParamName, "VIWeight", TRUE))
@@ -634,7 +643,7 @@ ATM_Radio_WMMApplication_SetParamUlongValue
 			return FALSE;
 
 		pAtmBandCfg->RadioAtmWmmAppl.ViWeight = ulValuep;
-		pWiFiAtm->bATMChanged = 1;
+		pAtmBandCfg->bATMChanged = 1;
 	}
 
 	if (AnscEqualString(ParamName, "VOWeight", TRUE))
@@ -647,16 +656,16 @@ ATM_Radio_WMMApplication_SetParamUlongValue
 			return FALSE;
 
 		pAtmBandCfg->RadioAtmWmmAppl.VoWeight = ulValuep;
-		pWiFiAtm->bATMChanged = 1;
+		pAtmBandCfg->bATMChanged = 1;
 	}
 
 
-	if(pWiFiAtm->bATMChanged)
+	if(pAtmBandCfg->bATMChanged)
 	{
 		/*Order is as per CL: BE,BK,VI,VO*/
 		sprintf(mwwWeights,"%lu,%lu,%lu,%lu",pAtmBandCfg->RadioAtmWmmAppl.BeWeight,pAtmBandCfg->RadioAtmWmmAppl.BkWeight,pAtmBandCfg->RadioAtmWmmAppl.ViWeight,pAtmBandCfg->RadioAtmWmmAppl.VoWeight);
 		if(0 != wifi_setAtmBandMWWWeight(pAtmBandCfg->InstanceNumber -1, mwwWeights))
-		pWiFiAtm->bATMChanged = 0;
+		pAtmBandCfg->bATMChanged = 0;
 		/*enable reset radio flag*/
 		enable_reset_radio_flag(pAtmBandCfg->InstanceNumber -1);
 		return TRUE;
