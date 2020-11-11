@@ -116,6 +116,7 @@ _COSA_DML_LG_WIFI_ATM_BAND_SETTING
     COSA_DML_LG_WIFI_ATM_RADIO_WMM  RadioAtmWmmAppl;
     COSA_DML_LG_WIFI_ATM_RADIO_SSID RadioAtmSsid;
     COSA_DML_LG_WIFI_ATM_BAND_STA   BandAtmSta;
+    BOOLEAN                         bATMChanged;
 }
 COSA_DML_LG_WIFI_ATM_BAND_SETTING,  *PCOSA_DML_LG_WIFI_ATM_BAND_SETTING;
 
@@ -125,7 +126,6 @@ _COSA_DML_LG_WIFI_ATM_FULL
     PCOSA_DML_LG_WIFI_ATM_BAND_SETTING  pAtmBandSetting;
     COSA_DML_LG_WIFI_ATM_INFO           AtmInfo;
     ULONG                               RadioCount;
-    BOOLEAN                             bATMChanged;
     ULONG                               BandAtmStatCount;
     PCOSA_DML_LG_WIFI_ATM_STAT          pBandAtmStat;
 }
