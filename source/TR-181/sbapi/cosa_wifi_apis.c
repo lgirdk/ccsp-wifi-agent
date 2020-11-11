@@ -13603,6 +13603,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 		strcmp(pCfg->RadiusSecret, pStoredCfg->RadiusSecret) !=0) {
 		CcspWifiTrace(("RDK_LOG_WARN,\n%s calling wifi_setApSecurityRadiusServer  \n",__FUNCTION__));        
 		wifi_setApSecurityRadiusServer(wlanIndex, pCfg->RadiusServerIPAddr, pCfg->RadiusServerPort, pCfg->RadiusSecret);
+		enable_reset_radio_flag(wlanIndex);
     }
 
 	if ( strcmp(pCfg->SecondaryRadiusServerIPAddr, pStoredCfg->SecondaryRadiusServerIPAddr) !=0 || 
@@ -13610,6 +13611,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 		strcmp(pCfg->SecondaryRadiusSecret, pStoredCfg->SecondaryRadiusSecret) !=0) {
 		CcspWifiTrace(("RDK_LOG_WARN,\n%s calling wifi_setApSecurityRadiusServer  \n",__FUNCTION__));
 		wifi_setApSecuritySecondaryRadiusServer(wlanIndex, pCfg->SecondaryRadiusServerIPAddr, pCfg->SecondaryRadiusServerPort, pCfg->SecondaryRadiusSecret);
+		enable_reset_radio_flag(wlanIndex);
 	}
 
 	if ( strcmp(pCfg->MFPConfig, pStoredCfg->MFPConfig) !=0 ) {
