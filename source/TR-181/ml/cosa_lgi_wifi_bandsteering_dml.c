@@ -276,8 +276,7 @@ LGI_BandSteeringSSID_SetParamBoolValue
 
     if (strcmp(ParamName, "Enable") == 0)
     {
-        /* TODO: Make Native Band Steering feature unconfigurable when Plume is enabled. */
-        wifi_setBandSteeringEnable_perSSID(pBandSteeringSSID->ifIndex,bValue);
+        pBandSteeringSSID->Enable = bValue;
         retValue = TRUE;
 
         enable_reset_both_radio_flag();
@@ -392,6 +391,54 @@ LGI_BandSteeringSSID_SetParamUlongValue
     }
 
     return FALSE;
+}
+
+BOOL
+LGI_BandSteeringSSID_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    )
+{
+    PCOSA_DML_BANDSTEERING_SSID pBandSteeringSSID = hInsContext;
+    bool bCCEnable = FALSE;
+    bool bPlumeNativeAtmBsControl = FALSE;
+
+    if(pBandSteeringSSID->Enable)
+    {
+        Cdm_GetParamBool("Device.X_LGI-COM_SON.NativeAtmBsControl", &bPlumeNativeAtmBsControl);
+        if (bPlumeNativeAtmBsControl)
+        {
+            _ansc_strcpy(pReturnParamName, "Enable");
+            return FALSE;
+        }
+    }
+    return TRUE;
+}
+
+ULONG
+LGI_BandSteeringSSID_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DML_BANDSTEERING_SSID pBandSteeringSSID = hInsContext;
+
+    wifi_setBandSteeringEnable_perSSID(pBandSteeringSSID->ifIndex, pBandSteeringSSID->Enable);
+    return 0;
+}
+
+ULONG
+LGI_BandSteeringSSID_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DML_BANDSTEERING_SSID pBandSteeringSSID = hInsContext;
+
+    wifi_getBandSteeringEnable_perSSID(pBandSteeringSSID->ifIndex, &(pBandSteeringSSID->Enable));
+    return 0;
 }
 
 ULONG
