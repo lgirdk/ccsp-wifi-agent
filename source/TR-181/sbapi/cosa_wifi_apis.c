@@ -6399,6 +6399,10 @@ CosaDmlWiFiGetBridgePsmData
                                 pBridge->VlanId =  _ansc_atoi(strValue);
                                 ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
                             } else {
+                                ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(ssidStrValue);
+                                if (pInstanceArray) {
+                                    AnscFreeMemory(pInstanceArray);
+                                }
                                 // No bridge with this id
                                 return ANSC_STATUS_FAILURE;
                             }
@@ -6409,6 +6413,7 @@ CosaDmlWiFiGetBridgePsmData
                             if (retPsmGet == CCSP_SUCCESS) {
                                 wifiDbgPrintf("%s: %s returned %s\n", __func__, recName, strValue);
                                 int l3InstanceNum = _ansc_atoi(strValue);
+                                ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue); 
 
                                 memset(recName, 0, sizeof(recName));
                                 sprintf(recName, l3netIpAddr, l3InstanceNum);
@@ -7146,6 +7151,7 @@ printf("%s \n",__FUNCTION__);
         if (value != 3) {
             resetNoAck = TRUE;
         }
+        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     } else {
         resetNoAck = TRUE;
     }
@@ -13055,6 +13061,7 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
 		retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
 		if (retPsmGet == CCSP_SUCCESS) {
 			wepLen = _ansc_atoi(strValue);
+			((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
 		} else {
 				// Default to 128
 				wepLen = 128;
