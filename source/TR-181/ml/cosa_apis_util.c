@@ -441,6 +441,8 @@ CosaUtilGetLowerLayers
             
             if ( pMatchedLowerLayer )
             {
+                AnscFreeMemory(pTableStringToken);
+                pTableStringToken = NULL;
                 break;
             }
         }
@@ -578,6 +580,8 @@ CosaUtilGetFullPathNameByKeyword
 
             if ( pMatchedLowerLayer )
             {
+                AnscFreeMemory(pTableStringToken);
+                pTableStringToken = NULL;
                 break;
             }
         }

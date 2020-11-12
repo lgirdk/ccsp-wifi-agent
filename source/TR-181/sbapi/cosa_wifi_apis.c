@@ -5594,6 +5594,10 @@ CosaDmlWiFiGetBridgePsmData
                                 {
                                     ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(ssidStrValue);
                                 }
+                                if (pInstanceArray)
+                                {
+                                    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(pInstanceArray);
+                                }
                                 return ANSC_STATUS_FAILURE;
                             }
 
