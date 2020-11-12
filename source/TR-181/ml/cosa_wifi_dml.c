@@ -396,6 +396,8 @@ BOOL UpdateCircuitId()
 		return FALSE;
 	}
 
+	free_parameterValStruct_t(bus_handle, valNum, valStructs);
+
 	if(dstComponent)
 	{
 		AnscFreeMemory(dstComponent);
