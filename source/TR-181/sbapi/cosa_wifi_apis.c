@@ -8907,7 +8907,7 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
 
         //zqiu: do not merge
 //        CosaDmlWiFiCheckSecurityParams();
-        CosaDmlWiFiCheckWmmParams();
+        //CosaDmlWiFiCheckWmmParams();
 
         //>>zqiu
 		// Fill Cache
