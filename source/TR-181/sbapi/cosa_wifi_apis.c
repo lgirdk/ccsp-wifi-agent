@@ -1684,7 +1684,7 @@ COSA_DML_WIFI_APWPS_FULL sWiFiDmlApWpsRunning[WIFI_INDEX_MAX];
 PCOSA_DML_WIFI_AP_MF_CFG  sWiFiDmlApMfCfg[WIFI_INDEX_MAX];
 static BOOLEAN sWiFiDmlApStatsEnableCfg[WIFI_INDEX_MAX];
 static BOOLEAN sWiFiDmlRestartHostapd = FALSE;
-static BOOLEAN sWiFiDmlRestartVap[16] = { FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE };
+static BOOLEAN sWiFiDmlRestartVap[WIFI_INDEX_MAX] = { FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE };
 BOOLEAN sWiFiDmlvApStatsFeatureEnableCfg = TRUE;
 QUEUE_HEADER *sWiFiDmlApMfQueue[WIFI_INDEX_MAX];
 #ifdef WIFI_HAL_VERSION_3
@@ -13312,6 +13312,7 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d false\n", __func__, __LINE__, 
                     if (pRunningApSecCfg->ModeEnabled >= COSA_DML_WIFI_SECURITY_WPA_Personal)
                     {
                         wifi_removeApSecVaribles(i);
+                        sWiFiDmlRestartVap[i] = TRUE; 
                         sWiFiDmlRestartHostapd = TRUE;
                         wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
                     }
@@ -13711,7 +13712,7 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d true\n", __func__, __LINE__, i
             }
 
             for (i=wlanIndex; i < 16; i += 2) { 
-                if (sWiFiDmlAffectedVap[i] == TRUE)
+                if (sWiFiDmlAffectedVap[i] == TRUE || sWiFiDmlRestartVap[i] == TRUE)
                 {
 #if defined(_INTEL_WAV_)
                     sWiFiDmlRestartHostapd = TRUE;
@@ -13750,8 +13751,16 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d true\n", __func__, __LINE__, i
                     wifi_resetApVlanCfg(i); 
                     sWiFiDmlUpdateVlanCfg[i] = FALSE;
                 }
+                int x=0;
+                for(x = i; x < 16; x += 2)
+                {
+                    sWiFiDmlAffectedVap[x] = FALSE;
+                    sWiFiDmlRestartVap[x]  = FALSE;
+                }
+
                 sWiFiDmlAffectedVap[i] = FALSE;
                 sWiFiDmlPushWepKeys[i] = FALSE;
+                sWiFiDmlRestartVap[i]  = FALSE; 
             }
 #if defined(_INTEL_WAV_)
             if (sWiFiDmlRestartHostapd == TRUE)
@@ -19065,6 +19074,7 @@ ULONG                                          instanceNumber
         wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
 		CcspWifiTrace(("RDK_LOG_WARN,%s : sWiFiDmlRestartHostapd set to TRUE \n",__FUNCTION__));
         sWiFiDmlRestartHostapd = TRUE;
+        sWiFiDmlRestartVap[wlanIndex] = TRUE;
     } else {
         // If the new config has security = WPA or None hostapd must be restarted
         if ( (pCfg->ModeEnabled >= COSA_DML_WIFI_SECURITY_WPA_Personal && 
@@ -19074,6 +19084,7 @@ ULONG                                          instanceNumber
             wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
 			CcspWifiTrace(("RDK_LOG_WARN,%s : sWiFiDmlRestartHostapd set to TRUE \n",__FUNCTION__));
             sWiFiDmlRestartHostapd = TRUE;
+            sWiFiDmlRestartVap[wlanIndex] = TRUE; 
         }
     }
 
@@ -19150,6 +19161,7 @@ ULONG                                          instanceNumber
                         wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
 		    			CcspWifiTrace(("RDK_LOG_WARN,%s : sWiFiDmlRestartHostapd set to TRUE \n",__FUNCTION__));
                         sWiFiDmlRestartHostapd = TRUE;
+                        sWiFiDmlRestartVap[checkIndex] = TRUE; 
                     }
                 }
             }
@@ -19308,6 +19320,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 #else
          if (enableWps == TRUE)
          {
+             sWiFiDmlRestartVap[wlanIndex] = TRUE;
              sWiFiDmlRestartHostapd = TRUE;
              wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
              // create WSC_ath*.conf file
@@ -19352,6 +19365,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
                         }
 
                         wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
+                        sWiFiDmlRestartVap[checkIndex] = TRUE;
                         sWiFiDmlRestartHostapd = TRUE;
                     }
                 }
@@ -19406,6 +19420,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         }
 #else //FEATURE_HOSTAP_AUTHENTICATOR
         wifi_createHostApdConfig(wlanIndex, enableWps);
+        sWiFiDmlRestartVap[wlanIndex] = TRUE; 
         sWiFiDmlRestartHostapd = TRUE;
 wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
 #endif //FEATURE_HOSTAP_AUTHENTICATOR
@@ -19544,6 +19559,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     }
 
     if (memcmp(pCfg, pRunningCfg, sizeof(COSA_DML_WIFI_APWPS_CFG)) != 0) {
+        sWiFiDmlRestartVap[index] = TRUE;
         sWiFiDmlRestartHostapd = TRUE;
 wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
     }
