@@ -1509,18 +1509,25 @@ CosaWifiReInitializeRadioAndAp
 	apIndex_2    =indexes & 0xff;
 	
 	//printf("-- %s indexes=%lu radioIndex=%lu apIndex=%lu radioIndex_2=%lu, apIndex_2=%lu\n", __func__, indexes, radioIndex, apIndex, radioIndex_2, apIndex_2);
-	
-    if(radioIndex_2==0 && apIndex_2==0) {
+
+	if(radioIndex_2==0 && apIndex_2==0) {
 		returnStatus = CosaDmlWiFiFactoryResetRadioAndAp(radioIndex, apIndex, TRUE);
-	} else {
+	}
+ 
+	else if ((!radioIndex) && (!radioIndex_2) && (apIndex) && (apIndex == apIndex_2)) { 
+		returnStatus = CosaDmlWiFiFactoryResetRadioAndAp(radioIndex, apIndex, FALSE);
+	}
+ 
+	else 
+	{	
 		returnStatus = CosaDmlWiFiFactoryResetRadioAndAp(radioIndex, apIndex, FALSE);
 		returnStatus = CosaDmlWiFiFactoryResetRadioAndAp(radioIndex_2, apIndex_2, TRUE);
 	}
 	
-    if ( returnStatus != ANSC_STATUS_SUCCESS )  {
-        CcspTraceWarning(("CosaWifiInitialize - WiFi failed to initialize. Is WiFi supposed to start?\n"));
-        return  returnStatus;
-    }
+	if ( returnStatus != ANSC_STATUS_SUCCESS )  {
+		CcspTraceWarning(("CosaWifiInitialize - WiFi failed to initialize. Is WiFi supposed to start?\n"));
+		return  returnStatus;
+	}
 
 	if(radioIndex>0) {
 		uRadioIndex	= radioIndex-1; 
