@@ -23,6 +23,7 @@
 #include "cosa_lgi_wifi_bandsteering_dml.h"
 #include "ccsp_psm_helper.h"
 #include "cosa_lgi_wifi_atm_dml.h"
+#include "cosa_lgi_wifi_wifilog_dml.h"
 
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
@@ -33,6 +34,13 @@ extern char g_Subsystem[32];
     ULONG               ulBandSteeringSSIDEntryCount;          \
     /* start of ATM object class content */                    \
     PCOSA_DML_LG_WIFI_ATM  pAATM;                              \
+    /* WiFi event log */                                       \
+    PCOSA_DML_WIFILOG_FULL        pWiFiLogTable;               \
+    ULONG                         WiFiLogEntryCount;           \
+    /* WiFi Channel Change history log linked list */          \
+    SLIST_HEADER                  pWiFiChChangeLogList;        \
+    ULONG                         uWiFiChChangeLogNextInsNum;  \
+
 
 ANSC_STATUS CosaLgiWifiInitialize  ( ANSC_HANDLE hThisObject );
 ANSC_STATUS CosaLgiWifiReInitialize( ANSC_HANDLE hThisObject );
