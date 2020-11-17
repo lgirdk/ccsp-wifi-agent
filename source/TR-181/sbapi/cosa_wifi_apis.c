@@ -230,6 +230,7 @@ void ccspWifiDbgPrint(int level, char *format, ...);
 ANSC_STATUS txRateStrToUint(char *inputStr, UINT *pTxRate);
 
 static void checkforbiddenSSID(int index);
+static void MeshNotifySecurityChange(INT apIndex, PCOSA_DML_WIFI_APSEC_CFG pStoredApSecCfg);
 
 void wifidb_print(char *format, ...)
 {
@@ -13033,9 +13034,6 @@ ValidationFailed:
     PCOSA_DML_WIFI_RADIO_CFG        pRunningCfg    = (PCOSA_DML_WIFI_RADIO_CFG )NULL;
     int  wlanIndex;
     BOOL createdNewVap = FALSE;
-#if defined(ENABLE_FEATURE_MESHWIFI)
-    CHAR multinet_instance[548] = {0};
-#endif
 #if defined(_INTEL_WAV_)
     PCOSA_DML_WIFI_SSID             pWifiSsid           = (PCOSA_DML_WIFI_SSID      )NULL;
     PCOSA_DML_WIFI_AP               pWifiAp             = (PCOSA_DML_WIFI_AP        )NULL;
@@ -13324,126 +13322,7 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d true\n", __func__, __LINE__, i
 
 #if defined(ENABLE_FEATURE_MESHWIFI)
                     // Notify Mesh components of an AP config change
-                    {
-                        //arg array will hold "4+size(i)+1+keypassphrase+1+secmode+1+encryptmode+NULL
-                        char secMode[256] = {0};
-                        char encryptMode[256] = {0};
-			int rc = -1 ;
-
-                        CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : Notify Mesh of AP config changes\n",__FUNCTION__));
-
-                        // Grab security Mode
-                        switch (pStoredApSecCfg->ModeEnabled)
-                        {
-                        case COSA_DML_WIFI_SECURITY_WEP_64:
-                            rc = strcpy_s(secMode,sizeof(secMode), "WEP-64");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        case COSA_DML_WIFI_SECURITY_WEP_128:
-                            rc = strcpy_s(secMode,sizeof(secMode), "WEP-128");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        case COSA_DML_WIFI_SECURITY_WPA_Personal:
-                            rc = strcpy_s(secMode,sizeof(secMode), "WPA-Personal");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        case COSA_DML_WIFI_SECURITY_WPA2_Personal:
-                            rc = strcpy_s(secMode,sizeof(secMode), "WPA2-Personal");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        case COSA_DML_WIFI_SECURITY_WPA_WPA2_Personal:
-                            rc = strcpy_s(secMode,sizeof(secMode), "WPA-WPA2-Personal");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        case COSA_DML_WIFI_SECURITY_WPA_Enterprise:
-                            rc = strcpy_s(secMode,sizeof(secMode), "WPA-Enterprise");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        case COSA_DML_WIFI_SECURITY_WPA2_Enterprise:
-                            rc = strcpy_s(secMode,sizeof(secMode), "WPA2-Enterprise");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        case COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise:
-                            rc = strcpy_s(secMode,sizeof(secMode), "WPA-WPA2-Enterprise");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        case COSA_DML_WIFI_SECURITY_None:
-                        default:
-                            rc = strcpy_s(secMode,sizeof(secMode), "None");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        }
-
-                        // Grab encryption method
-                        switch (pStoredApSecCfg->EncryptionMethod)
-                        {
-                        case COSA_DML_WIFI_AP_SEC_TKIP:
-                            rc = strcpy_s(encryptMode,sizeof(encryptMode), "TKIPEncryption");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        case COSA_DML_WIFI_AP_SEC_AES:
-                            rc = strcpy_s(encryptMode,sizeof(encryptMode), "AESEncryption");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        case COSA_DML_WIFI_AP_SEC_AES_TKIP:
-                            rc = strcpy_s(encryptMode,sizeof(encryptMode), "TKIPandAESEncryption");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        default:
-                            rc = strcpy_s(encryptMode,sizeof(encryptMode), "None");
-			    if (rc != 0) {
-                                ERR_CHK(rc);
-                                return ANSC_STATUS_FAILURE;
-                            }
-                            break;
-                        }
-
-                        // notify mesh components that wifi ap settings changed
-                        // index|ssid|passphrase|secMode|encryptMode
-                        snprintf(multinet_instance, sizeof(multinet_instance), "RDK|%d|%s|%s|%s",
-                                i,pStoredApSecCfg->KeyPassphrase,secMode,encryptMode);
-                        if ( (gWrite_sysevent_fd || !initGSyseventVar()) &&
-                            (sysevent_set(gWrite_sysevent_fd, gWrite_sysEtoken, "wifi_ApSecurity", multinet_instance, 0)) )
-                        {
-                            CcspWifiTrace(("RDK_LOG_ERROR, %s-%d Error in setting sysevent\n", __FUNCTION__, __LINE__));
-                        }
-                    }
+                    MeshNotifySecurityChange(i, pStoredApSecCfg);
 #endif
                 }
             } // for each SSID
@@ -15995,6 +15874,16 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
 #else
         wifi_setSSIDName(wlanIndex, pCfg->SSID);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
+
+#if defined(ENABLE_FEATURE_MESHWIFI)
+        // Notify Mesh components of SSID change
+        {
+            CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : Notify Mesh of SSID change\n",__FUNCTION__));
+            // notify mesh components that wifi ssid setting changed
+            // index|ssid
+            v_secure_system("/usr/bin/sysevent set wifi_SSIDName \"RDK|%d|%s\"", wlanIndex, pCfg->SSID);
+        }
+#endif
 
         /*Restart Radio needed for 5GHz SSID, in case of 2.4GHz SSID pushSSID function is sufficient*/
 #ifdef _LG_MV1_CELENO_
@@ -18597,6 +18486,11 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         wifi_setApBasicAuthenticationMode(wlanIndex, authMode);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
 
+#if defined(ENABLE_FEATURE_MESHWIFI)
+        // Notify Mesh components of an AP config change
+        MeshNotifySecurityChange(wlanIndex, pCfg);
+#endif
+
 #ifdef _LG_MV1_CELENO_
         wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
         if(bsEnabled)
@@ -18669,6 +18563,10 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
              CcspWifiEventTrace(("RDK_LOG_NOTICE, KeyPassphrase changed \n "));
              CcspWifiTrace(("RDK_LOG_WARN, KeyPassphrase changed \n "));
+#if defined(ENABLE_FEATURE_MESHWIFI)
+             // Notify Mesh components of an AP config change
+             MeshNotifySecurityChange(wlanIndex, pCfg);
+#endif
 #ifdef _LG_MV1_CELENO_
              wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
              if(bsEnabled)
@@ -29952,5 +29850,73 @@ static void checkforbiddenSSID(int index)
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc( strValue );
     } else {
         AnscTraceError(("%spsm set failed for Reserved name\n", __FUNCTION__));
+    }
+}
+
+static void MeshNotifySecurityChange(INT apIndex, PCOSA_DML_WIFI_APSEC_CFG pStoredApSecCfg)
+{
+    char *secMode;
+    char *encryptMode;
+    char multinet_instance[548];
+
+    CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : Notify Mesh of AP config changes\n",__FUNCTION__));
+
+    // Grab security Mode
+    switch (pStoredApSecCfg->ModeEnabled)
+    {
+        case COSA_DML_WIFI_SECURITY_WEP_64:
+            secMode = "WEP-64";
+            break;
+        case COSA_DML_WIFI_SECURITY_WEP_128:
+            secMode = "WEP-128";
+            break;
+        case COSA_DML_WIFI_SECURITY_WPA_Personal:
+            secMode = "WPA-Personal";
+            break;
+        case COSA_DML_WIFI_SECURITY_WPA2_Personal:
+            secMode = "WPA2-Personal";
+            break;
+        case COSA_DML_WIFI_SECURITY_WPA_WPA2_Personal:
+            secMode = "WPA-WPA2-Personal";
+            break;
+        case COSA_DML_WIFI_SECURITY_WPA_Enterprise:
+            secMode = "WPA-Enterprise";
+            break;
+        case COSA_DML_WIFI_SECURITY_WPA2_Enterprise:
+            secMode = "WPA2-Enterprise";
+            break;
+        case COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise:
+            secMode = "WPA-WPA2-Enterprise";
+            break;
+        case COSA_DML_WIFI_SECURITY_None:
+        default:
+            secMode = "None";
+            break;
+    }
+
+    // Grab encryption method
+    switch (pStoredApSecCfg->EncryptionMethod)
+    {
+        case COSA_DML_WIFI_AP_SEC_TKIP:
+            encryptMode = "TKIPEncryption";
+            break;
+        case COSA_DML_WIFI_AP_SEC_AES:
+            encryptMode = "AESEncryption";
+            break;
+        case COSA_DML_WIFI_AP_SEC_AES_TKIP:
+            encryptMode = "TKIPandAESEncryption";
+            break;
+        default:
+            encryptMode = "None";
+            break;
+    }
+
+    // notify mesh components that wifi ap settings changed
+    // index|ssid|passphrase|secMode|encryptMode
+    snprintf(multinet_instance, sizeof(multinet_instance), "RDK|%d|%s|%s|%s", apIndex, pStoredApSecCfg->KeyPassphrase, secMode, encryptMode);
+    if ((gWrite_sysevent_fd || !initGSyseventVar()) &&
+        (sysevent_set(gWrite_sysevent_fd, gWrite_sysEtoken, "wifi_ApSecurity", multinet_instance, 0)))
+    {
+        CcspWifiTrace(("RDK_LOG_ERROR, %s-%d Error in setting sysevent\n", __FUNCTION__, __LINE__));
     }
 }
