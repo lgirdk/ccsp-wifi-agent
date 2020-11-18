@@ -8315,6 +8315,9 @@ printf("%s: deleting records for index %d \n", __FUNCTION__, i);
         }
     }
 
+    pthread_t tid1;
+    pthread_create(&tid1, NULL, &MacFiltTab_CleanAll, NULL);
+
     PSM_Del_Record(bus_handle,g_Subsystem,WpsPin);
 
     PSM_Del_Record(bus_handle,g_Subsystem,FactoryReset);
