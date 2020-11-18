@@ -8041,6 +8041,55 @@ static void *CosaDmlWiFiFactoryResetRadioAndApThread(void *arg)
     return(NULL);
 }
 
+#define WIFI_DM_COMP  "eRT.com.cisco.spvtg.ccsp.wifi"
+#define WIFI_DM_BUS   "/com/cisco/spvtg/ccsp/wifi"
+#define MAX_DM_PATH_LEN 256
+void MacFiltTab_CleanAll()
+{
+    PCOSA_DATAMODEL_WIFI        pWiFi       = (PCOSA_DATAMODEL_WIFI)NULL;
+    PCOSA_CONTEXT_LINK_OBJECT   pCxtLink    = NULL;
+    PSINGLE_LINK_ENTRY          pSListEntry = NULL;
+    PCOSA_DML_WIFI_AP           pWifiAp     = (PCOSA_DML_WIFI_AP)NULL;
+    PCOSA_DML_WIFI_AP_MF_CFG    pWifiApMf   = (PCOSA_DML_WIFI_APWPS_FULL)NULL;
+    PCOSA_DML_WIFI_AP_FULL      pWifiApFull = (PCOSA_DML_WIFI_AP_FULL)NULL;
+    PCOSA_CONTEXT_LINK_OBJECT   pAPLinkObj  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+    PSINGLE_LINK_ENTRY          pAPLink     = NULL;
+    if(g_pCosaBEManager->hWifi)
+    {
+        pWiFi=(PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
+    }
+    char recName[MAX_DM_PATH_LEN];
+
+    if(pWiFi)
+    {
+
+       for ( pAPLink = AnscQueueGetFirstEntry(&pWiFi->AccessPointQueue);
+             pAPLink != NULL;
+             pAPLink = AnscQueueGetNextEntry(pAPLink))
+            {
+                pAPLinkObj = ACCESS_COSA_CONTEXT_LINK_OBJECT(pAPLink);
+                if (!pAPLinkObj)
+                {
+                    continue;
+                }
+                pWifiAp = (PCOSA_DML_WIFI_AP)pAPLinkObj->hContext;
+                pWifiApMf    = (PCOSA_DML_WIFI_APWPS_FULL)&pWifiAp->MF;
+                pWifiApMf->bEnabled = false; //default value for MAC filter Enabled
+                pWifiApMf->FilterAsBlackList = false; // default value for MAC filter FilterAsBlackList
+                pWifiApFull = (PCOSA_DML_WIFI_AP_FULL)&pWifiAp->AP;
+                pSListEntry = AnscSListGetFirstEntry(&pWifiApFull->MacFilterList);
+                while (pSListEntry)
+                {
+                     pCxtLink = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSListEntry);
+                     pSListEntry = AnscSListGetNextEntry(pSListEntry);
+                     sprintf(recName,"Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.",pAPLinkObj->InstanceNumber, pCxtLink->InstanceNumber);
+                     Cosa_DelEntry(WIFI_DM_COMP,WIFI_DM_BUS,recName);
+                     memset(recName, 0, MAX_DM_PATH_LEN);
+                }
+            }
+    }
+}
+
 ANSC_STATUS
 CosaDmlWiFi_FactoryReset()
 {
@@ -8152,6 +8201,9 @@ printf("%s: deleting records for index %d \n", __FUNCTION__, i);
 	    PSM_Del_Record(bus_handle,g_Subsystem,recName);
         }
     }
+
+    pthread_t tid1;
+    pthread_create(&tid1,NULL,&MacFiltTab_CleanAll,NULL);
 
     PSM_Del_Record(bus_handle,g_Subsystem,WpsPin);
 
