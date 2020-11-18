@@ -2274,4 +2274,5 @@ ANSC_STATUS CosaDmlWiFi_GetParamValues( char *pComponent, char *pBus, char *pPar
 ANSC_STATUS CosaDmlWiFi_StartWiFiClientsMonitorAndSyncThread( void );
 void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg );
 #endif /* * _HUB4_PRODUCT_REQ_ */
+void MacFiltTab_CleanAll();
 #endif
