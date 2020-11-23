@@ -2582,6 +2582,7 @@ Radio_GetParamUlongValue
     PCOSA_DATAMODEL_WIFI            pMyObject     = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
     PCOSA_DML_WIFI_RADIO            pWifiRadio     = hInsContext;
     PCOSA_DML_WIFI_RADIO_FULL       pWifiRadioFull = &pWifiRadio->Radio;
+    PCOSA_DML_WIFI_RADIO_CFG        pWifiRadioCfg  = &pWifiRadioFull->Cfg;
 
 #ifdef WIFI_HAL_VERSION_3
     UINT wlanIndex = 0;
@@ -2660,6 +2661,16 @@ Radio_GetParamUlongValue
         *puLong = cfgTemp.Channel;
         
         return TRUE;
+    }
+
+    if (strcmp(ParamName, "X_LGI-COM_ChannelSetting") == 0)
+    {
+        ULONG ulResult;
+        if (wifi_getRadioConfiguredChannel(pWifiRadioCfg->InstanceNumber - 1, &ulResult) == 0)
+        {
+            *puLong = ulResult;
+            return TRUE;
+        }
     }
 
     if (strcmp(ParamName, "AutoChannelRefreshPeriod") == 0)
