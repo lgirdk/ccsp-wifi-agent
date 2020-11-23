@@ -7767,6 +7767,10 @@ AccessPoint_SetParamBoolValue
         
         /* save update to backup */
         pWifiAp->AP.Cfg.WMMEnable = bValue;
+        /*  when disable WMM, make sure UAPSD is disabled as well */
+        if(bValue == FALSE) {
+             pWifiAp->AP.Cfg.UAPSDEnable = bValue;
+        }
         pWifiAp->bApChanged = TRUE;
         return TRUE;
     }
@@ -7776,6 +7780,10 @@ AccessPoint_SetParamBoolValue
         if ( pWifiAp->AP.Cfg.UAPSDEnable == bValue )
         {
             return  TRUE;
+        }
+        if ( TRUE == bValue && FALSE == pWifiAp->AP.Cfg.WMMEnable )
+        {
+            return FALSE;
         }
         /* save update to backup */
         pWifiAp->AP.Cfg.UAPSDEnable = bValue;
@@ -8393,12 +8401,14 @@ AccessPoint_Validate
     }
 
     /* UAPSD can not be enabled when WMM is disabled */
+#if 0
     if((FALSE == pWifiAp->AP.Cfg.WMMEnable) && (TRUE == pWifiAp->AP.Cfg.UAPSDEnable))
     {
        AnscCopyString(pReturnParamName, "UAPSDEnable");
        *puLength = sizeof("UAPSDEnable");
         goto EXIT;
     }
+#endif
              /* ManagementFramePowerControl Parameter values higher than 0 shall be converted to value of 0 and Parameter values lower than -20 shall be converted to value of -20 */
     if(pWifiAp->AP.Cfg.ManagementFramePowerControl > 0)
     {
