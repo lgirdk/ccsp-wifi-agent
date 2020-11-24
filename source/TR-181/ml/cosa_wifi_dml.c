@@ -2653,8 +2653,11 @@ Radio_GetParamUlongValue
     if (strcmp(ParamName, "Channel") == 0)
     {
         /* collect value */
-        CosaDmlWiFiRadioGetDCfg((ANSC_HANDLE)pMyObject->hPoamWiFiDm, &pWifiRadio->Radio.Cfg);
-        *puLong = pWifiRadioFull->Cfg.Channel;
+        COSA_DML_WIFI_RADIO_CFG cfgTemp = {0};
+        memcpy(&cfgTemp, &pWifiRadio->Radio.Cfg, sizeof(cfgTemp));
+
+        CosaDmlWiFiRadioGetDCfg((ANSC_HANDLE)pMyObject->hPoamWiFiDm, &cfgTemp);
+        *puLong = cfgTemp.Channel;
         
         return TRUE;
     }
