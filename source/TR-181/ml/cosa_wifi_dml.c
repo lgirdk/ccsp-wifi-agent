@@ -3482,6 +3482,20 @@ Radio_GetParamStringValue
         return 0;
     }
 
+    if (strcmp(ParamName, "CurrentOperatingChannelBandwidth") == 0)
+    {
+        char output_string[64] = {};
+        if(!wifi_getCurrentRadioOperatingChannelBandwidth(pWifiRadio->Radio.Cfg.InstanceNumber - 1, output_string))
+        {
+            AnscCopyString(pValue, output_string);
+            return 0;
+        }
+        else
+        {
+            CcspTraceError(("%s:%d wifi_getCurrentRadioOperatingChannelBandwidth returning error \n",__func__, __LINE__));
+            return 1;
+        }
+    }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
