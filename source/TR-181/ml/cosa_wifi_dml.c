@@ -101,6 +101,7 @@ extern ULONG g_currentBsUpdate;
 # define KEYPASSPHRASE_SET 2
 # define MFPCONFIG_OPTIONS_SET 3
 
+#define MAX_DM_PATH_LEN 256
 
 extern void* g_pDslhDmlAgent;
 extern int gChannelSwitchingCount;
@@ -9522,6 +9523,12 @@ AccessPoint_GetParamBoolValue
 #endif
         return TRUE;
     }
+
+    if (strcmp(ParamName, "MACAddressControlEnabled") == 0)
+    {
+        *pBool = (pWifiAp->MF.FilterAsBlackList != TRUE) && (pWifiAp->MF.bEnabled == TRUE) ? TRUE : FALSE;
+         return TRUE;
+    }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -10024,6 +10031,23 @@ AccessPoint_GetParamStringValue
         }
     }
 
+    if (strcmp(ParamName, "AllowedMACAddress") == 0)
+    {
+        ULONG nIndex = 0;
+        ULONG insNum = 0;
+        char allowedList[COSA_DML_WIFI_MAX_MAC_FILTER_NUM * COSA_DML_MAC_ADDR_LENGTH] = {0};
+        PCOSA_CONTEXT_LINK_OBJECT pSubCosaContext = MacFiltTab_GetEntry(hInsContext, nIndex++, &insNum);
+        while(pSubCosaContext)
+        {
+            PCOSA_DML_WIFI_AP_MAC_FILTER pMacFilt = (PCOSA_DML_WIFI_AP_MAC_FILTER)pSubCosaContext->hContext;
+            strncat(allowedList, IsValidMacAddress(pMacFilt->MACAddress)?pMacFilt->MACAddress:"", (sizeof(allowedList) - strlen(allowedList) - 1));
+            pSubCosaContext = MacFiltTab_GetEntry(hInsContext, nIndex++, &insNum);
+            strncat(allowedList, (pSubCosaContext)?",":"", (sizeof(allowedList) - strlen(allowedList) - 1));
+        }
+        AnscCopyString(pValue, allowedList);
+        return 0;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
@@ -10456,6 +10480,20 @@ AccessPoint_SetParamBoolValue
 			return TRUE;
 		}		
     }
+
+    if (strcmp(ParamName, "MACAddressControlEnabled") == 0)
+    {
+        if((pWifiAp->MF.FilterAsBlackList != bValue) && (pWifiAp->MF.bEnabled == bValue))
+        {
+            return  TRUE;
+        }
+        /* save update to backup */
+        pWifiAp->MF.bEnabled = bValue;
+        pWifiAp->MF.FilterAsBlackList = (bValue) ? FALSE : TRUE;
+        pWifiAp->bApChanged = TRUE;
+        return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -10975,6 +11013,42 @@ AccessPoint_SetParamStringValue
         return TRUE;
     }
 
+    if (strcmp(ParamName, "AllowedMACAddress") == 0)
+    {
+        char *macStr;
+        ULONG nIndex = 0;
+        ULONG insNum = 0;
+        ULONG entryCnt = AnscSListQueryDepth(&pWifiAp->AP.MacFilterList);
+
+        while(entryCnt > 0)
+        {
+            PCOSA_CONTEXT_LINK_OBJECT pSubCxt = MacFiltTab_GetEntry(hInsContext, --entryCnt, &insNum);
+            MacFiltTab_DelEntry(hInsContext, pSubCxt);
+        }
+
+        macStr = strtok(pString, ",");
+        while(NULL != macStr)
+        {
+            char devName[10] = {0};
+            PCOSA_CONTEXT_LINK_OBJECT pSubCosaContext = NULL;
+            PCOSA_DML_WIFI_AP_MAC_FILTER pMacFilt = NULL;
+            if(IsValidMacAddress(macStr) && (nIndex < 3))
+            {
+                pSubCosaContext = MacFiltTab_GetEntry(hInsContext, nIndex++, &insNum);
+                if(!pSubCosaContext)
+                {
+                    pSubCosaContext = MacFiltTab_AddEntry(hInsContext, &insNum);
+                }
+                pMacFilt = (PCOSA_DML_WIFI_AP_MAC_FILTER)pSubCosaContext->hContext;
+                AnscCopyString(pMacFilt->MACAddress, macStr);
+                sprintf(devName, "Device%lu", nIndex);
+                AnscCopyString(pMacFilt->DeviceName, devName);
+            }
+            macStr = strtok(NULL, ",");
+        }
+        return TRUE;
+    }
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
 }
@@ -11169,6 +11243,19 @@ AccessPoint_Commit
     CHAR                            PathName[64]  = {0};
     ANSC_STATUS                     returnStatus  = ANSC_STATUS_SUCCESS;
     errno_t                         rc            = -1;
+
+    MacFilter_Commit(hInsContext);
+    if((pWifiAp->MF.bEnabled == TRUE) && (pWifiAp->MF.FilterAsBlackList == FALSE))
+    {
+        ULONG nIndex = 0;
+        ULONG insNum = 0;
+        PCOSA_CONTEXT_LINK_OBJECT pSubCosaContext = MacFiltTab_GetEntry(hInsContext, nIndex++, &insNum);
+        while(pSubCosaContext)
+        {
+            MacFiltTab_Commit(pSubCosaContext);
+            pSubCosaContext = MacFiltTab_GetEntry(hInsContext, nIndex++, &insNum);
+        }
+    }
     
     pSLinkEntry = AnscQueueGetFirstEntry(&pMyObject->SsidQueue);
    
