@@ -2322,6 +2322,18 @@ INSTMSMT_PH2 -->
                            <syntax>bool</syntax>
                            <writable>true</writable>
                          </parameter>
+                         <parameter>
+                            <name>MACAddressControlEnabled</name>
+                            <type>boolean</type>
+                            <syntax>bool</syntax>
+                            <writable>true</writable>
+                         </parameter>
+                         <parameter>
+                             <name>AllowedMACAddress</name>
+                             <type>string(900)</type>
+                             <syntax>string</syntax>
+                             <writable>true</writable>
+                          </parameter>
                           <parameter>
                             <name>X_COMCAST-COM_MAC_FilteringMode</name>
                              <type>string</type>
