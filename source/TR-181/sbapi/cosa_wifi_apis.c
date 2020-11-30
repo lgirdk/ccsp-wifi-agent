@@ -16164,6 +16164,9 @@ CosaDmlWiFiSsidGetDinfo
     UNREFERENCED_PARAMETER(hContext);
     char vapStatus[32] = {0};
 
+    int wlanRadioIndex = 0;
+    BOOL radioActive = FALSE;
+
     if (!pInfo)
     {
 		CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : pCfg is NULL \n",__FUNCTION__));
@@ -16202,10 +16205,25 @@ CosaDmlWiFiSsidGetDinfo
         if ((strncmp(vapStatus, "Up", strlen("Up")) == 0) || (strncmp(vapStatus, "Enabled", strlen("Enabled")) == 0))
         {
             pInfo->Status = COSA_DML_IF_STATUS_Up;
-        } else if (strncmp(vapStatus,"Disable", strlen("Disable")) == 0)
+        } 
+        else if (strncmp(vapStatus,"Disable", strlen("Disable")) == 0)
         {
-            pInfo->Status = COSA_DML_IF_STATUS_Down;
-        } else 
+            wifi_getApRadioIndex(wlanIndex, &wlanRadioIndex);
+            wifi_getRadioStatus(wlanRadioIndex,&radioActive);
+            if (TRUE == radioActive)
+            {
+                pInfo->Status = COSA_DML_IF_STATUS_Down;
+            }
+            else
+            {
+                /*
+                 * The SSID interface should be set to "lowerLayerDown" if the radio interface
+                 *  is disabled but the SSID interface is still enabled.
+                 */
+                pInfo->Status = COSA_DML_IF_STATUS_LowerLayerDown;
+            }
+        }
+        else
         {
             pInfo->Status = COSA_DML_IF_STATUS_Error;
         }
