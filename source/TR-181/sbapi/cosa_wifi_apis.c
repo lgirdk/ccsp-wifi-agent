@@ -13824,11 +13824,13 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
             }
             if(bForceDisableFlag == FALSE) {
                 wifi_setRadioEnable(wlanIndex,pCfg->bEnabled);
+                wlanRestart = TRUE;
             } else {
                 CcspWifiTrace(("RDK_LOG_WARN, WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n"));
             }
         } else {
                wifi_setRadioEnable(wlanIndex,pCfg->bEnabled);
+               wlanRestart = TRUE;
         }
 
         if(pCfg->bEnabled)
