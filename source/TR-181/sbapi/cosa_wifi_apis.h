@@ -68,6 +68,7 @@
 #include "ccsp_base_api.h"
 #include "wifi_hal.h"
 #include "cosa_lgi_wifi_radio_stats_dml.h" //LGI ADD
+#include "cosa_lgi_wifi_radius_dml.h"
 
 //#include "secure_wrapper.h"
 
@@ -1407,6 +1408,10 @@ CosaDmlWiFiSetEnableRadiusGreylist
    );
 
 void CosaDmlWiFi_UpdateMfCfg(void);
+
+ANSC_STATUS getRadiusTransportInterface(int *radiusInterface);
+
+void setRadiusTransportInterfaceintoPSM(int val);
 
 
 ANSC_STATUS
