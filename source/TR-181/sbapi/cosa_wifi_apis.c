@@ -24815,7 +24815,11 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
 #ifdef WIFI_HAL_VERSION_3
     } else if (isVapHotspot(apIndex)) {
 #else
+#if defined(_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_)
 	} else if (apIndex==4 || apIndex==5 || apIndex==8 || apIndex==9 || apIndex==15) { //for hotspot
+#else
+	} else if (apIndex==4 || apIndex==5 || apIndex==8 || apIndex==9) { //for hotspot
+#endif
 #endif
     	Send_Notification_for_hotspot(mac, associated_dev->cli_Active, apIndex+1, associated_dev->cli_SignalStrength);
 #ifdef WIFI_HAL_VERSION_3
@@ -24838,9 +24842,15 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
     } else if (apIndex==14) { 
 
 #else
+#if defined(_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_)
 	} else if (apIndex==6 || apIndex==7 ||  apIndex==10 || apIndex==11 ) { //L&F
 	      CcspWifiTrace(("RDK_LOG_INFO, RDKB_WIFI_NOTIFY: Connected to:%s%s clientMac:%s\n",apIndex%2?"5.0":"2.4",apIndex<10?"_LNF_PSK_SSID":"_LNF_EAP_SSID",mac));
 	} else if (apIndex==14) { //guest
+#else
+	} else if (apIndex==14 || apIndex==15 ||  apIndex==10 || apIndex==11 ) { //L&F
+	      CcspWifiTrace(("RDK_LOG_INFO, RDKB_WIFI_NOTIFY: Connected to:%s%s clientMac:%s\n",apIndex%2?"5.0":"2.4",apIndex<10?"_LNF_PSK_SSID":"_LNF_EAP_SSID",mac));
+	} else if (apIndex==6 || apIndex==7 ) { //guest
+#endif
           
 #endif
 	} else {
@@ -24907,14 +24917,14 @@ INT CosaDmlWiFi_DisAssociatedDevice_callback(INT apIndex, char *mac, int reason)
 #ifdef WIFI_HAL_VERSION_3
         } else if (isVapLnf(apIndex)) { //L&F
 #else
-        } else if (apIndex==6 || apIndex==7 ||  apIndex==10 || apIndex==11 ) { //L&F
+        } else if (apIndex==14 || apIndex==15 ||  apIndex==10 || apIndex==11 ) { //L&F
 #endif
 #ifdef WIFI_HAL_VERSION_3
                 CcspWifiTrace(("RDK_LOG_INFO, RDKB_WIFI_NOTIFY: connectedTo:%s%s clientMac:%s\n",getRadioIndexFromAp(apIndex)?"5.0":"2.4",apIndex<10?"_LNF_PSK_SSID":"_LNF_EAP_SSID",macAddr));
 #else
                 CcspWifiTrace(("RDK_LOG_INFO, RDKB_WIFI_NOTIFY: connectedTo:%s%s clientMac:%s\n",apIndex%2?"5.0":"2.4",apIndex<10?"_LNF_PSK_SSID":"_LNF_EAP_SSID",macAddr));
 #endif
-        } else if (apIndex==14 || apIndex==15 ) { //guest
+        } else if (apIndex==6 || apIndex==7 ) { //guest
 
         } else {
                 //unused ssid
