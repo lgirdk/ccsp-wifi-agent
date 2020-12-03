@@ -3476,6 +3476,7 @@ static char *WpsEnable ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.SSID.%d.WPSE
 static char *WpsPin ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.WPSPin";
 static char *Vlan ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.SSID.%d.Vlan";
 static char *ReloadConfig = "com.cisco.spvtg.ccsp.psm.ReloadConfig";
+static char *TransportInterface ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.X_LGI-COM_Radius.TransportInterface";
 #if defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_TURRIS_)
 //Band Steering on Factory Reset
 static char *bsEnable ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.X_RDKCENTRAL-COM_BandSteering.Enable";
@@ -3641,6 +3642,33 @@ int isReservedSSID(char *ReservedNames, char *ssid)
 
         return 0;
 }
+
+ANSC_STATUS
+getRadiusTransportInterface(int *radiusInterface)
+{
+    int retVal = CCSP_SUCCESS;
+    char *strValue  = NULL;
+    retVal = PSM_Get_Record_Value2( bus_handle, g_Subsystem, TransportInterface, NULL, &strValue );
+    if (retVal == CCSP_SUCCESS)
+    {
+		*radiusInterface = _ansc_atoi(strValue);
+		((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc( strValue );
+    }
+else {
+		retVal = CCSP_FAILURE;
+		AnscTraceError(("%spsm get failed for Radius Transport Interface\n", __FUNCTION__));
+		return ANSC_STATUS_FAILURE;
+     }
+return ANSC_STATUS_SUCCESS;
+}
+
+void setRadiusTransportInterfaceintoPSM(int val)
+{
+        char strValue[10];
+        snprintf(strValue,sizeof(strValue),"%d",val);
+        PSM_Set_Record_Value2(bus_handle,g_Subsystem, TransportInterface, ccsp_string, strValue);
+}
+
 
 void checkforbiddenSSID(int index)
 {

@@ -66,6 +66,7 @@
 
 #include "cosa_apis.h"
 #include "cosa_lgi_wifi_radio_stats_dml.h" //LGI ADD
+#include "cosa_lgi_wifi_radius_dml.h"
 
 #define  COSA_DML_WIFI_MAX_MAC_FILTER_NUM           50
 
@@ -1339,6 +1340,10 @@ CosaDmlWiFi_SetPreferPrivatePsmData
     );
 
 void CosaDmlWiFi_UpdateMfCfg(void);
+
+ANSC_STATUS getRadiusTransportInterface(int *radiusInterface);
+
+void setRadiusTransportInterfaceintoPSM(int val);
 
 
 ANSC_STATUS
