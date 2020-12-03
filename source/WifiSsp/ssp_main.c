@@ -674,7 +674,7 @@ int main(int argc, char* argv[])
     if (ulReturnValCount > 0 &&
         strlen(ppReturnVal[0]->parameterValue) > 0)
     {
-        int iMin, iHour, iDay, iMonth, iYear, iGnIndex24=15, iGnIndex50=16;
+        int iMin, iHour, iDay, iMonth, iYear, iGnIndex24=7, iGnIndex50=8;
         char strCronCmd[256];
 
         //remove the current entry from crontab, if any
