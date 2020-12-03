@@ -10534,7 +10534,7 @@ AccessPoint_SetParamStringValue
         }
         else
         {
-            int    iGnIndex24 = 15, iGnIndex50 = 16;
+            int    iGnIndex24 = 7, iGnIndex50 = 8;
 
             //remove the current entry from crontab, if any
 #if defined(_LG_MV1_CELENO_)
