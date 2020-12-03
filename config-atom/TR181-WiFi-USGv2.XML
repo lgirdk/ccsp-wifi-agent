@@ -3594,6 +3594,26 @@ INSTMSMT_PH2 -->
 					</objects>
 				</object>
 				<object>
+					<name>X_LGI-COM_Radius</name>
+					<!--<description>Object containing Radius configuration.</description> -->
+					<objectType>object</objectType>
+					<functions>
+						<func_GetParamUlongValue>LGI_Radius_GetParamUlongValue</func_GetParamUlongValue>
+						<func_SetParamUlongValue>LGI_Radius_SetParamUlongValue</func_SetParamUlongValue>
+						<func_Validate>LGI_Radius_Validate</func_Validate>
+						<func_Commit>LGI_Radius_Commit</func_Commit>
+						<func_Rollback>LGI_Radius_Rollback</func_Rollback>
+					</functions>
+					<parameters>
+						<parameter>
+							<name>TransportInterface</name>
+							<type>string: eRouter(1),eCM(2)</type>
+							<syntax>uint32/mapped</syntax>
+							<writable>true</writable>
+						</parameter>
+					</parameters>
+				</object>
+				<object>
 					<name>X_LGI-COM_BandSteering</name>
 					 <!--<description>Object containing Bandsteering configuration and status.</description> -->
 					<objectType>object</objectType>

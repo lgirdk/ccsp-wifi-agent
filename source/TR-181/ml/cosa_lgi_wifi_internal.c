@@ -18,6 +18,7 @@
 #include "cosa_lgi_wifi_bandsteering_dml.h"
 #include "wifi_hal.h"
 #include "messagebus_interface_helper.h"
+#include "cosa_wifi_apis.h"
 
 // Called once when agent initializes
 ANSC_STATUS CosaLgiWifiInitialize( ANSC_HANDLE hThisObject )
@@ -27,6 +28,9 @@ ANSC_STATUS CosaLgiWifiInitialize( ANSC_HANDLE hThisObject )
 
     //Device.WiFi.X_LGI-COM_ATM.
     PCOSA_DML_LG_WIFI_ATM pAATM     = (PCOSA_DML_LG_WIFI_ATM )NULL;
+
+    //Device.WiFi.X_LGI-COM_RADIUS.
+    PCOSA_DML_LG_WIFI_RADIUS pRADIUS     = (PCOSA_DML_LG_WIFI_RADIUS )NULL;
 	
     //Device.WiFi.X_LGI-COM_BandSteering.
     PCOSA_DML_BANDSTEERING_SSID pBandSteeringSSIDEntry = NULL;
@@ -60,6 +64,22 @@ ANSC_STATUS CosaLgiWifiInitialize( ANSC_HANDLE hThisObject )
             pBandSteeringSSIDEntry->pBlacklist24G = NULL;
         }
     }
+
+    //Device.WiFi.X_LGI-COM_RADIUS.
+    pRADIUS = (PCOSA_DML_LG_WIFI_RADIUS)AnscAllocateMemory(sizeof(COSA_DML_LG_WIFI_RADIUS));
+    if ( NULL != pRADIUS )
+    {
+        int radiusInterface;
+        getRadiusTransportInterface(&radiusInterface);
+        pRADIUS->TransportInterface = radiusInterface;
+        pMyObject->pRADIUS        = pRADIUS;
+    }
+    else
+    {
+        AnscTraceError(("%smemory allocation failed for pRADIUS\n", __FUNCTION__));
+        returnStatus = ANSC_STATUS_FAILURE;
+    }
+
 
     //Device.WiFi.X_LGI-COM_ATM.
     pAATM = (PCOSA_DML_LG_WIFI_ATM)AnscAllocateMemory(sizeof(COSA_DML_LG_WIFI_ATM));
@@ -157,6 +177,11 @@ ANSC_STATUS CosaLgiWifiRemove( ANSC_HANDLE hThisObject )
         AnscFreeMemory((ANSC_HANDLE)pAATM);
     }
 
+    /* Remove Radius Object */
+    if (pMyObject->pRADIUS != NULL)
+    {
+        AnscFreeMemory((ANSC_HANDLE)pMyObject->pRADIUS);
+    }
 
     /*Remove BandSteering Object*/
     if (pMyObject->pBandSteeringSSIDTable != NULL)
