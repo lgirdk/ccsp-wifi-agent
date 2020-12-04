@@ -7512,7 +7512,7 @@ AccessPoint_GetParamUlongValue
         return TRUE;
     }
   
-    if (AnscEqualString(ParamName, "MaxAssociatedDevices", TRUE))
+    if (AnscEqualString(ParamName, "MaxAssociatedDevices", TRUE) || AnscEqualString(ParamName, "MaxAllowedAssociations", TRUE))
     {
         *puLong = pWifiAp->AP.Cfg.MaxAssociatedDevices; 
         return TRUE;
@@ -8138,13 +8138,7 @@ AccessPoint_SetParamIntValue
 
     if( AnscEqualString(ParamName, "X_CISCO_COM_BssMaxNumSta", TRUE))
     {
-        if ( pWifiAp->AP.Cfg.BssMaxNumSta == iValue )
-        {
-            return  TRUE;
-        }
-        /* save update to backup */
-        pWifiAp->AP.Cfg.BssMaxNumSta = iValue;
-        pWifiAp->bApChanged = TRUE;
+        CcspTraceWarning(("Unsupported parameter '%s'\n Use MaxAssociatedDevices to configure \n", ParamName));
         return TRUE;
     }
         if( AnscEqualString(ParamName, "X_RDKCENTRAL-COM_ManagementFramePowerControl", TRUE))
@@ -8250,8 +8244,26 @@ AccessPoint_SetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "MaxAssociatedDevices", TRUE))
+    if( AnscEqualString(ParamName, "MaxAssociatedDevices", TRUE) || AnscEqualString(ParamName, "MaxAllowedAssociations", TRUE))
     {
+        if(AnscEqualString(ParamName, "MaxAllowedAssociations", TRUE) )
+        {
+            if( pWifiAp->AP.Cfg.InstanceNumber != 5 && pWifiAp->AP.Cfg.InstanceNumber != 6 )
+            {
+                CcspTraceError(("MaxAllowedAssociations is configurable only to Community WiFi\n"));
+                return FALSE;
+            }
+            if(uValue < 1 || uValue > 32)
+            {
+                CcspTraceError((" Invalid configuration of maximum associated devices for Community WiFi\n"));
+                return FALSE;
+            }
+        }
+        else if(pWifiAp->AP.Cfg.InstanceNumber == 5 || pWifiAp->AP.Cfg.InstanceNumber == 6)
+        {
+            CcspTraceError(("Use MaxAllowedAssociations for configuring maximum associated devices to community wifi SSID\n"));
+            return FALSE;
+        }
 
         if ( pWifiAp->AP.Cfg.MaxAssociatedDevices == uValue )
         {
