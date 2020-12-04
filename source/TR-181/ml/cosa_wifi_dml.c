@@ -9731,7 +9731,7 @@ AccessPoint_GetParamUlongValue
         return TRUE;
     }
   
-    if (strcmp(ParamName, "MaxAssociatedDevices") == 0)
+    if ((strcmp(ParamName, "MaxAssociatedDevices") == 0) || (strcmp(ParamName, "MaxAllowedAssociations") == 0))
     {
         *puLong = pWifiAp->AP.Cfg.MaxAssociatedDevices; 
         return TRUE;
@@ -10569,37 +10569,7 @@ AccessPoint_SetParamIntValue
 
     if (strcmp(ParamName, "X_CISCO_COM_BssMaxNumSta") == 0)
     {
-#ifdef WIFI_HAL_VERSION_3
-        ULONG apIndex = pWifiAp->AP.Cfg.InstanceNumber;
-        if (apIndex == 0)
-        {
-            CcspWifiTrace(("RDK_LOG_ERROR, %s pWifiAp->AP.Cfg.InstanceNumber equal to zero:\n", __FUNCTION__));
-            return FALSE;
-        }
-        apIndex--;
-        wifi_vap_info_t * vapInfo = getVapInfo(apIndex);
-
-        if (vapInfo == NULL)
-        {
-            CcspWifiTrace(("RDK_LOG_ERROR, %s Unable to get VAP info for apIndex:%lu\n", __FUNCTION__, apIndex));
-            return FALSE;
-        }
-        if ( vapInfo->u.bss_info.bssMaxSta == (UINT)iValue )
-        {
-            return  TRUE;
-        }
-        /* save update to backup */
-        vapInfo->u.bss_info.bssMaxSta = iValue;
-        pWifiAp->AP.isApChanged = TRUE;
-#else
-        if ( pWifiAp->AP.Cfg.BssMaxNumSta == iValue )
-        {
-            return  TRUE;
-        }
-        /* save update to backup */
-        pWifiAp->AP.Cfg.BssMaxNumSta = iValue;
-        pWifiAp->bApChanged = TRUE;
-#endif
+        CcspTraceWarning(("Unsupported parameter '%s'\n Use MaxAssociatedDevices to configure \n", ParamName));
         return TRUE;
     }
         if (strcmp(ParamName, "X_RDKCENTRAL-COM_ManagementFramePowerControl") == 0)
@@ -10753,8 +10723,26 @@ AccessPoint_SetParamUlongValue
         return TRUE;
     }
 
-    if (strcmp(ParamName, "MaxAssociatedDevices") == 0)
+    if ((strcmp(ParamName, "MaxAssociatedDevices") == 0) || (strcmp(ParamName, "MaxAllowedAssociations") == 0))
     {
+        if (strcmp(ParamName, "MaxAllowedAssociations") == 0)
+        {
+            if( pWifiAp->AP.Cfg.InstanceNumber != 5 && pWifiAp->AP.Cfg.InstanceNumber != 6 )
+            {
+                CcspTraceError(("MaxAllowedAssociations is configurable only to Community WiFi\n"));
+                return FALSE;
+            }
+            if(uValue < 1 || uValue > 32)
+            {
+                CcspTraceError((" Invalid configuration of maximum associated devices for Community WiFi\n"));
+                return FALSE;
+            }
+        }
+        else if(pWifiAp->AP.Cfg.InstanceNumber == 5 || pWifiAp->AP.Cfg.InstanceNumber == 6)
+        {
+            CcspTraceError(("Use MaxAllowedAssociations for configuring maximum associated devices to community wifi SSID\n"));
+            return FALSE;
+        }
 
 #ifdef WIFI_HAL_VERSION_3
         if ( vapInfo->u.bss_info.bssMaxSta == uValue )
