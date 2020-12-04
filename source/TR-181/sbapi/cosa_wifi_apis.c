@@ -5676,25 +5676,6 @@ CosaDmlWiFiGetAccessPointPsmData
 
     if (!g_wifidb_rfc) {
     memset(recName, 0, sizeof(recName));
-    snprintf(recName, sizeof(recName), BssMaxNumSta, ulInstance);
-    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
-    if (retPsmGet == CCSP_SUCCESS) {
-        intValue = _ansc_atoi(strValue);
-        pCfg->BssMaxNumSta = intValue;
-        if (enabled == TRUE) {
-            wifi_setApMaxAssociatedDevices(wlanIndex, intValue);
-        }
-        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
-    }
-    } else {
-        pCfg->BssMaxNumSta = pcfg->bss_max_sta;
-        if (enabled == TRUE) {
-            wifi_setApMaxAssociatedDevices(wlanIndex, pCfg->BssMaxNumSta);
-        }
-    }
-
-    if (!g_wifidb_rfc) {
-    memset(recName, 0, sizeof(recName));
     snprintf(recName,  sizeof(recName), ApIsolationEnable, ulInstance);
     retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
     if (retPsmGet == CCSP_SUCCESS) {
@@ -16639,7 +16620,6 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 	wifi_setApWmmOgAckPolicy(wlanIndex, 2, !pCfg->WmmNoAck);
 	wifi_setApWmmOgAckPolicy(wlanIndex, 3, !pCfg->WmmNoAck);
     }
-    wifi_setApMaxAssociatedDevices(wlanIndex, pCfg->BssMaxNumSta);
     
     wifi_setApIsolationEnable(wlanIndex, pCfg->IsolationEnable);
 
@@ -16851,6 +16831,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 
     if (pCfg->MaxAssociatedDevices != pStoredCfg->MaxAssociatedDevices) {
         wifi_setApMaxAssociatedDevices(wlanIndex, pCfg->MaxAssociatedDevices);
+        enable_reset_radio_flag(wlanIndex);
     }
         if (pCfg->ManagementFramePowerControl != pStoredCfg->ManagementFramePowerControl) {
 	CcspWifiTrace(("RDK_LOG_INFO,X_RDKCENTRAL-COM_ManagementFramePowerControl:%d\n", pCfg->ManagementFramePowerControl));
@@ -16947,20 +16928,6 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 		wifi_setApWmmOgAckPolicy(wlanIndex, 1, !pCfg->WmmNoAck);
 		wifi_setApWmmOgAckPolicy(wlanIndex, 2, !pCfg->WmmNoAck);
 		wifi_setApWmmOgAckPolicy(wlanIndex, 3, !pCfg->WmmNoAck);
-    }
-
-    if (pCfg->BssMaxNumSta != pRunningCfg->BssMaxNumSta) {
-        // Check to see the current # of associated devices exceeds the new limit
-        // if so kick all the devices off
-        ULONG devNum;
-        wifi_getApNumDevicesAssociated(wlanIndex, &devNum);
-        if (devNum > (ULONG)pCfg->BssMaxNumSta) {
-            char ssidName[COSA_DML_WIFI_MAX_SSID_NAME_LEN];
-            wifi_getApName(wlanIndex, ssidName);
-            CosaDmlWiFiApKickAssocDevices(ssidName);
-            t2_event_d("WIFI_INFO_Kickoff_All_Clients", 1);
-        }
-        wifi_setApMaxAssociatedDevices(wlanIndex, pCfg->BssMaxNumSta);
     }
 
     if (pCfg->IsolationEnable != pRunningCfg->IsolationEnable) {    
