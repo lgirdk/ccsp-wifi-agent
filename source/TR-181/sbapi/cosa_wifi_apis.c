@@ -5584,19 +5584,6 @@ printf("%s g_Subsytem = %s wlanIndex %d ulInstance %d enabled = %s\n",__FUNCTION
         wifi_setApEnableOnLine(wlanIndex,0);
 #endif
     }
-
-    memset(recName, 0, sizeof(recName));
-    sprintf(recName, BssMaxNumSta, ulInstance);
-    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
-    if (retPsmGet == CCSP_SUCCESS) {
-        intValue = _ansc_atoi(strValue);
-        pCfg->BssMaxNumSta = intValue;
-        if (enabled == TRUE) {
-            wifi_setApMaxAssociatedDevices(wlanIndex, intValue);
-        }
-        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
-    }
-
     memset(recName, 0, sizeof(recName));
     sprintf(recName, ApIsolationEnable, ulInstance);
     retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
@@ -12241,7 +12228,6 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 	wifi_setApWmmOgAckPolicy(wlanIndex, 2, !pCfg->WmmNoAck);
 	wifi_setApWmmOgAckPolicy(wlanIndex, 3, !pCfg->WmmNoAck);
     }
-    wifi_setApMaxAssociatedDevices(wlanIndex, pCfg->BssMaxNumSta);
     
     wifi_setApIsolationEnable(wlanIndex, pCfg->IsolationEnable);
 
@@ -12405,6 +12391,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 
     if (pCfg->MaxAssociatedDevices != pStoredCfg->MaxAssociatedDevices) {
         wifi_setApMaxAssociatedDevices(wlanIndex, pCfg->MaxAssociatedDevices);
+        enable_reset_radio_flag(wlanIndex);
     }
         if (pCfg->ManagementFramePowerControl != pStoredCfg->ManagementFramePowerControl) {
 	CcspWifiTrace(("RDK_LOG_INFO,X_RDKCENTRAL-COM_ManagementFramePowerControl:%d\n", pCfg->ManagementFramePowerControl));
@@ -12508,19 +12495,6 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 		wifi_setApWmmOgAckPolicy(wlanIndex, 1, !pCfg->WmmNoAck);
 		wifi_setApWmmOgAckPolicy(wlanIndex, 2, !pCfg->WmmNoAck);
 		wifi_setApWmmOgAckPolicy(wlanIndex, 3, !pCfg->WmmNoAck);
-    }
-
-    if (pCfg->BssMaxNumSta != pRunningCfg->BssMaxNumSta) {
-        // Check to see the current # of associated devices exceeds the new limit
-        // if so kick all the devices off
-        unsigned int devNum;
-        wifi_getApNumDevicesAssociated(wlanIndex, &devNum);
-        if (devNum > pCfg->BssMaxNumSta) {
-            char ssidName[COSA_DML_WIFI_MAX_SSID_NAME_LEN];
-            wifi_getApName(wlanIndex, ssidName);
-            CosaDmlWiFiApKickAssocDevices(ssidName);
-        }
-        wifi_setApMaxAssociatedDevices(wlanIndex, pCfg->BssMaxNumSta);
     }
 
     if (pCfg->IsolationEnable != pRunningCfg->IsolationEnable) {    
