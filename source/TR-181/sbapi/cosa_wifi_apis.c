@@ -176,6 +176,10 @@ static void CosaDmlWiFi_StringToChannelsList(char *psmString, PCOSA_DML_WIFI_DPP
 static void Update_Hotspot_MacFilt_Entries(BOOL signal_thread);
 static void Load_Hotspot_APIsolation_Settings(void);
 
+#if defined(ENABLE_FEATURE_MESHWIFI)
+static void wifi_handle_sysevent_async(void);
+#endif
+
 void CosaDmlWiFi_RemoveSpacesFromString( char *string )
 {
     int count = 0, i = 0; 
@@ -18310,8 +18314,8 @@ static async_id_t async_id[4],
 
 enum {SYS_EVENT_ERROR=-1, SYS_EVENT_OK, SYS_EVENT_TIMEOUT, SYS_EVENT_HANDLE_EXIT, SYS_EVENT_RECEIVED=0x10};
 
-//extern void *bus_handle;
-INT Mesh_Notification(char *event, char *data) {
+static INT Mesh_Notification(char *event, char *data)
+{
         char *token=NULL;
         int ret = 0;
  
@@ -18425,7 +18429,7 @@ INT Mesh_Notification(char *event, char *data) {
  * Initialize sysevnt
  *   return 0 if success and -1 if failure.
  */
-int wifi_sysevent_init(void)
+static int wifi_sysevent_init(void)
 {
     int rc;
 
@@ -18482,7 +18486,7 @@ int wifi_sysevent_init(void)
 /*
  * Listen sysevent notification message
  */
-int wifi_sysvent_listener(void)
+static int wifi_sysvent_listener(void)
 {
     int     ret = SYS_EVENT_TIMEOUT;
     fd_set  rfds;
@@ -18527,7 +18531,7 @@ int wifi_sysvent_listener(void)
 /*
  * Close sysevent
  */
-int wifi_sysvent_close(void)
+static int wifi_sysvent_close(void)
 {
     /* we are done with this notification, so unregister it using async_id provided earlier */
     sysevent_rmnotification(sysevent_fd, sysEtoken, async_id[0]);
@@ -18549,7 +18553,7 @@ int wifi_sysvent_close(void)
  * check the initialized sysevent status (happened or not happened),
  * if the event happened, call the functions registered for the events previously
  */
-int wifi_check_sysevent_status(int fd, token_t token)
+static int wifi_check_sysevent_status(int fd, token_t token)
 {
     char evtValue[256] = {0};
     int  returnStatus = ANSC_STATUS_SUCCESS;
@@ -18623,7 +18627,7 @@ static void *wifi_sysevent_handler_th(void *arg)
 /*
  * Create a thread to handle the sysevent asynchronously
  */
-void wifi_handle_sysevent_async(void)
+static void wifi_handle_sysevent_async(void)
 {
     int err;
     pthread_t event_handle_thread;
