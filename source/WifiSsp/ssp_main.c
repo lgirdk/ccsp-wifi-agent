@@ -641,6 +641,12 @@ int main(int argc, char* argv[])
         fprintf(fd,"1");
         fclose(fd);
     }
+
+#if defined(_LG_MV1_CELENO_)
+    //Trigerring radius relay start after wifi_initialized
+    system("rpcclient 192.168.254.253 'sysevent set radiusrelay-start'");
+#endif
+
     char*                           pParamNames[]      = {"Device.WiFi.AccessPoint.15.X_LGI-COM_ActiveTimeout"};
     parameterValStruct_t**          ppReturnVal        = NULL;
     parameterInfoStruct_t**         ppReturnValNames   = NULL;
