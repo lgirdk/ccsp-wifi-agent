@@ -174,6 +174,7 @@ UINT gRadioRestartRequest = 0; //bitmask radio index to identify which radio sho
 BOOL gRadioRestartRequest[3]={FALSE,FALSE,FALSE};
 #endif
 BOOL g_newXH5Gpass=FALSE;
+BOOL gRestartRadiusRelay = FALSE;
 
 #if defined(_ENABLE_BAND_STEERING_)
 ANSC_STATUS CosaDmlWiFi_GetBandSteeringLog_2();
@@ -14687,6 +14688,16 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__,
         wifi_apply();
 #endif
 #endif
+
+        if(gRestartRadiusRelay)
+        {
+            gRestartRadiusRelay = FALSE;
+#if defined(_LG_MV1_CELENO_)
+            CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : restart Radius Relay \n",__FUNCTION__));
+            //Trigerring radius relay restart after radius setting changed
+            system("rpcclient 192.168.254.253 'sysevent set radiusrelay-restart'");
+#endif
+        }
     }
     else
     {
@@ -15777,6 +15788,13 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 	            else
 	                enable_reset_radio_flag(wlanIndex);
 #endif
+
+                    /* restart radius relay for hotspot SSIDs */
+                    if (wlanIndex == 4 || wlanIndex == 5)
+                    {
+                        gRestartRadiusRelay = TRUE;
+                    }
+
                     CcspWifiTrace(("RDK_LOG_WARN,WIFI %s wifi_setApEnable success  index %d , %d\n",__FUNCTION__,wlanIndex,pCfg->bEnabled));
 		 if (pCfg->InstanceNumber == 4) {
 			char passph[128]={0};
@@ -17664,6 +17682,7 @@ CosaDmlSetApRadiusSettings
     }
     else
     {
+        gRestartRadiusRelay = TRUE;
         enable_reset_radio_flag(wlanIndex);
     }
 
@@ -18501,6 +18520,8 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         wifi_setApBasicAuthenticationMode(wlanIndex, authMode);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
 
+        gRestartRadiusRelay = TRUE;
+
 #if defined(ENABLE_FEATURE_MESHWIFI)
         // Notify Mesh components of an AP config change
         MeshNotifySecurityChange(wlanIndex, pCfg);
@@ -18553,6 +18574,8 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 #if !defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
         wifi_setApSecurityPreSharedKey(wlanIndex, (char*)pCfg->PreSharedKey);
 #endif // !FEATURE_SUPPORT_EASYMESH_CONTROLLER
+
+        gRestartRadiusRelay = TRUE;
         }
     }
 
@@ -18669,6 +18692,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 #endif
 		CcspWifiTrace(("RDK_LOG_WARN, RDKB_WIFI_CONFIG_CHANGED :%s Encryption method changed ,calling setWpaEncryptionMode Index : %d mode : %s \n",__FUNCTION__,wlanIndex,method));
 		wifi_setApWpaEncryptionMode(wlanIndex, method);
+		gRestartRadiusRelay = TRUE;
 		enable_reset_radio_flag(wlanIndex);
     } 
 
@@ -18676,6 +18700,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     if ( pCfg->RekeyingInterval != pStoredCfg->RekeyingInterval) {
 		CcspWifiTrace(("RDK_LOG_WARN,%s calling setWpaRekeyInterval  \n",__FUNCTION__));
         wifi_setApSecurityWpaRekeyInterval(wlanIndex,  pCfg->RekeyingInterval);
+        gRestartRadiusRelay = TRUE;
     }
 #endif
 
@@ -18684,6 +18709,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 		strcmp(pCfg->RadiusSecret, pStoredCfg->RadiusSecret) !=0) {
 		CcspWifiTrace(("RDK_LOG_WARN,%s calling wifi_setApSecurityRadiusServer  \n",__FUNCTION__));        
 		wifi_setApSecurityRadiusServer(wlanIndex, (char*)pCfg->RadiusServerIPAddr, pCfg->RadiusServerPort, pCfg->RadiusSecret);
+		gRestartRadiusRelay = TRUE;
 		enable_reset_radio_flag(wlanIndex);
     }
 
@@ -18692,6 +18718,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 		strcmp(pCfg->SecondaryRadiusSecret, pStoredCfg->SecondaryRadiusSecret) !=0) {
 		CcspWifiTrace(("RDK_LOG_WARN,%s calling wifi_setApSecurityRadiusServer  \n",__FUNCTION__));
 		wifi_setApSecuritySecondaryRadiusServer(wlanIndex, (char*)pCfg->SecondaryRadiusServerIPAddr, pCfg->SecondaryRadiusServerPort, pCfg->SecondaryRadiusSecret);
+		gRestartRadiusRelay = TRUE;
 		enable_reset_radio_flag(wlanIndex);
 	}
 #if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
@@ -30052,6 +30079,11 @@ ANSC_STATUS setRadiusTransportInterfaceintoPSM(int val)
             {
                 AnscTraceError(("%scfg set failed for Radius Transport Interface\n", __FUNCTION__));
                 retVal = ANSC_STATUS_FAILURE;
+            }
+            else
+            {
+                //Triggering radius relay restart after radius interface changed
+                gRestartRadiusRelay = TRUE;
             }
         }
         else
