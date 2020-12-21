@@ -123,6 +123,8 @@
 #define SAE_PASSPHRASE_MAX_LENGTH 64
 #endif
 
+#define COSA_DML_WIFI_MAX_SUP_RATE_LEN              10
+
 #ifndef ULLONG
 #define ULLONG unsigned long long
 #endif
@@ -734,6 +736,16 @@ _COSA_DML_WIFI_SSID_STATS
 }_struct_pack_;
 
 typedef  struct _COSA_DML_WIFI_SSID_STATS COSA_DML_WIFI_SSID_STATS, *PCOSA_DML_WIFI_SSID_STATS;
+
+/* For Device.WiFi.SSID.{i}.X_LGI-COM_WifiSupportedRates.*/
+struct
+_COSA_DML_WIFI_SSID_SUPPORTED_RATES
+{
+    char                            disableBasicRates[COSA_DML_WIFI_MAX_SUP_RATE_LEN];
+    char                            disableSupportedRates[COSA_DML_WIFI_MAX_SUP_RATE_LEN];
+}_struct_pack_;
+
+typedef  struct _COSA_DML_WIFI_SSID_SUPPORTED_RATES COSA_DML_WIFI_SSID_SUPPORTED_RATES, *PCOSA_DML_WIFI_SSID_SUPPORTED_RATES;
 
 struct _COSA_DML_WIFI_SSID_BRIDGE 
 {
@@ -1734,6 +1746,20 @@ CosaDmlWiFiSsidSetValues
         ULONG                       ulInstanceNumber,
         char*                       pAlias
     );    
+
+/* Description:
+ *      The API retrieves the SupportedRate of the WiFi SSID designated by index.
+ * Arguments:
+ *      ulIndex         Indicates the index number of the entry.
+ *      pEntry          To receive the WiFiDisableBasicRates and WiFiDisableSupportedRates of the entry.
+ */
+
+ANSC_STATUS
+CosaDmlWiFiSsidGetSupRate
+    (
+        ULONG                                  uIndex,
+        PCOSA_DML_WIFI_SSID_SUPPORTED_RATES    pEntry
+    );
     
 /* Description:
  *	The API adds a new WiFi SSID into the system. 
