@@ -39,3 +39,4 @@ libCcspWifiAgent_ml_la_SOURCES += cosa_lgi_wifi_radio_stats_dml.c
 libCcspWifiAgent_ml_la_SOURCES += cosa_lgi_wifi_atm_dml.c
 libCcspWifiAgent_ml_la_SOURCES += cosa_lgi_wifi_wifilog_dml.c
 libCcspWifiAgent_ml_la_SOURCES += cosa_lgi_wifi_radius_dml.c
+libCcspWifiAgent_ml_la_SOURCES += cosa_lgi_wifi_WifiSupportedRates_dml.c
