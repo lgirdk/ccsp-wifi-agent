@@ -30331,12 +30331,47 @@ ANSC_STATUS getRadiusTransportInterface(int *radiusInterface)
     return ANSC_STATUS_FAILURE;
 }
 
-void setRadiusTransportInterfaceintoPSM(int val)
+ANSC_STATUS setRadiusTransportInterfaceintoPSM(int val)
 {
+    char *storedValue = NULL;
     char strValue[12];
+    int retVal;
 
-    snprintf(strValue, sizeof(strValue), "%d", val);
-    PSM_Set_Record_Value2(bus_handle, g_Subsystem, TransportInterface, ccsp_string, strValue);
+    retVal = PSM_Get_Record_Value2( bus_handle, g_Subsystem, TransportInterface, NULL, &storedValue );
+    if (retVal == CCSP_SUCCESS)
+    {
+        if (val != storedValue)
+        {
+            snprintf(strValue,sizeof(strValue),"%d",val);
+            retVal = PSM_Set_Record_Value2(bus_handle,g_Subsystem, TransportInterface, ccsp_string, strValue);
+            if  (retVal != CCSP_SUCCESS)
+            {
+                AnscTraceError(("%spsm set failed for Radius Transport Interface\n", __FUNCTION__));
+                retVal = ANSC_STATUS_FAILURE;
+            }
+            else
+            {
+                retVal = ANSC_STATUS_SUCCESS;
+            }
+            retVal = wifi_setApRadiusTransportInterface(val);
+            if (retVal != ANSC_STATUS_SUCCESS)
+            {
+                AnscTraceError(("%scfg set failed for Radius Transport Interface\n", __FUNCTION__));
+                retVal = ANSC_STATUS_FAILURE;
+            }
+        }
+        else
+        {
+            retVal = ANSC_STATUS_SUCCESS;
+        }
+    }
+    else
+    {
+        retVal = ANSC_STATUS_FAILURE;
+        AnscTraceError(("%spsm get failed for Radius Transport Interface\n", __FUNCTION__));
+    }
+
+    return retVal;
 }
 
 static void MeshNotifySecurityChange(INT apIndex, PCOSA_DML_WIFI_APSEC_CFG pStoredApSecCfg)
