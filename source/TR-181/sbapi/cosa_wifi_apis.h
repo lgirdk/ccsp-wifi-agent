@@ -1493,7 +1493,7 @@ void CosaDmlWiFi_UpdateMfCfg(void);
 
 ANSC_STATUS getRadiusTransportInterface(int *radiusInterface);
 
-void setRadiusTransportInterfaceintoPSM(int val);
+ANSC_STATUS setRadiusTransportInterfaceintoPSM(int val);
 
 
 ANSC_STATUS
