@@ -95,6 +95,7 @@ _COSA_DML_WIFI_SSID
 {
     COSA_DML_WIFI_SSID_FULL         SSID;
     COSA_DML_WIFI_SSID_STATS        Stats;
+    COSA_DML_WIFI_SSID_SUPPORTED_RATES SupportedRate; /*For Device.WiFi.SSID.{i}.X_LGI-COM_WifiSupportedRates.*/
     BOOLEAN                         bSsidChanged;
 }
 COSA_DML_WIFI_SSID, *PCOSA_DML_WIFI_SSID;
