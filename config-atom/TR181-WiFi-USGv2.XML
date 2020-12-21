@@ -2137,6 +2137,28 @@ INSTMSMT_PH2 -->
                                 </parameter>
                             </parameters>
                         </object>
+                        <object>
+                            <name>X_LGI-COM_WifiSupportedRates</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamStringValue>WifiSupportedRates_GetParamStringValue</func_GetParamStringValue>
+                                <func_SetParamStringValue>WifiSupportedRates_SetParamStringValue</func_SetParamStringValue>
+                            </functions>
+                            <parameters>
+                                <parameter>
+                                    <name>WiFiDisableBasicRates</name>
+                                    <type>string</type>
+                                    <syntax>string</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                                <parameter>
+                                    <name>WiFiDisableSupportedRates</name>
+                                    <type>string</type>
+                                    <syntax>string</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                            </parameters>
+                        </object>
                     </objects>
                 </object>
                 <object>
@@ -4130,7 +4152,23 @@ INSTMSMT_PH2 -->
                             </objects>
                            </object> 
                     </objects> 
-                </object> 
+                </object>
+                <object>
+                    <name>X_LGI-COM_WifiSupportedRates</name>
+                    <objectType>object</objectType>
+                    <functions>
+                        <func_GetParamBoolValue>WifiSupportedRatesControl_GetParamBoolValue</func_GetParamBoolValue>
+                        <func_SetParamBoolValue>WifiSupportedRatesControl_SetParamBoolValue</func_SetParamBoolValue>
+                    </functions>
+                    <parameters>
+                        <parameter>
+                            <name>WiFiBitmapControlFeature</name>
+                            <type>boolean</type>
+                            <syntax>bool</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                    </parameters>
+                </object>
                 <object>
 					<name>X_RDKCENTRAL-COM_ATM</name>
 					<objectType>object</objectType>
