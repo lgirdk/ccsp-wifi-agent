@@ -15468,6 +15468,37 @@ wifiDbgPrintf("%s ulIndex = %lu \n",__FUNCTION__, ulIndex);
     return ANSC_STATUS_SUCCESS;
 }
 
+/* Description:
+ *      The API retrieves the SupportedRates of the WiFi SSID designated by index.
+ * Arguments:
+ *      ulIndex         Indicates the index number of the entry.
+ *      pEntry          To receive the WiFiDisableBasicRates and WiFiDisableSupportedRates of the entry.
+ */
+
+ANSC_STATUS
+CosaDmlWiFiSsidGetSupRate
+    (
+        ULONG                                  uIndex,
+        PCOSA_DML_WIFI_SSID_SUPPORTED_RATES    pEntry
+    )
+{
+    wifiDbgPrintf("%s ulIndex = %d \n",__FUNCTION__, uIndex);
+
+    if (!pEntry || (uIndex<0) || (uIndex>=WIFI_INDEX_MAX))
+        return ANSC_STATUS_FAILURE;
+
+    if(wifi_getSupportRatesDisableBasicRates(uIndex,pEntry->disableBasicRates))
+    {
+        wifiDbgPrintf("Error in hal:wifi_getSupportRatesDisableSupportedRates %s ulIndex = %d\n",__FUNCTION__, uIndex);
+    }
+    if(wifi_getSupportRatesDisableSupportedRates(uIndex,pEntry->disableSupportedRates))
+    {
+        wifiDbgPrintf("Error in hal:wifi_getSupportRatesDisableSupportedRates %s ulIndex = %d\n",__FUNCTION__, uIndex);
+    }
+
+    return ANSC_STATUS_SUCCESS;
+}
+
 ANSC_STATUS
 CosaDmlWiFiSsidSetValues
     (
