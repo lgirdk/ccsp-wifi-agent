@@ -103,6 +103,13 @@ extern ULONG g_currentBsUpdate;
 
 #define MAX_DM_PATH_LEN 256
 
+#define MAX_BASICRATES_BYTE 6 //2byte + 0x 2byte
+#define MAX_SUPPORTRATES_BYTE 10 //4byte + 0x 2byte
+#define BASICRATES_24G_LESS_VALUE 0x8000 // last bit must 1
+#define BASICRATES_5G_LESS_VALUE  0xF800 // last byte must 1111 1xxx
+#define SUPPORTRATES_24G_LESS_VALUE 0xFFF00000 // last 2 byte must 1111 1111 1111 xxxx
+#define SUPPORTRATES_5G_LESS_VALUE  0xFFFF0000 // last 2 byte must 1111 1111 1111 1111
+
 extern void* g_pDslhDmlAgent;
 extern int gChannelSwitchingCount;
 extern BOOL isWifiApplyLibHostapRunning;
@@ -8923,6 +8930,208 @@ Stats4_GetParamStringValue
     return -1;
 }
 
+/***********************************************************************
+
+ APIs for Object:
+
+    WiFi.SSID.{i}.X_LGI-COM_WifiSupportedRates.
+
+    *  WifiSupportedRates_GetParamStringValue
+    *  WifiSupportedRates_SetParamStringValue
+
+***********************************************************************/
+
+ULONG
+WifiSupportedRates_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    )
+{
+    PCOSA_DATAMODEL_WIFI            pMyObject      = (PCOSA_DATAMODEL_WIFI     )g_pCosaBEManager->hWifi;
+    PCOSA_CONTEXT_LINK_OBJECT       pLinkObj       = (PCOSA_CONTEXT_LINK_OBJECT )hInsContext;
+    PCOSA_DML_WIFI_SSID             pWifiSsid      = (PCOSA_DML_WIFI_SSID       )pLinkObj->hContext;
+    PCOSA_DML_WIFI_SSID_SUPPORTED_RATES pWifiSsidSupRate = (PCOSA_DML_WIFI_SSID_SUPPORTED_RATES )&pWifiSsid->SupportedRate;
+
+    /* check the parameter name and return the corresponding value */
+    if (strcmp(ParamName, "WiFiDisableBasicRates") == 0)
+    {
+        /* collect value */
+        if ( AnscSizeOfString(pWifiSsidSupRate->disableBasicRates) < *pUlSize)
+        {
+            AnscCopyString(pValue, pWifiSsidSupRate->disableBasicRates);
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
+    /* check the parameter name and return the corresponding value */
+    if (strcmp(ParamName, "WiFiDisableSupportedRates") == 0)
+    {
+        /* collect value */
+        if ( AnscSizeOfString(pWifiSsidSupRate->disableSupportedRates) < *pUlSize)
+        {
+            AnscCopyString(pValue, pWifiSsidSupRate->disableSupportedRates);
+            return 0;
+        }
+        else
+        {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+/*Below function verify whether given string is Hexadecimal digit or not*/
+static int CheckStringIsHexString(char *value)
+{
+    char buff[16];
+    int len = 0;
+    int i = 0;
+
+    memset(buff, 0, sizeof(buff));
+
+    if(sscanf(value, "0x%s", buff) != 1)
+    {
+           return -1;
+    }
+    len = strlen(buff);
+    for(i = 0;i < len;i++)
+    {
+        if(isxdigit(buff[i]) == 0)
+            return -2;
+    }
+    return 0;
+}
+
+BOOL
+WifiSupportedRates_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue
+    )
+{
+    PCOSA_DATAMODEL_WIFI            pMyObject      = (PCOSA_DATAMODEL_WIFI     )g_pCosaBEManager->hWifi;
+    PCOSA_CONTEXT_LINK_OBJECT       pLinkObj       = (PCOSA_CONTEXT_LINK_OBJECT )hInsContext;
+    PCOSA_DML_WIFI_SSID             pWifiSsid      = (PCOSA_DML_WIFI_SSID       )pLinkObj->hContext;
+    PCOSA_DML_WIFI_SSID_SUPPORTED_RATES pWifiSsidSupRate = (PCOSA_DML_WIFI_SSID_SUPPORTED_RATES )&pWifiSsid->SupportedRate;
+    ULONG HexValue = 0xFFFF;
+
+    /* check the parameter name and return the corresponding value */
+    if (strcmp(ParamName, "WiFiDisableBasicRates") == 0)
+    {
+        if(strlen(pValue) != MAX_BASICRATES_BYTE)
+        {
+            CcspWifiTrace(("RDK_LOG_ERROR, Input string:%s len error.\n",pValue));
+            return FALSE;
+        }
+
+        if(CheckStringIsHexString(pValue) != 0)
+        {
+            CcspWifiTrace(("RDK_LOG_ERROR, Input string:%s is not hexadecimal number\n",pValue));
+            return FALSE;
+        }
+
+        HexValue = strtoul(pValue, NULL, 16);
+
+        if((pWifiSsid->SSID.Cfg.InstanceNumber)%2 ==  1)
+        {
+            if((HexValue & BASICRATES_24G_LESS_VALUE) != BASICRATES_24G_LESS_VALUE)
+            {
+                CcspWifiTrace(("RDK_LOG_ERROR, Input string:%s fail\n",pValue));
+                return FALSE;
+            }
+        }
+        else
+        {
+            if((HexValue & BASICRATES_5G_LESS_VALUE) != BASICRATES_5G_LESS_VALUE)
+            {
+                CcspWifiTrace(("RDK_LOG_ERROR, Input string:%s fail\n",pValue));
+                return FALSE;
+            }
+        }
+
+        if(AnscEqualString(pWifiSsidSupRate->disableBasicRates, pValue, TRUE))
+        {
+            return  TRUE;
+        }
+
+        /* collect value */
+        if(!wifi_setSupportRatesDisableBasicRates(pWifiSsid->SSID.Cfg.InstanceNumber-1,pValue))
+        {
+            AnscCopyString(pWifiSsidSupRate->disableBasicRates,pValue);
+            enable_reset_radio_flag(pWifiSsid->SSID.Cfg.InstanceNumber-1);
+            return TRUE;
+        }
+        else
+        {
+            CcspWifiTrace(("RDK_LOG_ERROR, fail in hal fun:wifi_setSupportRatesDisableBasicRates \n"));
+            return FALSE;
+        }
+    }
+
+    /* check the parameter name and return the corresponding value */
+    if (strcmp(ParamName, "WiFiDisableSupportedRates") == 0)
+    {
+        /* collect value */
+        if(strlen(pValue) != MAX_SUPPORTRATES_BYTE)
+        {
+            CcspWifiTrace(("RDK_LOG_ERROR, Input string:`%s len error.\n",pValue));
+            return FALSE;
+        }
+
+        if(CheckStringIsHexString(pValue) != 0)
+        {
+            CcspWifiTrace(("RDK_LOG_ERROR, Input string:%s is not hexadecimal number\n",pValue));
+            return FALSE;
+        }
+
+        HexValue = strtoul(pValue, NULL, 16);
+
+        if((pWifiSsid->SSID.Cfg.InstanceNumber)%2 ==  1)
+        {
+            if((HexValue & SUPPORTRATES_24G_LESS_VALUE) != SUPPORTRATES_24G_LESS_VALUE)
+            {
+                CcspWifiTrace(("RDK_LOG_ERROR, Input string:%s fail\n",pValue));
+                return FALSE;
+            }
+        }
+        else
+        {
+            if((HexValue & SUPPORTRATES_5G_LESS_VALUE) != SUPPORTRATES_5G_LESS_VALUE)
+            {
+                CcspWifiTrace(("RDK_LOG_ERROR, Input string:%s fail\n",pValue));
+                return FALSE;
+            }
+        }
+
+        if(AnscEqualString(pWifiSsidSupRate->disableSupportedRates, pValue, TRUE))
+        {
+            return  TRUE;
+        }
+
+        if(!wifi_setSupportRatesDisableSupportedRates(pWifiSsid->SSID.Cfg.InstanceNumber-1,pValue))
+        {
+            AnscCopyString(pWifiSsidSupRate->disableSupportedRates,pValue);
+            enable_reset_radio_flag(pWifiSsid->SSID.Cfg.InstanceNumber-1);
+            return TRUE;
+        }
+        else
+        {
+            CcspWifiTrace(("RDK_LOG_ERROR, fail in hal fun:wifi_setSupportRatesDisableSupportedRates \n"));
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
 /***********************************************************************
 
  APIs for Object:
