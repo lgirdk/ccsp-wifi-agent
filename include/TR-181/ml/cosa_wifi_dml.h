@@ -748,6 +748,33 @@ Stats4_GetParamStringValue
 
  APIs for Object:
 
+    WiFi.SSID.{i}.X_LGI-COM_WifiSupportedRates.
+
+    *  WifiSupportedRates_GetParamStringValue
+    *  WifiSupportedRates_SetParamStringValue
+
+***********************************************************************/
+ULONG
+WifiSupportedRates_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+BOOL
+WifiSupportedRates_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       strValue
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
     WiFi.AccessPoint.{i}.
 
     *  AccessPoint_GetEntryCount

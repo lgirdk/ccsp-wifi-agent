@@ -734,6 +734,8 @@ CosaWifiInitialize
         
         /*retrieve data from backend*/
         CosaDmlWiFiSsidGetEntry((ANSC_HANDLE)pMyObject->hPoamWiFiDm, uIndex, &pWifiSsid->SSID);
+        /*Retrieve the data for WifiSupportedRates*/
+        CosaDmlWiFiSsidGetSupRate(uIndex, &pWifiSsid->SupportedRate);
 
         if (TRUE)
         {
@@ -1330,6 +1332,9 @@ CosaWifiReInitialize
             /*retrieve data from backend*/
 			//reload ssid parameters  
             CosaDmlWiFiSsidGetEntry((ANSC_HANDLE)pMyObject->hPoamWiFiDm, uIndex, &pWifiSsid->SSID);
+
+            /*Retrieve the data for WifiSupportedRates*/
+            CosaDmlWiFiSsidGetSupRate(uIndex, &pWifiSsid->SupportedRate);
 
 			//give PathName=Device.WiFi.SSID.1.
             snprintf(PathName, sizeof(PathName), "Device.WiFi.SSID.%lu.", pLinkObj->InstanceNumber);
