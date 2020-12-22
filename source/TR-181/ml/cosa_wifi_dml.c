@@ -20899,6 +20899,13 @@ RadiusSettings_GetParamIntValue
         return TRUE;
     }
 
+    if (strcmp(ParamName, "ReAuthInterval") == 0)
+    {
+        /* collect value */
+        *pInt = pWifiAp->AP.RadiusSetting.iReAuthInterval;
+        return TRUE;
+    }
+
     if (strcmp(ParamName, "MaxAuthenticationAttempts") == 0)
     {
         /* collect value */
@@ -21025,6 +21032,14 @@ RadiusSettings_SetParamIntValue
         pWifiAp->AP.RadiusSetting.iPMKCacheInterval = iValue;
         return TRUE;
     }
+
+    if (strcmp(ParamName, "ReAuthInterval") == 0)
+    {
+        /* save update to backup */
+        pWifiAp->AP.RadiusSetting.iReAuthInterval = iValue;
+        return TRUE;
+    }
+
     if (strcmp(ParamName, "MaxAuthenticationAttempts") == 0)
     {
         /* save update to backup */
