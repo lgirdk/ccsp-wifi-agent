@@ -80,6 +80,9 @@ ANSC_STATUS CosaLgiWifiInitialize( ANSC_HANDLE hThisObject )
         returnStatus = ANSC_STATUS_FAILURE;
     }
 
+    //init SoftBlocking BlackList table and count
+    pMyObject->pBlackListTable = NULL;
+    pMyObject->ulClientEntryCount = 0;
 
     //Device.WiFi.X_LGI-COM_ATM.
     pAATM = (PCOSA_DML_LG_WIFI_ATM)AnscAllocateMemory(sizeof(COSA_DML_LG_WIFI_ATM));
@@ -189,6 +192,10 @@ ANSC_STATUS CosaLgiWifiRemove( ANSC_HANDLE hThisObject )
         AnscFreeMemory((ANSC_HANDLE)pMyObject->pBandSteeringSSIDTable);
     }
 
+    if (pMyObject->pBlackListTable != NULL)
+    {
+        AnscFreeMemory((ANSC_HANDLE)pMyObject->pBlackListTable);
+    }
     return  returnStatus;
 }
 
