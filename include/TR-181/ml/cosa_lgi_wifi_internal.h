@@ -25,6 +25,7 @@
 #include "cosa_lgi_wifi_atm_dml.h"
 #include "cosa_lgi_wifi_wifilog_dml.h"
 #include "cosa_lgi_wifi_radius_dml.h"
+#include "cosa_lgi_wifi_softblock_dml.h"
 
 extern ANSC_HANDLE bus_handle;
 extern char g_Subsystem[32];
@@ -43,6 +44,9 @@ extern char g_Subsystem[32];
     /* WiFi Channel Change history log linked list */          \
     SLIST_HEADER                  pWiFiChChangeLogList;        \
     ULONG                         uWiFiChChangeLogNextInsNum;  \
+    /* SoftBlocking  */                                        \
+    PCOSA_DML_SOFTBLOCKING_CLIENT pBlackListTable;             \
+    ULONG                         ulClientEntryCount;          \
 
 
 ANSC_STATUS CosaLgiWifiInitialize  ( ANSC_HANDLE hThisObject );
