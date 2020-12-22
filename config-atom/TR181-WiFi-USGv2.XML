@@ -3641,6 +3641,70 @@ INSTMSMT_PH2 -->
 						</parameter>
 					</parameters>
 				</object>
+                <object>
+                    <name>X_LGI-COM_SoftBlock</name>
+                    <description>Object containing Softblocking configuration and status.</description>
+                    <objectType>object</objectType>
+                    <functions>
+                        <func_GetParamBoolValue>SoftBlock_GetParamBoolValue</func_GetParamBoolValue>
+                        <func_GetParamUlongValue>SoftBlock_GetParamUlongValue</func_GetParamUlongValue>
+                        <func_GetParamStringValue>SoftBlock_GetParamStringValue</func_GetParamStringValue>
+                        <func_SetParamBoolValue>SoftBlock_SetParamBoolValue</func_SetParamBoolValue>
+                        <func_SetParamUlongValue>SoftBlock_SetParamUlongValue</func_SetParamUlongValue>
+                        <func_SetParamStringValue>SoftBlock_SetParamStringValue</func_SetParamStringValue>
+                        <func_Validate>SoftBlock_Validate</func_Validate>
+                        <func_Commit>SoftBlock_Commit</func_Commit>
+                        <func_Rollback>SoftBlock_Rollback</func_Rollback>
+                    </functions>
+                    <parameters>
+                        <parameter>
+                            <name>Enable</name>
+                            <description>Enables or disables the Softblocking feature.</description>
+                            <type>boolean</type>
+                            <syntax>bool</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                            <name>ClearClientBlacklist</name>
+                            <description>Setting to true clears the ClientBlacklist table. Returns false when read.</description>
+                            <type>boolean</type>
+                            <syntax>bool</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                    </parameters>
+                    <objects>
+                        <object>
+                            <name>ClientBlacklist</name>
+                            <description>Table of clients that have connected to the Private SSID and are not blacklisted from the Public SSID(s)</description>
+                            <objectType>dynamicTable</objectType>
+                            <maxInstance>64</maxInstance>
+                            <functions>
+                                <func_GetEntryCount>ClientBlacklist_GetEntryCount</func_GetEntryCount>
+                                <func_GetEntry>ClientBlacklist_GetEntry</func_GetEntry>
+                                <func_IsUpdated>ClientBlacklist_IsUpdated</func_IsUpdated>
+                                <func_Synchronize>ClientBlacklist_Synchronize</func_Synchronize>
+                                <func_GetParamBoolValue>ClientBlacklist_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_GetParamUlongValue>ClientBlacklist_GetParamUlongValue</func_GetParamUlongValue>
+                                <func_GetParamStringValue>ClientBlacklist_GetParamStringValue</func_GetParamStringValue>
+                                <func_SetParamBoolValue>ClientBlacklist_SetParamBoolValue</func_SetParamBoolValue>
+                            </functions>
+                            <parameters>
+                                <parameter>
+                                    <name>MacAddress</name>
+                                    <description>MAC Address of the client.</description>
+                                    <type>string</type>
+                                    <syntax>string</syntax>
+                                </parameter>
+                                <parameter>
+                                    <name>LastAssocTime</name>
+                                    <description>Time when the client last associated.</description>
+                                    <type>dateTime</type>
+                                    <syntax>string</syntax>
+                                </parameter>
+                            </parameters>
+                        </object>
+                    </objects>
+                </object>
 				<object>
 					<name>X_LGI-COM_BandSteering</name>
 					 <!--<description>Object containing Bandsteering configuration and status.</description> -->
