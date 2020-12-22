@@ -1827,6 +1827,7 @@ static char *WpsPin ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.WPSPin";
 static char *Vlan ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.SSID.%d.Vlan";
 static char *ReloadConfig = "com.cisco.spvtg.ccsp.psm.ReloadConfig";
 static char *TransportInterface ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.X_LGI-COM_Radius.TransportInterface";
+static char *AuthInterval = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.Security.X_COMCAST-COM_RadiusSettings.ReAuthInterval";
 #if defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_TURRIS_)
 //Band Steering on Factory Reset
 static char *bsEnable ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.X_RDKCENTRAL-COM_BandSteering.Enable";
@@ -8768,6 +8769,48 @@ void RegisterWifiDbRfcCallback()
     }
     CcspBaseIf_SetCallback2(bus_handle, "WifiDbStatus", wifi_db_rfc_event_callback, NULL);
     return;
+}
+
+static ANSC_STATUS getRadiusAuthInterval (int index, UINT *radiusInterval)
+{
+    char recName[256];
+    char *strValue = NULL;
+    int retVal;
+
+    snprintf(recName, sizeof(recName), AuthInterval , index+1);
+
+    retVal = PSM_Get_Record_Value2( bus_handle, g_Subsystem, recName , NULL, &strValue );
+
+    if (retVal != CCSP_SUCCESS)
+    {
+         AnscTraceError(("%spsm get failed for Radius Auth Interval\n", __FUNCTION__));
+         return ANSC_STATUS_FAILURE;
+    }
+
+    *radiusInterval = _ansc_atoi(strValue);
+    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc( strValue );
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+static ANSC_STATUS setRadiusAuthIntervalintoPSM (int index, UINT val)
+{
+    char recName[256];
+    char strValue[12];
+    int retVal;
+
+    snprintf(recName, sizeof(recName), AuthInterval , index+1);
+    snprintf(strValue, sizeof(strValue), "%u", val);
+
+    retVal = PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName , ccsp_string, strValue);
+
+    if(retVal != CCSP_SUCCESS)
+    {
+         AnscTraceError(("%spsm set failed for Radius Auth Interval\n", __FUNCTION__));
+         return ANSC_STATUS_FAILURE;
+    }
+
+    return ANSC_STATUS_SUCCESS;
 }
 
 #if (defined(_COSA_BCM_ARM_) && defined(_XB7_PRODUCT_REQ_)) || defined(_XB8_PRODUCT_REQ_) || defined(_SR300_PRODUCT_REQ_) || defined (_HUB4_PRODUCT_REQ_)
@@ -17846,6 +17889,17 @@ CosaDmlGetApRadiusSettings
         pRadiusSetting->iIdentityRequestRetryInterval                      = radSettings.IdentityRequestRetryInterval;
         pRadiusSetting->iQuietPeriodAfterFailedAuthentication              = radSettings.QuietPeriodAfterFailedAuthentication;
     }
+
+    int AuthInterval;
+    if( getRadiusAuthInterval( wlanIndex , &AuthInterval) != ANSC_STATUS_SUCCESS )
+    {
+        CcspWifiTrace(("RDK_LOG_ERR, RadiusReAuthInterval get from PSm failed\n"));
+    }
+    else
+    {
+        pRadiusSetting->iReAuthInterval = AuthInterval;
+    }
+
 	return returnStatus;
 }
 
@@ -17883,6 +17937,12 @@ CosaDmlSetApRadiusSettings
 		t2_event_d("WIFI_ERROR_NoWlanIndex",1);
         // Error could not find index
         return ANSC_STATUS_FAILURE;
+    }
+
+    CcspWifiTrace(("RDK_LOG_WARN,\n%s calling setRadiusAuthIntervalintoPSM \n",__FUNCTION__));
+    if (setRadiusAuthIntervalintoPSM(wlanIndex, pRadiusSetting->iReAuthInterval) != ANSC_STATUS_SUCCESS)
+    {
+        CcspWifiTrace(("RDK_LOG_ERR,\n%s RadiusReAuthInterval failed to set \n",__FUNCTION__));
     }
 
 	radSettings.RadiusServerRetries  	=	pRadiusSetting->iRadiusServerRetries;
