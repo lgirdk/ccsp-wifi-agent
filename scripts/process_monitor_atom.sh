@@ -245,6 +245,7 @@ interface=1
 		echo_t "WiFi process is not running, restarting it"
 		echo_t "RDKB_PROCESS_CRASHED : WiFiAgent_process is not running, need restart"
 		t2CountNotify "WIFI_ERROR_WIFIAGENT_Restart"
+		t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error,WiFiAgent process is not running"
 		restart_wifi
 	else
 	  radioenable=`dmcli eRT getv Device.WiFi.Radio.1.Enable`
@@ -255,6 +256,7 @@ interface=1
 		wifi_name_error=`echo $wifi_name_query | grep "Execution fail"`
 		if [ "$wifi_name_error" != "" ]; then
 		  echo_t "WiFi process is not responding. Restarting it"
+		  t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error, WiFi process is not responding"
 		  kill -9 $WiFi_PID
 		  restart_wifi
 		fi
@@ -480,10 +482,12 @@ interface=1
 					check_ap_sec_mode_5=`grep AP_SECMODE_2:=WPA /tmp/cfg_list.txt`
 					if [ "$check_radio_enable2" == "1" ] && [ "$check_ap_enable2" == "1" ] && [ "$check_ap_sec_mode_2" != "" ] && [ "$check_hostapd_ath0" == "" ]; then
 						echo_t "Hostapd incorrect config"
+						WIFI_REBOOT_REASON="Hostapd incorrect config"
 						WIFI_RESTART=1
 					fi
 					if [ "$check_radio_enable5" == "1" ] && [ "$check_ap_enable5" == "1" ] && [ "$check_ap_sec_mode_5" != "" ] && [ "$check_hostapd_ath1" == "" ]; then
 						echo_t "Hostapd incorrect config"
+						WIFI_REBOOT_REASON="Hostapd incorrect config"
 						WIFI_RESTART=1
 					fi
 					
@@ -495,6 +499,7 @@ interface=1
                                                 check_interface_iw2=`iwconfig ath0 | grep Access | awk '{print $6}'`
 						if [ "$check_interface_iw2" == "Not-Associated" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [ "$(pidof hostapd)" != "" ]; then
 								echo_t "ath0 is Not-Associated, restarting radios"
+								WIFI_REBOOT_REASON="ath0 is Not-Associated"
 								WIFI_RESTART=1
 						fi
 					fi
@@ -506,6 +511,7 @@ interface=1
                                                 check_interface_iw5=`iwconfig ath1 | grep Access | awk '{print $6}'`
 						if [ "$check_interface_iw5" == "Not-Associated" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [ "$(pidof hostapd)" != "" ]; then
 								echo_t "ath1 is Not-Associated, restarting radios"
+								WIFI_REBOOT_REASON="ath1 is Not-Associated"
 								WIFI_RESTART=1
 						fi
 					fi
@@ -517,6 +523,7 @@ interface=1
                                                 check_interface_iw_ath2=`iwconfig ath2 | grep Access | awk '{print $6}'`
 						if [ "$check_interface_iw_ath2" == "Not-Associated" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [ "$(pidof hostapd)" != "" ]; then
 								echo_t "ath2 is Not-Associated, restarting radios"
+								WIFI_REBOOT_REASON="ath2 is Not-Associated"
 								WIFI_RESTART=1
 						fi
 					fi
@@ -526,6 +533,7 @@ interface=1
 						check_interface_up5=`ifconfig | grep -v ath1[0-9] | grep ath1`
 						if [ "$check_interface_up5" == "" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [ "$(pidof hostapd)" != "" ]; then
 							echo_t "ath1 is down, restarting radios"
+							WIFI_REBOOT_REASON="ath1 is down"
 							WIFI_RESTART=1
 						fi
 					fi
@@ -534,6 +542,7 @@ interface=1
 						check_interface_up2=`ifconfig | grep ath0`
 						if [ "$check_interface_up2" == "" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [ "$(pidof hostapd)" != "" ]; then
 							echo_t "ath0 is down, restarting radios"
+							WIFI_REBOOT_REASON="ath0 is down"
 							WIFI_RESTART=1
 						fi
 					fi
@@ -768,6 +777,7 @@ interface=1
                                         AP_UP_COUNTER=0
                                         FASTDOWN_COUNTER=0
 					kill -9 $APUP_PID
+					t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error, APUP stuck"
                                         restart_wifi
 					#WIFI_RESTART=1
 				fi
@@ -805,6 +815,7 @@ interface=1
 						fi
 						echo_t "resetting radios"
 						dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
+						t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error, $WIFI_REBOOT_REASON"
 						HOSTAPD_RESTART_COUNTER=$(($HOSTAPD_RESTART_COUNTER + 1))
                                                 sleep 120
                                                 break
