@@ -257,6 +257,7 @@ interface=1
 		echo_t "WiFi process is not running, restarting it"
 		echo_t "RDKB_PROCESS_CRASHED : WiFiAgent_process is not running, need restart"
 		t2CountNotify "WIFI_SH_WIFIAGENT_Restart"
+		t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error,WiFiAgent process is not running"
 		restart_wifi
 	else
 	  radioenable=`dmcli eRT getv Device.WiFi.Radio.1.Enable`
@@ -267,6 +268,7 @@ interface=1
 		wifi_name_error=`echo $wifi_name_query | grep "Execution fail"`
 		if [ "$wifi_name_error" != "" ]; then
 		  echo_t "WiFi process is not responding. Restarting it"
+		  t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error, WiFi process is not responding"
 		  kill -9 $WiFi_PID
 		  restart_wifi
 		fi
@@ -511,6 +513,7 @@ interface=1
 						#RDKB-30035 MOD START
 						if [ "$check_interface_iw2" == "Not-Associated" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
 								echo_t "ath0 is Not-Associated, restarting radios"
+								WIFI_REBOOT_REASON="ath0 is Not-Associated"
 								WIFI_RESTART=1
 						fi
 					fi
@@ -525,6 +528,7 @@ interface=1
 						if [ "$check_interface_iw5" == "Not-Associated" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
 						#RDKB-30035 END
 								echo_t "ath1 is Not-Associated, restarting radios"
+								WIFI_REBOOT_REASON="ath1 is Not-Associated"
 								WIFI_RESTART=1
 						fi
 					fi
@@ -538,6 +542,7 @@ interface=1
 						#RDKB-30035 START
 						if [ "$check_interface_iw_ath2" == "Not-Associated" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
 								echo_t "ath2 is Not-Associated, restarting radios"
+								WIFI_REBOOT_REASON="ath2 is Not-Associated"
 								WIFI_RESTART=1
 						fi
 					fi
@@ -549,6 +554,7 @@ interface=1
 						#RDKB-30035 START
 						if [ "$check_interface_up5" == "" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
 							echo_t "ath1 is down, restarting radios"
+							WIFI_REBOOT_REASON="ath1 is down"
 							WIFI_RESTART=1
 						fi
 					fi
@@ -559,6 +565,7 @@ interface=1
 						#RDKB-30035 START
 						if [ "$check_interface_up2" == "" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
 							echo_t "ath0 is down, restarting radios"
+							WIFI_REBOOT_REASON="ath0 is down"
 							WIFI_RESTART=1
 						fi
 					fi
@@ -793,6 +800,7 @@ interface=1
                                         AP_UP_COUNTER=0
                                         FASTDOWN_COUNTER=0
 					kill -9 $APUP_PID
+					t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error, APUP stuck"
                                         restart_wifi
 					#WIFI_RESTART=1
 				fi
@@ -830,6 +838,7 @@ interface=1
 						fi
 						echo_t "resetting radios"
 						dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
+						t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error, $WIFI_REBOOT_REASON"
 						HOSTAPD_RESTART_COUNTER=$(($HOSTAPD_RESTART_COUNTER + 1))
                                                 sleep 120
                                                 break
