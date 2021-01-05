@@ -342,6 +342,7 @@ if [ "$THRESHOLD_REACHED_2G" -eq 1 ];then
 					else
 						echo_t "WIFI_BANDUTILIZATION : Threshold value is reached, resetting WiFi"
 						dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
+						t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error,WIFI_BANDUTILIZATION Threshold value is reached, resetting WiFi"
 					fi
 
 				else
@@ -376,6 +377,7 @@ if [ "$THRESHOLD_REACHED_5G" -eq 1 ];then
 				echo_t "ChanUtilSelfHealEnable value is $ChanUtilSelfHealEnable_5G"
 				echo_t "WIFI_BANDUTILIZATION : Threshold value ($CHANNEL_THREASHOLD_5G) is reached, resetting 5GHz WiFi"
 				dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
+				t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error,WIFI_BANDUTILIZATION Threshold value ($CHANNEL_THREASHOLD_5G) is reached, resetting 5GHz WiFi"
 		
 				storeWiFiRebootTime=$(date -u +"%s")
 				syscfg set lastActiontakentimeforChanUtil "$storeWiFiRebootTime"
