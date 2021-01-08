@@ -7740,6 +7740,7 @@ void RemoveInvalidMacFilterListFromPsm()
     }
 }
 
+#if 0
 static ANSC_STATUS getRadiusAuthInterval (int index, UINT *radiusInterval)
 {
     char recName[256];
@@ -7761,6 +7762,7 @@ static ANSC_STATUS getRadiusAuthInterval (int index, UINT *radiusInterval)
 
     return ANSC_STATUS_SUCCESS;
 }
+#endif
 
 static ANSC_STATUS setRadiusAuthIntervalintoPSM (int index, UINT val)
 {
@@ -13298,10 +13300,10 @@ CosaDmlGetApRadiusSettings
         pRadiusSetting->iQuietPeriodAfterFailedAuthentication              = radSettings.QuietPeriodAfterFailedAuthentication;
     }
 
-    int AuthInterval;
-    if( getRadiusAuthInterval( wlanIndex , &AuthInterval) != ANSC_STATUS_SUCCESS )
+    unsigned int AuthInterval;
+    if( wifi_getApRadiusReAuthInterval(wlanIndex, &AuthInterval) )
     {
-        CcspWifiTrace(("RDK_LOG_ERR, RadiusReAuthInterval get from PSm failed\n"));
+        CcspWifiTrace(("RDK_LOG_ERR, RadiusReAuthInterval get failed\n"));
     }
     else
     {
@@ -13348,9 +13350,13 @@ CosaDmlSetApRadiusSettings
     }
 
     CcspWifiTrace(("RDK_LOG_WARN,\n%s calling setRadiusAuthIntervalintoPSM \n",__FUNCTION__));
-    if (setRadiusAuthIntervalintoPSM(wlanIndex, pRadiusSetting->iReAuthInterval) != ANSC_STATUS_SUCCESS)
+    if (setRadiusAuthIntervalintoPSM(wlanIndex, pRadiusSetting->iReAuthInterval) != ANSC_STATUS_SUCCESS || wifi_setApRadiusReAuthInterval(wlanIndex,pRadiusSetting->iReAuthInterval) != 0)
     {
         CcspWifiTrace(("RDK_LOG_ERR,\n%s RadiusReAuthInterval failed to set \n",__FUNCTION__));
+    }
+    else
+    {
+        enable_reset_radio_flag(wlanIndex);
     }
 
 	radSettings.RadiusServerRetries  	=	pRadiusSetting->iRadiusServerRetries;
