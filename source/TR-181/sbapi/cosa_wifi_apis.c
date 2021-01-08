@@ -9042,7 +9042,7 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
 	wifi_handle_sysevent_async();
 #endif
 	CosaDmlWiFi_startHealthMonitorThread();
-#if !defined(_XF3_PRODUCT_REQ_)
+#if 0
     CosaDmlWiFiCheckPreferPrivateFeature(&(pMyObject->bPreferPrivateEnabled));
 #endif
 #if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
@@ -9838,6 +9838,8 @@ CosaDmlWiFi_SetPreferPrivatePsmData(BOOL value,BOOL init_flag)
             return ANSC_STATUS_FAILURE;
         }
     }
+
+#if 0
 #if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
 #ifdef WIFI_HAL_VERSION_3
     for (UINT apIndex = 0; apIndex < getTotalNumberVAPs(); ++apIndex)
@@ -9936,6 +9938,7 @@ CosaDmlWiFi_SetPreferPrivatePsmData(BOOL value,BOOL init_flag)
     UNREFERENCED_PARAMETER(idx);
 #endif
 	wifi_setPreferPrivateConnection(value);
+#endif
 #endif
     return ANSC_STATUS_SUCCESS;
 }
@@ -24590,6 +24593,7 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
 		if(associated_dev->cli_Active == 1) 
 		{
 			Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 0, 0);		
+#if 0
 			if ( ANSC_STATUS_SUCCESS == CosaDmlWiFi_GetPreferPrivateData(&bEnabled) )
 			{
 				if (bEnabled == TRUE)
@@ -24597,6 +24601,7 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
 					Hotspot_Macfilter_sync(mac);
 				}
 			}
+#endif
 		}
 		else 				
 		{
