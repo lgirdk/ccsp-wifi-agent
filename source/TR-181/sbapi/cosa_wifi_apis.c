@@ -18878,6 +18878,8 @@ CosaDmlWiFiApAcctSetCfg
             CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : could not set RADUIS account security server\n",__FUNCTION__));
             return ANSC_STATUS_FAILURE;
         }
+        gRestartRadiusRelay = TRUE;
+        enable_reset_radio_flag(wlanIndex);
     }
 
     if (strcmp(pCfg->SecondaryAcctServerIPAddr, pStoredCfg->SecondaryAcctServerIPAddr) !=0 ||
@@ -18889,6 +18891,8 @@ CosaDmlWiFiApAcctSetCfg
             CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : could not set RADUIS account security secondary server\n",__FUNCTION__));
             return ANSC_STATUS_FAILURE;
         }
+        gRestartRadiusRelay = TRUE;
+        enable_reset_radio_flag(wlanIndex);
     }
 
     if ( pCfg->InterimInterval != pStoredCfg->InterimInterval )
