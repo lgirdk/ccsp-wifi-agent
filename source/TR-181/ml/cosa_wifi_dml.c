@@ -10476,6 +10476,17 @@ Security_SetParamStringValue
 
 #endif //_XB6_PRODUCT_REQ_
 
+#ifdef _LG_MV1_CELENO_
+        /* Allow only WPA2-Enterprise for hotspot/community wifi */
+        if (pWifiAp->AP.Cfg.InstanceNumber == 5 || pWifiAp->AP.Cfg.InstanceNumber == 6)
+        {
+            if (!(COSA_DML_WIFI_SECURITY_WPA2_Enterprise & TmpMode))
+            {
+                CcspWifiTrace(("RDK_LOG_ERROR, Security mode should be WPA2_Enterprise for hotspot, current input is %d\n", pWifiApSec->Cfg.ModeEnabled));
+                return FALSE;
+            }
+        }
+#endif
         if ( TmpMode == pWifiApSec->Cfg.ModeEnabled )
         {
             return  TRUE;
