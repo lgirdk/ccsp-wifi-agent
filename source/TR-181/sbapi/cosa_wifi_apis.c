@@ -13950,7 +13950,11 @@ CosaDmlWiFiRadioGetCfg
 	CosaDmlWiFiGetRadioStandards(wlanIndex, pCfg->OperatingFrequencyBand, &pCfg->OperatingStandards);
 //<<
 
+#if defined(_LG_MV1_CELENO_)
+	wifi_getRadioConfiguredChannel(wlanIndex, &pCfg->Channel);
+#else
 	wifi_getRadioChannel(wlanIndex, &pCfg->Channel);
+#endif
 
 #if defined(_LG_MV1_CELENO_)
     wifi_getRadioDfsMoveBackEnable(wlanIndex, &pCfg->EnhancedACS.DFSMoveBack);
