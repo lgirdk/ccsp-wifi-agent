@@ -3782,7 +3782,7 @@ void *RegisterWiFiConfigureCallBack(void *par)
     {
         wifiDbgPrintf("%s %s not found in PSM and returned %d \n", __FUNCTION__, NotifyWiFiChanges, retPsmGet);
         CcspWifiTrace(("RDK_LOG_WARN,WIFI %s : %s not found in PSM and returned %d \n", __FUNCTION__, NotifyWiFiChanges, retPsmGet));
-        return;
+        return NULL;
     }
 
     if (AnscEqualString(stringValue, "true", TRUE))
@@ -3929,6 +3929,7 @@ void *RegisterWiFiConfigureCallBack(void *par)
    }
 	((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(stringValue);
 
+    return NULL;
 }
 
 void
