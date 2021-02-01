@@ -1604,6 +1604,43 @@ Authenticator_Commit
     );
 
 ULONG
+Radius_GetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pValue,
+        ULONG*                      pUlSize
+    );
+
+BOOL
+Radius_SetParamStringValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        char*                       pString
+    );
+
+BOOL
+Radius_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    );
+
+ULONG
+Radius_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
+Radius_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
 MacFiltTab_GetEntryCount
     (
         ANSC_HANDLE                 hInsContext
