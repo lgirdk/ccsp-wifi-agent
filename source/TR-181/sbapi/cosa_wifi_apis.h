@@ -893,6 +893,8 @@ _COSA_DML_WIFI_APSEC_CFG
     unsigned int                    uiEAPIdentityRequestRetries;
     unsigned int                    uiEAPRequestTimeout;
     unsigned int                    uiEAPRequestRetries;
+    char                            cOperatorName[33];
+    char                            cLocationData[254];
 }_struct_pack_;
 
 typedef  struct _COSA_DML_WIFI_APSEC_CFG COSA_DML_WIFI_APSEC_CFG,  *PCOSA_DML_WIFI_APSEC_CFG;
@@ -1834,6 +1836,14 @@ CosaDmlWiFiApEapAuthCfg
     );
 
 ANSC_STATUS
+CosaDmlWiFiApRadiusCfg
+    (
+        ANSC_HANDLE                     hContext,
+        char*                           pSsid,
+        PCOSA_DML_WIFI_APSEC_CFG        pCfg
+    );
+
+ANSC_STATUS
 CosaDmlWiFiApSecGetEntry
     (
         ANSC_HANDLE                 hContext,
@@ -2331,4 +2341,8 @@ ANSC_STATUS CosaDmlWiFi_StartWiFiClientsMonitorAndSyncThread( void );
 void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg );
 #endif /* * _HUB4_PRODUCT_REQ_ */
 void MacFiltTab_CleanAll();
+
+ANSC_STATUS setOperatorName(int band,char *pValue);
+ANSC_STATUS setLocationData(int band,char *pValue);
+
 #endif
