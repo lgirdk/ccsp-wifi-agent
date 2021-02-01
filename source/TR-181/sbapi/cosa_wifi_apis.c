@@ -18538,6 +18538,27 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     }
 #endif
 
+    char operatorValue[33];
+    char locationValue[254];
+
+    if (wifi_getRadiusOperatorName (wlanIndex, operatorValue) != RETURN_OK)
+    {
+        CcspWifiTrace(("RDK_LOG_ERR, OperatorName cfg get failed\n"));
+    }
+    else
+    {
+        AnscCopyString (pCfg->cOperatorName, operatorValue);
+    }
+
+    if (wifi_getRadiusLocationData (wlanIndex, locationValue) != RETURN_OK)
+    {
+        CcspWifiTrace(("RDK_LOG_ERR, LocationData cfg get failed\n"));
+    }
+    else
+    {
+        AnscCopyString (pCfg->cLocationData, locationValue);
+    }
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -19794,6 +19815,95 @@ CosaDmlWiFiApEapAuthCfg
         return ANSC_STATUS_FAILURE;
     }
 
+    return ANSC_STATUS_SUCCESS;
+}
+
+ 
+ANSC_STATUS
+setOperatorName(int band,char *pValue)
+{
+        int retVal;
+        retVal = wifi_setRadiusOperatorName(band, pValue);
+        if (retVal == RETURN_ERR)
+        {
+               AnscTraceError(("%scfg set failed for Operator Name\n", __FUNCTION__));
+               retVal = ANSC_STATUS_FAILURE;
+        }
+        else
+        {
+               retVal = ANSC_STATUS_SUCCESS;
+               gRestartRadiusRelay = TRUE;
+        }
+        return retVal;
+}
+
+ANSC_STATUS
+setLocationData(int band,char *pValue)
+{
+        int retVal;
+        retVal = wifi_setRadiusLocationData(band, pValue);
+        if (retVal == RETURN_ERR)
+        {
+                AnscTraceError(("%scfg set failed for Location Data\n", __FUNCTION__));
+                retVal = ANSC_STATUS_FAILURE;
+        }
+        else
+        {
+                retVal = ANSC_STATUS_SUCCESS;
+                gRestartRadiusRelay = TRUE;
+        }
+        return retVal;
+}
+
+ANSC_STATUS
+CosaDmlWiFiApRadiusCfg
+    (
+        ANSC_HANDLE                     hContext,
+        char*                           pSsid,
+        PCOSA_DML_WIFI_APSEC_CFG        pCfg
+    )
+{
+    PCOSA_DML_WIFI_APSEC_CFG pStoredCfg = NULL;
+    int wRet, wlanIndex = -1;
+    unsigned int retval = RETURN_OK;
+
+    wifiDbgPrintf("%s\n",__FUNCTION__);
+
+    if (!pCfg || !pSsid)
+    {
+        CcspTraceInfo(("%s pCfg is NULL \n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    wRet = wifi_getIndexFromName(pSsid, &wlanIndex);
+    if ( (wRet != RETURN_OK) || (wlanIndex <0) || (wlanIndex >= WIFI_INDEX_MAX) )
+    {
+        // Error could not find index
+        return ANSC_STATUS_FAILURE;
+    }
+
+    pStoredCfg = &sWiFiDmlApSecurityStored[wlanIndex].Cfg;
+
+    if (pStoredCfg == NULL) {
+       CcspTraceInfo(("%s pStoredCfg is NULL \n", __FUNCTION__));
+       return ANSC_STATUS_FAILURE;
+    }
+    if (AnscEqualString(pCfg->cOperatorName, pStoredCfg->cOperatorName, FALSE)) {
+        AnscCopyString(sWiFiDmlApSecurityStored[wlanIndex].Cfg.cOperatorName, pCfg->cOperatorName);
+        enable_reset_radio_flag(wlanIndex);
+    }
+
+    if (AnscEqualString(pCfg->cLocationData, pStoredCfg->cLocationData, FALSE)) {
+        AnscCopyString(sWiFiDmlApSecurityStored[wlanIndex].Cfg.cLocationData, pCfg->cLocationData);
+        enable_reset_radio_flag(wlanIndex);
+    }
+
+    if (retval == RETURN_OK ) {
+        CcspTraceInfo(("%s wifi_set success\n", __FUNCTION__));
+    } else {
+        CcspTraceInfo(("%s wifi_set failed\n", __FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
     return ANSC_STATUS_SUCCESS;
 }
 
