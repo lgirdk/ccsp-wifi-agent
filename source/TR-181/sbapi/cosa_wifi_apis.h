@@ -1004,6 +1004,8 @@ _COSA_DML_WIFI_APSEC_CFG
     unsigned int                    uiEAPIdentityRequestRetries;
     unsigned int                    uiEAPRequestTimeout;
     unsigned int                    uiEAPRequestRetries;
+    char                            cOperatorName[33];
+    char                            cLocationData[254];
 }_struct_pack_;
 
 typedef  struct _COSA_DML_WIFI_APSEC_CFG COSA_DML_WIFI_APSEC_CFG,  *PCOSA_DML_WIFI_APSEC_CFG;
@@ -2002,6 +2004,14 @@ CosaDmlWiFiApEapAuthCfg
     );
 
 ANSC_STATUS
+CosaDmlWiFiApRadiusCfg
+    (
+        ANSC_HANDLE                     hContext,
+        char*                           pSsid,
+        PCOSA_DML_WIFI_APSEC_CFG        pCfg
+    );
+
+ANSC_STATUS
 CosaDmlWiFiApSecGetEntry
     (
         ANSC_HANDLE                 hContext,
@@ -2574,6 +2584,9 @@ ANSC_STATUS CosaDmlWiFi_setDppValue(ULONG apIns, ULONG staIndex,char* ParamName,
 ANSC_STATUS CosaDmlWiFi_ParseEasyConnectEnrolleeChannels(UINT apIndex, PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta, const char *pString);
 char *CosaDmlWiFi_ChannelsListToString(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta, char *string);
 INT wifi_getApWpsEnable(INT apIndex, BOOL *output_bool);
+
+ANSC_STATUS setOperatorName(int band, char *pValue);
+ANSC_STATUS setLocationData(int band, char *pValue);
 
 #if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
     INT wifi_setApEnableOnLine(INT index, BOOL status);
