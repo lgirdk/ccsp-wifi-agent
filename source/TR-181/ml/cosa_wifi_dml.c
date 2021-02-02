@@ -2331,7 +2331,15 @@ Radio_GetParamUlongValue
             return TRUE;
         }
     }
-
+    if (AnscEqualString(ParamName, "RunningChannel", TRUE))
+    {
+        ULONG ulResult;
+        if (wifi_getRadioRunningChannel(pWifiRadioCfg->InstanceNumber - 1, &ulResult) == 0)
+        {
+            *puLong = ulResult;
+            return TRUE;
+        }
+    }
     if( AnscEqualString(ParamName, "AutoChannelRefreshPeriod", TRUE))
     {
 		//zqiu:  Reason for change: Device.WiFi.Radio.10000.AutoChannelRefreshPeriod parameter is getting updated even after Device.WiFi.Radio.10000.AutoChannelEnable is disabled.
