@@ -43,6 +43,8 @@ AC_PREFIX_DEFAULT(`pwd`)
 AC_ENABLE_SHARED
 AC_DISABLE_STATIC
 
+AM_CONDITIONAL(USE_LIBWIFI_NL, [test x"$USE_LIBWIFI_API_NL" != x])
+
 AC_ARG_ENABLE([rdk-wifi-libhostap],
 	[AS_HELP_STRING([--enable-rdk-wifi-libhostap],[enable])],
 	[
