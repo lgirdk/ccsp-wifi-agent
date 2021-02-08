@@ -90,3 +90,7 @@ libCcspWifiAgent_sbapi_la_LDFLAGS += -lnl-route-3
 libCcspWifiAgent_sbapi_la_LDFLAGS += -lnl-nf-3
 libCcspWifiAgent_sbapi_la_LDFLAGS += -lnl-idiag-3
 endif
+
+if USE_LIBWIFI_NL
+libCcspWifiAgent_sbapi_la_LDFLAGS += -lwifi_api_1_nl
+endif
