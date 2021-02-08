@@ -61,6 +61,7 @@ AM_CONDITIONAL(CCSP_ARCH_ARM, test "x$CCSP_ARCH" = xarm)
 AM_CONDITIONAL(CCSP_ARCH_ATOM, test "x$CCSP_ARCH" = xatom)
 AM_CONDITIONAL(CCSP_ARCH_PC, test "x$CCSP_ARCH" = xpc)
 AM_CONDITIONAL(CCSP_ARCH_MIPS, test "x$CCSP_ARCH" = xmips)
+AM_CONDITIONAL(USE_LIBWIFI_NL, [test x"$USE_LIBWIFI_API_NL" != x])
 
 # Specify ccsp platform (device)
 
