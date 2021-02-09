@@ -643,6 +643,9 @@ int main(int argc, char* argv[])
     }
 
 #if defined(_LG_MV1_CELENO_)
+    //Passing wifi initialized status 
+    system("rpcclient 192.168.254.253 'touch /tmp/wifi_initialized'");
+
     //Trigerring radius relay start after wifi_initialized
     system("rpcclient 192.168.254.253 'sysevent set radiusrelay-start'");
 #endif
