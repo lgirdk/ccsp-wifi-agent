@@ -237,7 +237,7 @@ CosaUtilGetLowerLayers
     ULONG                           ulChildNumOfEntries         = 0;
     ULONG                           i                           = 0;
     ULONG                           j                           = 0;
-    ULONG                           ulEntryNameLen              = 256;
+    ULONG                           ulEntryNameLen;
     UCHAR                           ucEntryParamName[256]       = {0};
     UCHAR                           ucEntryNameValue[256]       = {0};
     UCHAR                           ucEntryFullPath[256]        = {0};
@@ -281,6 +281,8 @@ CosaUtilGetLowerLayers
 
                         _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
                
+                        ulEntryNameLen = sizeof(ucEntryNameValue);
+
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
                              AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
                         {
@@ -303,6 +305,8 @@ CosaUtilGetLowerLayers
                         _ansc_sprintf(ucEntryFullPath, "%s%d", "Device.IP.Interface.", ulEntryInstanceNum);
 
                         _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
+
+                        ulEntryNameLen = sizeof(ucEntryNameValue);
 
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
                              AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
@@ -337,6 +341,8 @@ CosaUtilGetLowerLayers
                         
                         _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, "Name");
                         
+                        ulEntryNameLen = sizeof(ucEntryNameValue);
+
                         if (( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
                             AnscEqualString(ucEntryNameValue, pKeyword, TRUE) )
                         {
@@ -376,6 +382,8 @@ CosaUtilGetLowerLayers
 
                         _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, ".Name");
                
+                        ulEntryNameLen = sizeof(ucEntryNameValue);
+
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
                              AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
                         {
@@ -414,6 +422,8 @@ CosaUtilGetLowerLayers
                             _ansc_sprintf(ucEntryParamName, "%s%s%d%s", ucEntryFullPath, ".Port.", j, ".Name");
                             CcspTraceInfo(("----------CosaUtilGetLowerLayers, Param:%s,Param2:%s\n", ucLowerEntryName, ucEntryParamName));
                         
+                            ulEntryNameLen = sizeof(ucEntryNameValue);
+
                             if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
                                  AnscEqualString(ucEntryNameValue, pKeyword , TRUE ) )
                             {
@@ -489,7 +499,7 @@ CosaUtilGetFullPathNameByKeyword
     ULONG                           ulNumOfEntries              = 0;
     ULONG                           ulChildNumOfEntries         = 0;
     ULONG                           i                           = 0;
-    ULONG                           ulEntryNameLen              = 256;
+    ULONG                           ulEntryNameLen;
     UCHAR                           ucEntryParamName[256]       = {0};
     UCHAR                           ucEntryNameValue[256]       = {0};
     UCHAR                           ucTmp[128]                  = {0};
@@ -558,6 +568,8 @@ CosaUtilGetFullPathNameByKeyword
 
                         _ansc_sprintf(ucEntryParamName, "%s%s", ucEntryFullPath, pParameterName);
                
+                        ulEntryNameLen = sizeof(ucEntryNameValue);
+
                         if ( ( 0 == CosaGetParamValueString(ucEntryParamName, ucEntryNameValue, &ulEntryNameLen)) &&
                              AnscEqualString(ucEntryNameValue, pKeyword, TRUE ) )
                         {
