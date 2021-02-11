@@ -13246,24 +13246,19 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
          pCfg->ModeEnabled >= COSA_DML_WIFI_SECURITY_WPA_Personal &&
          pCfg->ModeEnabled <= COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise )
     { 
-#if !defined(_INTEL_BUG_FIXES_)
-	char method[32];
-#else
-        char method[128];
-#endif
+        char *method = "";
 
-        memset(method,0,sizeof(method));
 	if ( pCfg->EncryptionMethod == COSA_DML_WIFI_AP_SEC_TKIP)
 	{ 
-            strcpy(method,"TKIPEncryption");
+            method = "TKIPEncryption";
 	} else if ( pCfg->EncryptionMethod == COSA_DML_WIFI_AP_SEC_AES)
 	{
-            strcpy(method,"AESEncryption");
+            method = "AESEncryption";
 	} 
 #ifndef _XB6_PRODUCT_REQ_	
 	else if ( pCfg->EncryptionMethod == COSA_DML_WIFI_AP_SEC_AES_TKIP)
 	{
-            strcpy(method,"TKIPandAESEncryption");
+            method = "TKIPandAESEncryption";
 	}
 #endif
 		CcspWifiTrace(("RDK_LOG_WARN,\n RDKB_WIFI_CONFIG_CHANGED :%s Encryption method changed ,calling setWpaEncryptionMode Index : %d mode : %s \n",__FUNCTION__,wlanIndex,method));
