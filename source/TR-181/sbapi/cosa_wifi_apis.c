@@ -9562,7 +9562,7 @@ CosaDmlWiFiRadioSetTransmitPowerPercent
 
     wifiDbgPrintf("%s: enter wlanIndex %d transmitPowerPercent %d \n", __func__, wlanIndex, transmitPowerPercent);
 
-#if defined(_COSA_BCM_MIPS_)|| defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_) || defined(_INTEL_WAV_)
+#if defined(_COSA_BCM_MIPS_)|| defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_) || defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_)
     wifi_setRadioTransmitPower(wlanIndex, transmitPowerPercent);
 #else
     int ret = wifi_getRadioTransmitPower(wlanIndex, &curTransmitPower);
