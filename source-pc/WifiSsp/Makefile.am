@@ -22,6 +22,12 @@ ACLOCAL_AMFLAGS = -I m4
 
 bin_PROGRAMS = CcspWifiSsp
 
-CcspWifiSsp_CPPFLAGS = -I$(top_srcdir)/../CcspCommonLibrary/source/ccsp/custom -I$(top_srcdir)/../CcspCommonLibrary/source/ccsp/include -I$(top_srcdir)/../CcspCommonLibrary/source/debug_api/include -I$(top_srcdir)/../CcspCommonLibrary/source/cosa/include -I$(top_srcdir)/../CcspCommonLibrary/source/cosa/include/linux -I$(top_srcdir)/../CcspCommonLibrary/source/ccsp/components/include -I$(top_srcdir)/../CcspCommonLibrary/source/cosa/package/slap/include -I$(top_srcdir)/../hal/include -I$(top_srcdir)/../CcspCommonLibrary/source/util_api/http/include -I$(top_srcdir)/../CcspCommonLibrary/source/util_api/ansc/include -I$(top_srcdir)/source-pc/TR-181/ml -I$(top_srcdir)/source-pc/TR-181/sbapi -I$(top_srcdir)/include/TR-181/ml -I$(top_srcdir)/../CcspCommonLibrary/source/ccsp/components/common/MessageBusHelper/include -I$(top_srcdir)/../CcspCommonLibrary/source/ccsp/components/common/PoamIrepFolder -I$(top_srcdir)/source-pc/Custom -I$(top_srcdir)/./include $(CPPFLAGS)
+CcspWifiSsp_CPPFLAGS = \
+    -I$(top_srcdir)/source-pc/TR-181/ml \
+    -I$(top_srcdir)/source-pc/TR-181/sbapi \
+    -I$(top_srcdir)/include/TR-181/ml \
+    -I$(top_srcdir)/source-pc/Custom \
+    -I$(top_srcdir)/include
+
 CcspWifiSsp_SOURCES = ssp_main.c ssp_messagebus_interface.c ssp_action.c
 CcspWifiSsp_LDFLAGS = -lccsp_common -lhal_wifi -rdynamic
