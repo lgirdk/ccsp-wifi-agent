@@ -11615,6 +11615,13 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 	            else
 	                enable_reset_radio_flag(wlanIndex);
 #endif
+#if defined(INTEL_MV1)
+                /* restart radius relay for hotspot SSIDs */
+                if (wlanIndex == 4 || wlanIndex == 5)
+                {
+                    gRestartRadiusRelay = TRUE;
+                }
+#endif
                     CcspWifiTrace(("RDK_LOG_WARN,WIFI %s wifi_setApEnable success  index %d , %d",__FUNCTION__,wlanIndex,pCfg->bEnabled));
 		 if (pCfg->InstanceNumber == 4) {
 			char passph[128]={0};
