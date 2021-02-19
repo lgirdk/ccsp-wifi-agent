@@ -10224,9 +10224,21 @@ Security_SetParamStringValue
         ERR_CHK(rc);
         if((rc == EOK) && (!ind))
         {
-            if ((AnscSizeOfString(pString) < 8 ) || (AnscSizeOfString(pString) > 63))
+            int j;
+            size_t len = strlen(pString);
+
+            if ((len < 8 ) || (len > 63))
             {
                 return FALSE;
+            }
+
+            for(j = 0; j < len; j++)
+            {
+                if ((pString[j] == ' ') || (isprint(pString[j]) == 0))
+                {
+                    CcspTraceError(("%s:Invalid %s\n", __FUNCTION__,KeyPassphraseType[i]));
+                    return FALSE;
+                }
             }
 
             rc = strcmp_s(pWifiApSec->Cfg.KeyPassphrase, sizeof(pWifiApSec->Cfg.KeyPassphrase), pString, &ind);
