@@ -11869,10 +11869,23 @@ Security_SetParamStringValue
         ERR_CHK(rc);
         if((rc == EOK) && (!ind))
         {
-            if ((AnscSizeOfString(pString) < 8 ) || (AnscSizeOfString(pString) > 63))
+            int j;
+            size_t len = strlen(pString);
+
+            if ((len < 8 ) || (len > 63))
             {
                 return FALSE;
             }
+
+            for (j = 0; j < len; j++)
+            {
+                if (!isprint(pString[j]))
+                {
+                    CcspTraceError(("%s:Invalid %s\n", __FUNCTION__,KeyPassphraseType[i]));
+                    return FALSE;
+                }
+            }
+
 #ifdef WIFI_HAL_VERSION_3
             rc = strcmp_s((char*)vapInfo->u.bss_info.security.u.key.key, sizeof(vapInfo->u.bss_info.security.u.key.key), pString, &ind);
 #else
