@@ -232,6 +232,8 @@ ANSC_STATUS txRateStrToUint(char *inputStr, UINT *pTxRate);
 
 static void checkforbiddenSSID(int index);
 static void MeshNotifySecurityChange(INT apIndex, PCOSA_DML_WIFI_APSEC_CFG pStoredApSecCfg);
+static ANSC_STATUS getPMKCaching (int index, BOOLEAN *pmkEnable);
+static ANSC_STATUS setPmkCachingintoPSM (int index, BOOLEAN pmkEnable);
 
 void wifidb_print(char *format, ...)
 {
@@ -1827,6 +1829,7 @@ static char *Vlan ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.SSID.%d.Vlan";
 static char *ReloadConfig = "com.cisco.spvtg.ccsp.psm.ReloadConfig";
 static char *TransportInterface ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.X_LGI-COM_Radius.TransportInterface";
 static char *AuthInterval = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.Security.X_COMCAST-COM_RadiusSettings.ReAuthInterval";
+static char *PmkCaching = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.Security.X_COMCAST-COM_RadiusSettings.PMKCaching";
 #if defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_TURRIS_)
 //Band Steering on Factory Reset
 static char *bsEnable ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.X_RDKCENTRAL-COM_BandSteering.Enable";
@@ -17772,8 +17775,6 @@ CosaDmlGetApRadiusSettings
         pRadiusSetting->iRadiusServerRetries                      	   = radSettings.RadiusServerRetries;
         pRadiusSetting->iRadiusServerRequestTimeout                	   = radSettings.RadiusServerRequestTimeout;
         pRadiusSetting->iPMKLifetime	                    		   = radSettings.PMKLifetime;
-        pRadiusSetting->bPMKCaching			                   = radSettings.PMKCaching;
-        pRadiusSetting->iPMKCacheInterval		                   = radSettings.PMKCacheInterval;
         pRadiusSetting->iMaxAuthenticationAttempts                         = radSettings.MaxAuthenticationAttempts;
         pRadiusSetting->iBlacklistTableTimeout                             = radSettings.BlacklistTableTimeout;
         pRadiusSetting->iIdentityRequestRetryInterval                      = radSettings.IdentityRequestRetryInterval;
@@ -17788,6 +17789,24 @@ CosaDmlGetApRadiusSettings
     else
     {
         pRadiusSetting->iReAuthInterval = AuthInterval;
+    }
+
+    bool pmkEnable;
+    if( getPMKCaching( wlanIndex , &pmkEnable) != ANSC_STATUS_SUCCESS )
+    {
+           CcspWifiTrace(("RDK_LOG_ERR, PMKCaching enable get from PSM failed\n"));
+    }
+    else{
+           pRadiusSetting->bPMKCaching = pmkEnable;
+    }
+
+    unsigned int PmkCacheInterval;
+    if( wifi_getApPMKCacheInterval(wlanIndex, &PmkCacheInterval) )
+    {
+           CcspWifiTrace(("RDK_LOG_ERR, PMKCacheInterval get failed\n"));
+    }
+    else{
+           pRadiusSetting->iPMKCacheInterval = PmkCacheInterval;
     }
 
 	return returnStatus;
@@ -17840,11 +17859,33 @@ CosaDmlSetApRadiusSettings
         enable_reset_radio_flag(wlanIndex);
     }
 
+    CcspWifiTrace(("RDK_LOG_WARN,\n%s calling setPMKCacheEnable intoPSM \n",__FUNCTION__));
+    if (setPmkCachingintoPSM(wlanIndex, pRadiusSetting->bPMKCaching) != ANSC_STATUS_SUCCESS)
+    {
+         CcspWifiTrace(("RDK_LOG_ERR,\n%s PMKCacheEnable failed to set \n",__FUNCTION__));
+    }
+    else{
+         if(pRadiusSetting->bPMKCaching == 0)
+         {
+             pRadiusSetting->iPMKCacheInterval = 0;
+             wifi_setApPMKCacheInterval(wlanIndex, 0);
+         }
+         gRestartRadiusRelay = TRUE;
+         enable_reset_radio_flag(wlanIndex);
+    }
+
+    if (wifi_setApPMKCacheInterval(wlanIndex,pRadiusSetting->iPMKCacheInterval) != RETURN_OK )
+    {
+         CcspWifiTrace(("RDK_LOG_ERR,\n%s PMKCacheInterval failed to set \n",__FUNCTION__));
+    }
+    else{
+         gRestartRadiusRelay = TRUE;
+         enable_reset_radio_flag(wlanIndex);
+    }
+
 	radSettings.RadiusServerRetries  	=	pRadiusSetting->iRadiusServerRetries;
 	radSettings.RadiusServerRequestTimeout  = 	pRadiusSetting->iRadiusServerRequestTimeout;
 	radSettings.PMKLifetime			=	pRadiusSetting->iPMKLifetime;
-	radSettings.PMKCaching			=	pRadiusSetting->bPMKCaching;
-	radSettings.PMKCacheInterval		=	pRadiusSetting->iPMKCacheInterval;
 	radSettings.MaxAuthenticationAttempts	=	pRadiusSetting->iMaxAuthenticationAttempts;
 	radSettings.BlacklistTableTimeout	=	pRadiusSetting->iBlacklistTableTimeout;
 	radSettings.IdentityRequestRetryInterval=	pRadiusSetting->iIdentityRequestRetryInterval;
@@ -30165,6 +30206,47 @@ int isReservedSSID (char *ReservedNames, char *ssid_raw)
     }
 
     return 0;
+}
+
+static ANSC_STATUS getPMKCaching (int index, BOOLEAN *pmkEnable)
+{
+    int retVal;
+    char recName[256];
+    char *strValue = NULL;
+
+    snprintf(recName, sizeof(recName), PmkCaching, index+1);
+
+    retVal = PSM_Get_Record_Value2 (bus_handle, g_Subsystem, recName, NULL, &strValue);
+
+    if (retVal != CCSP_SUCCESS)
+    {
+         AnscTraceError(("%spsm get failed for PMK Caching Enable\n", __FUNCTION__));
+         return ANSC_STATUS_FAILURE;
+    }
+
+    *pmkEnable = (atoi(strValue) == 1) ? TRUE : FALSE;
+
+    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc( strValue );
+
+    return ANSC_STATUS_SUCCESS;
+}
+
+static ANSC_STATUS setPmkCachingintoPSM (int index, BOOLEAN pmkEnable)
+{
+    int retVal;
+    char recName[256];
+
+    snprintf(recName, sizeof(recName), PmkCaching, index+1);
+
+    retVal = PSM_Set_Record_Value2 (bus_handle, g_Subsystem, recName, ccsp_string, pmkEnable ? "1" : "0");
+
+    if (retVal != CCSP_SUCCESS)
+    {
+         AnscTraceError(("%spsm set failed for PMK Caching Enable\n", __FUNCTION__));
+         return ANSC_STATUS_FAILURE;
+    }
+
+    return ANSC_STATUS_SUCCESS;
 }
 
 static void checkforbiddenSSID(int index)
