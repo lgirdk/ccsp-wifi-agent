@@ -20406,6 +20406,12 @@ RadiusSettings_SetParamIntValue
 
     if (strcmp(ParamName, "PMKCacheInterval") == 0)
     {
+        if(pWifiAp->AP.RadiusSetting.bPMKCaching == FALSE)
+        {
+            CcspTraceWarning(("'%s' cannot be set as PMKCaching is set to False\n", ParamName));
+            return FALSE;
+        }
+
         /* save update to backup */
         pWifiAp->AP.RadiusSetting.iPMKCacheInterval = iValue;
         return TRUE;
