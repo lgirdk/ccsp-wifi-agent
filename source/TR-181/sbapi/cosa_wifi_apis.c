@@ -18469,7 +18469,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 	ULONG count = 0;
 	PCOSA_DML_WIFI_AP_ASSOC_DEVICE assoc_devices = NULL;
 	LM_wifi_hosts_t hosts;
-	static ULONG backup_count[4]={0};
+	static ULONG backup_count[8]={0};
 	BOOL enabled=FALSE; 
 #if defined(_INTEL_BUG_FIXES_)
 	char *output_buf = NULL;
@@ -18692,7 +18692,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 	}
 	else  // Group notification - on request from LMLite
 	{
-		for(i = 1; i <=4 ; i++)
+		for(i = 1; i <=8 ; i++)
 		{
 			//zqiu:
 			//_ansc_sprintf(ssid,"ath%d",i-1);
@@ -18995,11 +18995,10 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
                 return -1;
         }
 
-	if(apIndex==0 || apIndex==1) {	//for private network
+	if(apIndex==0 || apIndex==1 || apIndex==6 || apIndex==7) {	//for private network and guest network
 		if(associated_dev->cli_Active == 1) 
 		{
-			Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 0, 0);		
-#if 0
+			Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 1, 0);
 			if ( ANSC_STATUS_SUCCESS == CosaDmlWiFi_GetPreferPrivateData(&bEnabled) )
 			{
 				if (bEnabled == TRUE)
@@ -19007,11 +19006,10 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
 					Hotspot_Macfilter_sync(mac);
 				}
 			}
-#endif
 		}
 		else 				
 		{
-			Wifi_Hosts_Sync_Func((void *)mac, (apIndex+1), associated_dev, 0, 0);		
+			Wifi_Hosts_Sync_Func((void *)mac, (apIndex+1), associated_dev, 1, 0);
 		}
 	}
 #if defined(_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_)
@@ -19024,25 +19022,23 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
 	} else if (apIndex==2 || apIndex==3 ) { //XHS
                 if(associated_dev->cli_Active == 1)
                 {
-                        Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 0, 0);
+                        Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 1, 0);
                 }
                 else
                 {
-                       Wifi_Hosts_Sync_Func((void *)mac,(apIndex+1), associated_dev, 0, 0);
+                       Wifi_Hosts_Sync_Func((void *)mac,(apIndex+1), associated_dev, 1, 0);
                 }
 	}
 #if defined(_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_)
-	else if (apIndex==6 || apIndex==7 ||  apIndex==10 || apIndex==11 ) { //L&F
+	else if (apIndex==10 || apIndex==11 ) { //L&F
 
 	} else if (apIndex==14) //guest
 #else
 	else if (apIndex==14 || apIndex==15 ||  apIndex==10 || apIndex==11 ) { //L&F
 
-	} else if (apIndex==6 || apIndex==7 ) //guest
+	}
 #endif
-	{
-	
-	} else {
+	else {
 		//unused ssid
 	}	
 	return 0;
@@ -19064,7 +19060,7 @@ INT CosaDmlWiFi_DisAssociatedDevice_callback(INT apIndex, char *mac, int reason)
                 return -1;
         }
 
-        if(apIndex==0 || apIndex==1) {  //for private network
+        if(apIndex==0 || apIndex==1 || apIndex==6 || apIndex==7) {  //for private network and guest network
                 if(associated_dev.cli_Active == 1)
                 {
                         Wifi_Hosts_Sync_Func(NULL,(apIndex+1), &associated_dev, 0, 1);
@@ -19094,9 +19090,9 @@ INT CosaDmlWiFi_DisAssociatedDevice_callback(INT apIndex, char *mac, int reason)
         } else if (apIndex==14 || apIndex==15 ||  apIndex==10 || apIndex==11 ) { //L&F
                 CcspWifiTrace(("RDK_LOG_INFO, RDKB_WIFI_NOTIFY: connectedTo:%s%s clientMac:%s\n",apIndex%2?"5.0":"2.4",apIndex<10?"_LNF_PSK_SSID":"_LNF_EAP_SSID",macAddr));
 
-        } else if (apIndex==6 || apIndex==7 ) { //guest
+        }
 
-        } else {
+        else {
                 //unused ssid
         }
         return 0;
