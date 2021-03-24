@@ -52,8 +52,6 @@
 #if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_PLATFORM_RASPBERRYPI_)
 static const char *wifi_health_log = "/rdklogs/logs/wifihealth.txt";
 
-extern bool wifi_api_is_device_associated(int ap_index, char *mac);
-
 extern bool is_device_associated(int ap_index, char *mac);
 
 static wifi_easy_connect_t g_easy_connect = {0};
@@ -404,7 +402,7 @@ void process_easy_connect_event_timeout(wifi_device_dpp_context_t *ctx, wifi_eas
                 // now start checking for associated state on the vap index
                 if ((ctx->enrollee_version == 1)) { /* configurator shall support both 2.0 & 1.0, hence check only enrollee */
                     to_mac_str(ctx->session_data.sta_mac, mac_str);
-                    if (wifi_api_is_device_associated(ctx->ap_index, mac_str) == true) {
+                    if (wifi_api_is_device_associated(ctx->ap_index, mac_str) == TRUE) {
                         set_dpp_device_context_states(ctx, STATE_DPP_PROVISIONED, 
                                 ActStatus_OK, RESPONDER_STATUS_OK, pWifiDppSta);
                         pWifiDppSta->Activate = FALSE;
