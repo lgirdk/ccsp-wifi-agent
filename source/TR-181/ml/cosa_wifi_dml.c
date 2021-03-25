@@ -16447,7 +16447,7 @@ AssociatedDevice1_GetParamUlongValue
         return TRUE;
     }
 
-    if( AnscEqualString(ParamName, "Retransmissions", TRUE))
+    if( AnscEqualString(ParamName, "Retransmissions", TRUE) || ( AnscEqualString(ParamName, "RetransCount", TRUE)))
     {
         /* collect value */
         *puLong = pWifiApDev->Retransmissions;
@@ -16496,6 +16496,41 @@ AssociatedDevice1_GetParamUlongValue
         return TRUE;
     }
 
+    if( AnscEqualString(ParamName, "PacketsSent", TRUE))
+    {
+        /* collect value */
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "PacketsReceived", TRUE))
+    {
+        /* collect value */
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "ErrorsSent", TRUE))
+    {
+        /* collect value */
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "FailedRetransCount", TRUE))
+    {
+        /* collect value */
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "RetryCount", TRUE))
+    {
+        /* collect value */
+        return TRUE;
+    }
+
+    if( AnscEqualString(ParamName, "MultipleRetryCount", TRUE))
+    {
+        /* collect value */
+        return TRUE;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return FALSE;
