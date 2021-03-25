@@ -219,6 +219,7 @@ interface=1
 		interface=`expr $interface + 1`
 	done
         
+      if [ "$BOX_TYPE" != "MV1" ]; then
 	Dropbear_Pid=`pidof dropbear`
 	if [ "$Dropbear_Pid" = "" ]
 	then
@@ -230,6 +231,7 @@ interface=1
 			echo_t "dropbear script not found"
 		fi
 	fi
+      fi
 
  	if [ -f /lib/rdk/wifi_config_profile_check.sh ];then
 		source /lib/rdk/wifi_config_profile_check.sh 
@@ -851,24 +853,6 @@ interface=1
 	  fi
 	fi
 
-	cd /usr/ccsp/webpa
-	Webpa_PID=`pidof webpa`
-	if [ "$Webpa_PID" == "" ]; then
-		echo_t "WebPA_process is not running, restarting it "
-		t2CountNotify "SYS_SH_WebPA_restart"
-		if [ -f /usr/bin/webpa ];then
-			/usr/bin/webpa &
-		fi
-	fi
-
-        cd /usr/ccsp/harvester
-        Harvester_PID=`pidof harvester`
-        cosa_start_PID=`pidof cosa_start.sh`
-        if [ "$Harvester_PID" == "" ] && [ "$cosa_start_PID" == "" ]; then
-                echo_t "Harvester process is not running, restarting it"
-                $BINPATH/harvester &
-        fi
-
        if [ "$BOX_TYPE" = "XB3" ] && [ -f "/etc/webgui_atom.sh" ]
        then
           Lighttpd_PID=`pidof lighttpd`
@@ -886,6 +870,7 @@ interface=1
           fi
        fi
    
+      if [ "$BOX_TYPE" != "MV1" ]; then
        if [ -f $TELNET_SCRIPT_PATH/arping_to_host ]
        then
            $TELNET_SCRIPT_PATH/arping_to_host
@@ -899,6 +884,7 @@ interface=1
 			echo "[`getDateTime`] RDKB_PROCESS_CRASHED : NTPD is not running in ATOM, restarting NTPD"
 			ntpd -p $ARM_INTERFACE_IP
 	fi
+      fi
 
         
 #MESH-492 Checking if Mesh bridges br12/br13 has a valid IP for XB3 devices
