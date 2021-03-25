@@ -839,6 +839,8 @@ interface=1
 	  fi
 	fi
 
+#Webpa is not used in MV1 device
+      if [ "$BOX_TYPE" != "MV1" ]; then
 	cd /usr/ccsp/webpa
 	Webpa_PID=`pidof webpa`
 	if [ "$Webpa_PID" == "" ]; then
@@ -870,6 +872,7 @@ interface=1
 		fi
 	fi
 
+      fi
        if [ "$BOX_TYPE" = "XB3" ] && [ -f "/etc/webgui_atom.sh" ]
        then
           Lighttpd_PID=`pidof lighttpd`
@@ -887,6 +890,7 @@ interface=1
           fi
        fi
    
+       if [ "$BOX_TYPE" != "MV1" ]; then
        if [ -f $TELNET_SCRIPT_PATH/arping_to_host ]
        then
            $TELNET_SCRIPT_PATH/arping_to_host
@@ -900,8 +904,8 @@ interface=1
 			echo "[`getDateTime`] RDKB_PROCESS_CRASHED : NTPD is not running in ATOM, restarting NTPD"
 			ntpd -p $ARM_INTERFACE_IP
 	fi
-
         
+       fi
 #MESH-492 Checking if Mesh bridges br12/br13 has a valid IP for XB3 devices
 	if [ "$MESH_ENABLE" == "true" ]; then
  	 if [ "$MODEL_NUM" == "DPC3941" ] || [ "$MODEL_NUM" == "TG1682G" ] || [ "$MODEL_NUM" == "DPC3939" ] || [ "$MODEL_NUM" == "TG1682" ]; then
