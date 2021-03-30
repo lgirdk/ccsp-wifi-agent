@@ -8787,6 +8787,10 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
 		//wifi_setLFSecurityKeyPassphrase();
 #if defined(_LG_MV1_CELENO_)
         wait_for_ethernet1_up();
+        if(wifi_apply_customer_index())
+        {
+            printf("Error in Applying customer index related changes\n");
+        }
 #endif
 		m_wifi_init();
 #endif
