@@ -4390,51 +4390,6 @@ void *RegisterWiFiConfigureCallBack(void *par)
 		CcspWifiTrace(("RDK_LOG_WARN,CaptivePortal:%s - Waiting for wifi init ...\n",__FUNCTION__));
 		sleep(2);
 	}
-
-	if (AnscEqualString(SSID1_DEF, SSID1_CUR , TRUE))
-	{
-		CcspWifiTrace(("RDK_LOG_WARN,CaptivePortal:%s - Registering for 2.4GHz SSID value change notification ...\n",__FUNCTION__));
-  		SetParamAttr("Device.WiFi.SSID.1.SSID",notify);
-
-	}	
-	else
-	{
-		CcspWifiTrace(("RDK_LOG_WARN, Inside SSID1 is changed already\n"));
-		SSID1_Changed = TRUE;
-	}
-
-	if (AnscEqualString(PASSPHRASE1_DEF, PASSPHRASE1_CUR , TRUE))
-	{
-		CcspWifiTrace(("RDK_LOG_WARN,CaptivePortal:%s - Registering for 2.4GHz Passphrase value change notification ...\n",__FUNCTION__));
-        	SetParamAttr("Device.WiFi.AccessPoint.1.Security.X_COMCAST-COM_KeyPassphrase",notify);
-	}
-	else
-	{
-		CcspWifiTrace(("RDK_LOG_WARN, Inside KeyPassphrase1 is changed already\n"));
-		PASSPHRASE1_Changed = TRUE;
-	}
-	if (AnscEqualString(SSID2_DEF, SSID2_CUR , TRUE))
-	{
-		CcspWifiTrace(("RDK_LOG_WARN,CaptivePortal:%s - Registering for 5GHz SSID value change notification ...\n",__FUNCTION__));
-		SetParamAttr("Device.WiFi.SSID.2.SSID",notify);
-	}
-	else
-	{
-		CcspWifiTrace(("RDK_LOG_WARN, Inside SSID2 is changed already\n"));
-		SSID2_Changed = TRUE;
-	}
-
-	if (AnscEqualString(PASSPHRASE2_DEF, PASSPHRASE2_CUR , TRUE))
-	{
-		CcspWifiTrace(("RDK_LOG_WARN,CaptivePortal:%s - Registering for 5GHz Passphrase value change notification ...\n",__FUNCTION__));
-        SetParamAttr("Device.WiFi.AccessPoint.2.Security.X_COMCAST-COM_KeyPassphrase",notify);
-	}
-	else
-	{
-		CcspWifiTrace(("RDK_LOG_WARN, Inside KeyPassphrase2 is changed already\n"));
-		PASSPHRASE2_Changed = TRUE;
-	}
-     	Captive_Portal_Check();
    }
    else
    {
