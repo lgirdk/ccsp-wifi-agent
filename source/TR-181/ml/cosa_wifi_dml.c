@@ -855,7 +855,6 @@ ANSC_STATUS CosaDmlWiFi_CheckAndConfigureMFPConfig( BOOLEAN bFeatureMFPConfig )
 								return ANSC_STATUS_FAILURE;
 							}
 
-							memset( pWifiAp->SEC.Cfg.MFPConfig, 0 , sizeof( pWifiAp->SEC.Cfg.MFPConfig ) );
 							sprintf( pWifiAp->SEC.Cfg.MFPConfig, "%s", "Optional" );
 						}
 
@@ -866,7 +865,6 @@ ANSC_STATUS CosaDmlWiFi_CheckAndConfigureMFPConfig( BOOLEAN bFeatureMFPConfig )
 								return ANSC_STATUS_FAILURE;
 							}
 
-							memset( pWifiAp->SEC.Cfg.MFPConfig, 0 , sizeof( pWifiAp->SEC.Cfg.MFPConfig ) );
 							sprintf( pWifiAp->SEC.Cfg.MFPConfig, "%s", "Disabled" );
 						}
 					}
@@ -877,7 +875,6 @@ ANSC_STATUS CosaDmlWiFi_CheckAndConfigureMFPConfig( BOOLEAN bFeatureMFPConfig )
 							return ANSC_STATUS_FAILURE;
 						}
 						
-						memset( pWifiAp->SEC.Cfg.MFPConfig, 0 , sizeof( pWifiAp->SEC.Cfg.MFPConfig ) );
 						sprintf( pWifiAp->SEC.Cfg.MFPConfig, "%s", "Disabled" );
 					}
 				}
@@ -13864,7 +13861,7 @@ DPP_STA_ProvisionStart_Validate(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta)
     ULONG apIns, staIndex;
     UCHAR dppVersion;
 #define LARRAY 32
-    char buff[512] = {0x0};
+    char buff[512];
     int Input[LARRAY] = {0x0};
     unsigned char keyasn1[1024];
 #if !defined(_BWG_PRODUCT_REQ_)
@@ -13897,16 +13894,14 @@ DPP_STA_ProvisionStart_Validate(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta)
     if (wifi_api_is_device_associated((apIns-1), pWifiDppSta->ClientMac) == true)
     {
         wifi_dpp_dml_dbg_print(1, "%s:%d Device already Associated\n", __func__, __LINE__);
-        memset(buff, 0, 512);
-        snprintf(buff, 512, "%s MAC-%s\n", "Wifi DPP: Device already Associated", pWifiDppSta->ClientMac);
+        snprintf(buff, sizeof(buff), "%s MAC-%s\n", "Wifi DPP: Device already Associated", pWifiDppSta->ClientMac);
         write_to_file(wifi_health_logg, buff);
         return FALSE;
     }
 
     if (pWifiDppSta->Activate == TRUE) {
         wifi_dpp_dml_dbg_print(1, "%s:%d Activation already in progress\n", __func__, __LINE__);
-        memset(buff, 0, 512);
-        snprintf(buff, 512, "%s\n", "Wifi DPP: Activation already done");
+        snprintf(buff, sizeof(buff), "%s\n", "Wifi DPP: Activation already done");
         write_to_file(wifi_health_logg, buff);
         return FALSE;
     }
@@ -14191,9 +14186,6 @@ DPP_STA_GetParamStringValue
     PCOSA_DML_WIFI_DPP_STA_CFG      pWifiDppSta  = (PCOSA_DML_WIFI_DPP_STA_CFG)hInsContext;
     ULONG apIns, staIndex;
     UCHAR dppVersion;
-    char password[256] = {0x0};
-	char channelsList[256] = {0};
-	char tmp[8] = {0};
 	unsigned int i;
 
     if (GetInsNumsByWifiDppSta(pWifiDppSta, &apIns, &staIndex, &dppVersion) != ANSC_STATUS_SUCCESS)
@@ -14219,12 +14211,14 @@ DPP_STA_GetParamStringValue
 
     if( AnscEqualString(ParamName, "Channels", TRUE))
     {
+        char channelsList[256];
+
+        channelsList[0] = 0;
+
         for (i = 0; i < pWifiDppSta->NumChannels && i < 32 ; i++) {
-            memset(tmp, '\0', sizeof(tmp));
             if (pWifiDppSta->Channels[i] == 0)
             	break;
-            sprintf(tmp, "%d,", pWifiDppSta->Channels[i]);
-            strncat(channelsList, tmp, strlen(tmp));
+            sprintf(&channelsList[strlen(channelsList)], "%d,", pWifiDppSta->Channels[i]);
         }
 
         if (pWifiDppSta->NumChannels > 0) {
@@ -14351,12 +14345,8 @@ DPP_STA_SetParamBoolValue
 
     BOOL ret;
     BOOL rfc;
-    char recName[256] = {0x0};
-    char buff[512] = {0x0};
+    char *recName = "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.Enable";
     char* strValue = NULL;
-
-    memset(recName, 0, sizeof(recName));
-    sprintf(recName, "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.EasyConnect.Enable");
 
     if(PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue) != CCSP_SUCCESS) {
         wifi_dpp_dml_dbg_print(1, "%s: fail to get PSM record for RFC EasyConnect\n", __func__);
@@ -14413,9 +14403,9 @@ DPP_STA_SetParamBoolValue
                 }
                 return ret;
             } else {
+                char buff[64];
                 CcspTraceError(("%s:%d: Not all expected parameters present\n",__func__, __LINE__));
-                memset(buff, 0, 512);
-                snprintf(buff, 512, "%s\n", "Wifi DPP: ActStatus_Config_Error");
+                snprintf(buff, sizeof(buff), "%s\n", "Wifi DPP: ActStatus_Config_Error");
                 write_to_file(wifi_health_logg, buff);
                 return FALSE;
             }
@@ -16951,20 +16941,20 @@ MacFiltTab_Commit
         if( ANSC_STATUS_SUCCESS != CosaDmlMacFilt_AddEntry(pWiFiAP->Cfg.InstanceNumber, pMacFilt) )
     	{
 			pthread_t 	 WiFi_DelMacFilter_Thread;
-			char		 table_name[ 512 ] = { 0 },
-						 *ptable_name 	   = NULL;
+			char		 table_name[128];
+			char		 *ptable_name;
+			int		 len;
 
-			sprintf( table_name, "Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.", pWiFiAP->Cfg.InstanceNumber, pMacFilt->InstanceNumber);
+			len = sprintf( table_name, "Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.", pWiFiAP->Cfg.InstanceNumber, pMacFilt->InstanceNumber);
 
-			ptable_name = AnscAllocateMemory( AnscSizeOfString( table_name ) + 1 );
+			ptable_name = AnscAllocateMemory( len + 1 );
 			if( NULL != ptable_name )
 			{
-				memset( ptable_name, 0, AnscSizeOfString( table_name ) + 1 );
-				sprintf( ptable_name, "%s", table_name );
                                 pthread_attr_t attr;
-                                pthread_attr_t *attrp = NULL;
+                                pthread_attr_t *attrp = &attr;
 
-                                attrp = &attr;
+                                memcpy( ptable_name, table_name, len + 1 );
+
                                 pthread_attr_init(&attr);
                                 pthread_attr_setdetachstate( &attr, PTHREAD_CREATE_DETACHED );
 				pthread_create( &WiFi_DelMacFilter_Thread, attrp, WiFi_DeleteMacFilterTableThread, (void *)ptable_name); 	
