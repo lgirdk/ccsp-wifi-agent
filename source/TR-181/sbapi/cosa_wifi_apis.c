@@ -17031,9 +17031,11 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     // pCfg->BssCountStaAsCpe  = TRUE;
 
     if (pCfg->KickAssocDevices == TRUE) {
-        CosaDmlWiFiApKickAssocDevices(pSsid);
-        t2_event_d("WIFI_INFO_Kickoff_All_Clients", 1);
-        pCfg->KickAssocDevices = FALSE;
+        if (CosaDmlWiFiApKickAssocDevices(pSsid) == ANSC_STATUS_SUCCESS)
+        {
+            t2_event_d("WIFI_INFO_Kickoff_All_Clients", 1);
+            pCfg->KickAssocDevices = FALSE;
+        }
     }
 
  /*   if (pCfg->InterworkingEnable != pStoredCfg->InterworkingEnable) {
@@ -20307,23 +20309,14 @@ CosaDmlWiFiApKickAssocDevices
         char*                       pSsid
     )
 {
+    int wlanIndex = -1;
+    ANSC_STATUS returnStatus = ANSC_STATUS_SUCCESS;
+
     if (!pSsid)
     {
         return ANSC_STATUS_FAILURE;
     }
-    
-wifiDbgPrintf("%s SSID %s\n",__FUNCTION__, pSsid);
 
-    ANSC_STATUS                     returnStatus   = ANSC_STATUS_SUCCESS;
-#ifndef WIFI_HAL_VERSION_3
-    ULONG                           index             = 0;
-    ULONG                           ulCount           = 0;
-#endif
-#if defined(ENABLE_FEATURE_MESHWIFI)
-    CHAR multinet_instance[256] = {0};
-#endif
-    /*For example we have 5 AssocDevices*/
-    int wlanIndex = -1;
     int wRet = wifi_getIndexFromName(pSsid, &wlanIndex);
     if ( (wRet != RETURN_OK) || (wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX) )
     {
@@ -20352,6 +20345,7 @@ wifiDbgPrintf("%s SSID %s\n",__FUNCTION__, pSsid);
     }
 #if defined(ENABLE_FEATURE_MESHWIFI)
     if (isDeviceKicked){
+        char multinet_instance[256];
         // notify mesh components that wifi SSID Advertise changed
         CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : Notify Mesh to kick off all devices\n",__FUNCTION__));
         snprintf(multinet_instance, sizeof(multinet_instance), "RDK|%d", wlanIndex);
@@ -20366,29 +20360,14 @@ wifiDbgPrintf("%s SSID %s\n",__FUNCTION__, pSsid);
 #endif
 
 #else
-    wifi_getApNumDevicesAssociated(wlanIndex, &ulCount);
-    if (ulCount > 0)
+    // KickAllAssociatedDevices
+    if (wifi_kickAllAssociatedDevice(wlanIndex) == RETURN_OK)
     {
-		for (index = ulCount; index > 0; index--)
-		{ 
-			wifi_device_t wlanDevice;
-
-			wifi_getAssociatedDeviceDetail(wlanIndex, index, &wlanDevice);
-			wifi_kickAssociatedDevice(wlanIndex, &wlanDevice);
-		}
-#if defined(ENABLE_FEATURE_MESHWIFI)
-        {
-            // notify mesh components that wifi SSID Advertise changed
-            CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : Notify Mesh to kick off all devices\n",__FUNCTION__));
-            memset(multinet_instance, '\0', sizeof(multinet_instance));
-            snprintf(multinet_instance, sizeof(multinet_instance), "RDK|%d", wlanIndex);
-            if ( (gWrite_sysevent_fd || !initGSyseventVar()) &&
-                (sysevent_set(gWrite_sysevent_fd, gWrite_sysEtoken, "wifi_kickAllApAssociatedDevice", multinet_instance, 0)) )
-            {
-                CcspWifiTrace(("RDK_LOG_ERROR, %s-%d Error in setting sysevent\n", __FUNCTION__, __LINE__));
-            }
-        }
-#endif
+        return ANSC_STATUS_SUCCESS;
+    }
+    else
+    {
+        return ANSC_STATUS_FAILURE;
     }
 #endif
     return returnStatus;
