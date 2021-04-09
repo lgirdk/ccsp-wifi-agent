@@ -6809,55 +6809,6 @@ CosaDmlWiFiCheckPreferPrivateFeature
 }
 
 void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associated_dev, BOOL bCallForFullSync, BOOL bCallFromDisConnCB);
-/*********************************************************************************/
-/*                                                                               */
-/* FUNCTION NAME : CosaDmlWiFiCheckEnableRadiusGreylist                          */
-/*                                                                               */
-/* DESCRIPTION   : This function set the rdk_greylist to TRUE/FALSE in HAL       */
-/* 			at bootup                                                */
-/* 	                                                                         */
-/* INPUT         : pbEnabled                                                     */
-/*                                                                               */
-/* OUTPUT        : TRUE / FALSE                                                  */
-/*                                                                               */
-/* RETURN VALUE  : ANSC_STATUS_SUCCESS / ANSC_STATUS_FAILURE                     */
-/*                                                                               */
-/*********************************************************************************/
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-static
-ANSC_STATUS CosaDmlWiFiCheckEnableRadiusGreylist(BOOL* pbEnabled) {
-    CcspTraceInfo(("[%s] Enter\n",__FUNCTION__));
-    int index=0;
-    int apIndex=0;
-    char recName[256];
-    BOOL bEnabled;
-
-
-    CosaDmlWiFiGetEnableRadiusGreylist(&bEnabled);
-    *pbEnabled = bEnabled;
-    if (bEnabled == TRUE)
-    {
-        CcspTraceInfo(("[%s] Enabled\n",__FUNCTION__));
-        for(index=0 ; index<HOTSPOT_NO_OF_INDEX ; index++) {
-            apIndex=Hotspot_Index[index];
-            memset(recName, 0, sizeof(recName));
-            sprintf(recName, MacFilterMode, apIndex);
-            wifi_setApMacAddressControlMode(Hotspot_Index[index], 2);
-            PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, "2");
-        }
-        wifi_enableGreylistAccessControl(bEnabled);
-    }
-    else {
-        CcspTraceInfo(("[%s] Disabled\n",__FUNCTION__));
-        wifi_enableGreylistAccessControl(bEnabled);
-        for(index = 0; index <HOTSPOT_NO_OF_INDEX ; index++) {
-                apIndex=Hotspot_Index[index];
-                wifi_delApAclDevices(apIndex-1);
-        }
-    }
-    return ANSC_STATUS_SUCCESS;
-}
-#endif
 void CosaDMLWiFi_Send_FullHostDetails_To_LMLite(LM_wifi_hosts_t *phosts);
 void CosaDMLWiFi_Send_ReceivedHostDetails_To_LMLite(LM_wifi_host_t   *phost);
 
@@ -7927,9 +7878,6 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
     CosaDmlWiFiCheckPreferPrivateFeature(&(pMyObject->bPreferPrivateEnabled));
 #endif
 
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-    CosaDmlWiFiCheckEnableRadiusGreylist(&(pMyObject->bEnableRadiusGreyList));
-#endif
     CosaDmlWiFi_GetGoodRssiThresholdValue(&(pMyObject->iX_RDKCENTRAL_COM_GoodRssiThreshold));
     CosaDmlWiFi_GetAssocCountThresholdValue(&(pMyObject->iX_RDKCENTRAL_COM_AssocCountThreshold));
     CosaDmlWiFi_GetAssocMonitorDurationValue(&(pMyObject->iX_RDKCENTRAL_COM_AssocMonitorDuration));
@@ -8528,91 +8476,6 @@ CosaDmlWiFi_SetPreferPrivatePsmData(BOOL value)
 	wifi_setPreferPrivateConnection(value);
 #endif
 #endif
-    return ANSC_STATUS_SUCCESS;
-}
-
-/*********************************************************************************/
-/*                                                                               */
-/* FUNCTION NAME : CosaDmlWiFiGetEnableRadiusGreylist                            */
-/*                                                                               */
-/* DESCRIPTION   : This function is to get the value of RadiusGreyList           */
-/*                        from the PSM Database                                  */
-/*                                                                               */
-/* INPUT         : pbEnableRadiusGreyList - pointer to the return value          */
-/*                                                                               */
-/* OUTPUT        : TRUE / FALSE                                                  */
-/*                                                                               */
-/* RETURN VALUE  : ANSC_STATUS_SUCCESS / ANSC_STATUS_FAILURE                     */
-/*                                                                               */
-/*********************************************************************************/
-void CosaDmlWiFiGetEnableRadiusGreylist(BOOLEAN *pbEnableRadiusGreyList)
-{
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-    char *psmStrValue = NULL;
-
-    *pbEnableRadiusGreyList = FALSE;
-    CcspTraceInfo(("[%s] Get EnableRadiusGreylist Value \n",__FUNCTION__));
-
-    if (PSM_Get_Record_Value2(bus_handle, g_Subsystem,
-            "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.RadiusGreyList.Enable",
-            NULL, &psmStrValue) == CCSP_SUCCESS)
-    {
-        *pbEnableRadiusGreyList = _ansc_atoi(psmStrValue);
-        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(psmStrValue);
-    }
-#else
-    UNREFERENCED_PARAMETER(pbEnableRadiusGreyList);
-#endif
-}
-
-/*********************************************************************************/
-/*                                                                               */
-/* FUNCTION NAME : CosaDmlWiFiCheckEnableRadiusGreylist                          */
-/*                                                                               */
-/* DESCRIPTION   : This function set the rdk_greylist to TRUE/FALSE in HAL       */
-/*                      at bootup                                                */
-/*                                                                               */
-/* INPUT         : Value                                                         */
-/*                                                                               */
-/* OUTPUT        : TRUE / FALSE                                                  */
-/*                                                                               */
-/* RETURN VALUE  : ANSC_STATUS_SUCCESS / ANSC_STATUS_FAILURE                     */
-/*                                                                               */
-/*********************************************************************************/
-ANSC_STATUS
-CosaDmlWiFiSetEnableRadiusGreylist(BOOLEAN value) {
-
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-    CcspTraceInfo(("[%s] Enter\n",__FUNCTION__));
-    int index=0;
-    int apIndex=0;
-    char recName[256];
-
-    if (value == TRUE)
-    {
-	CcspTraceInfo(("[%s] Enabled\n",__FUNCTION__));
-	CosaDmlWiFi_SetPreferPrivatePsmData(FALSE);
-	for(index=0 ; index<HOTSPOT_NO_OF_INDEX ; index++) {
-	    apIndex=Hotspot_Index[index];
-	    memset(recName, 0, sizeof(recName));
-	    sprintf(recName, MacFilterMode, apIndex);
-	    wifi_setApMacAddressControlMode(apIndex-1, 2);
-	    PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, "2");
-        }
-	wifi_enableGreylistAccessControl(value);
-    }
-    else {
-	CcspTraceInfo(("[%s] Disabled\n",__FUNCTION__));
-	CosaDmlWiFi_SetPreferPrivatePsmData(TRUE);
-	wifi_enableGreylistAccessControl(value);
-	for(index=0 ; index<HOTSPOT_NO_OF_INDEX ; index++) {
-		apIndex=Hotspot_Index[index];
-		wifi_delApAclDevices(apIndex-1);
-	}
-    }
-#else 
-    UNREFERENCED_PARAMETER(value);
-#endif    
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -11735,20 +11598,12 @@ CosaDmlWiFiSsidSetCfg
     ANSC_STATUS                     returnStatus   = ANSC_STATUS_SUCCESS;
     PCOSA_DML_WIFI_SSID_CFG pStoredCfg = NULL;
     int wlanIndex = 0;
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-    int i = 0;
-#endif
-    UNREFERENCED_PARAMETER(hContext);
-
 #if defined(DMCLI_SUPPORT_TO_ADD_DELETE_VAP)
     ULONG uIndex = 0;
 #endif
     BOOL cfgChange = FALSE;
 	char status[64];
     BOOL bEnabled;
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-    BOOL bRadiusEnabled = FALSE;
-#endif
     BOOLEAN bForceDisableFlag = FALSE;
     BOOL bsEnabled = FALSE;
 
@@ -11890,19 +11745,6 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
                 Delete_Hotspot_MacFilt_Entries();
             }
         }
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-	CosaDmlWiFiGetEnableRadiusGreylist(&bRadiusEnabled);
-	if (bRadiusEnabled == TRUE)
-	{
-	    if(wlanIndex==0 || wlanIndex==1)
-	    {
-		for(i=0 ; i<HOTSPOT_NO_OF_INDEX ; i++)
-		{
-		    wifi_delApAclDevices(Hotspot_Index[i] - 1);
-		}
-	    }
-	}
-#endif
     }
     } else {
         CcspWifiTrace(("RDK_LOG_WARN, WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n"));
@@ -13673,9 +13515,6 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
 #endif 
     wifi_getApSecurityRadiusServer(wlanIndex, pCfg->RadiusServerIPAddr, &pCfg->RadiusServerPort, pCfg->RadiusSecret);
     wifi_getApSecuritySecondaryRadiusServer(wlanIndex, pCfg->SecondaryRadiusServerIPAddr, &pCfg->SecondaryRadiusServerPort, pCfg->SecondaryRadiusSecret);
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-    wifi_getApDASRadiusServer(wlanIndex, pCfg->RadiusDASIPAddr, &pCfg->RadiusDASPort, pCfg->RadiusDASSecret);
-#endif
     CosaDmlWiFi_GetApMFPConfigValue(wlanIndex, pCfg->MFPConfig);
     //zqiu: TODO: set pCfg->RadiusReAuthInterval;
 #ifdef DUAL_CORE_XB3
@@ -13746,10 +13585,6 @@ CosaDmlWiFiApSecSetCfg
 wifiDbgPrintf("%s\n",__FUNCTION__);
 
     int wlanIndex = -1;
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-    int i = 0;
-#endif
-
 #if !defined(_INTEL_BUG_FIXES_)
     char securityType[32];
     char authMode[32];
@@ -13758,9 +13593,6 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     char authMode[128];
 #endif
     BOOL bEnabled;
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-    BOOL bRadiusEnabled = FALSE;
-#endif
 
     if (!pCfg || !pSsid)
     {
@@ -13994,19 +13826,6 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 			Delete_Hotspot_MacFilt_Entries();
 		}
 	}
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-	CosaDmlWiFiGetEnableRadiusGreylist(&bRadiusEnabled);
-        if (bRadiusEnabled == TRUE)
-        {
-            if(wlanIndex==0 || wlanIndex==1)
-            {
-                for(i=0 ; i<HOTSPOT_NO_OF_INDEX ; i++)
-                {
-                    wifi_delApAclDevices(Hotspot_Index[i] - 1);
-                }
-           }
-        }
-#endif
     }
     }
 
@@ -14062,14 +13881,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 		gRestartRadiusRelay = TRUE;
 		enable_reset_radio_flag(wlanIndex);
 	}
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-	if ( strcmp(pCfg->RadiusDASIPAddr, pStoredCfg->RadiusDASIPAddr) !=0 ||
-                pCfg->RadiusDASPort != pStoredCfg->RadiusDASPort ||
-                strcmp(pCfg->RadiusDASSecret, pStoredCfg->RadiusDASSecret) !=0) {
-                CcspWifiTrace(("RDK_LOG_WARN,\n%s calling wifi_setApDASRadiusServer  \n",__FUNCTION__));
-                wifi_setApDASRadiusServer(wlanIndex, pCfg->RadiusDASIPAddr, pCfg->RadiusDASPort, pCfg->RadiusDASSecret);
-	}
-#endif
+
 	if ( strcmp(pCfg->MFPConfig, pStoredCfg->MFPConfig) !=0 ) {
 		CcspWifiTrace(("RDK_LOG_WARN,\n%s calling wifi_setApSecurityMFPConfig  \n",__FUNCTION__));
 		if ( RETURN_OK == wifi_setApSecurityMFPConfig(wlanIndex, pCfg->MFPConfig)) {
@@ -14534,9 +14346,6 @@ CosaDmlWiFiApSecPushCfg
 #endif
 wifiDbgPrintf("%s\n",__FUNCTION__);
 
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-    BOOL bEnabled;
-#endif
     int wlanIndex = instanceNumber-1;
 
     if (!pCfg)
@@ -14549,48 +14358,25 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 
     if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_None)
    {
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-       CosaDmlWiFiGetEnableRadiusGreylist(&bEnabled);
-#endif
 #ifdef CISCO_XB3_PLATFORM_CHANGES
         int wpsCfg = 0;
         BOOL enableWps = FALSE;
  
         wifi_getApWpsEnable(wlanIndex, &wpsCfg);
         enableWps = (wpsCfg == 0) ? FALSE : TRUE;
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-        if (bEnabled == TRUE || enableWps == TRUE )
-        {
-            sWiFiDmlRestartHostapd = TRUE;
-            sWiFiDmlRestartVap[wlanIndex] = TRUE;
-            wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
-            // create WSC_ath*.conf file
-            wifi_createHostApdConfig(wlanIndex, enableWps);
-        } 
-#else
-	 if (enableWps == TRUE )
+ 
+        if (enableWps == TRUE)
         {
             sWiFiDmlRestartHostapd = TRUE;
             wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
             // create WSC_ath*.conf file
             wifi_createHostApdConfig(wlanIndex, TRUE);
-        }
-
-#endif
+        } 
             
 #else
          BOOL enableWps = FALSE;
          wifi_getApWpsEnable(wlanIndex, &enableWps);
-
-#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
-        if (bEnabled == TRUE || enableWps == TRUE )
-        {
-            sWiFiDmlRestartHostapd = TRUE;
-            wifiDbgPrintf("%s %d sWiFiDmlRestartHostapd set to TRUE\n",__FUNCTION__, __LINE__);
-            // create WSC_ath*.conf file
-            wifi_createHostApdConfig(wlanIndex, enableWps);
-        }
-#else
+ 
          if (enableWps == TRUE)
          {
              sWiFiDmlRestartVap[wlanIndex] = TRUE;
@@ -14599,7 +14385,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
              // create WSC_ath*.conf file
              wifi_createHostApdConfig(wlanIndex, TRUE);
          } 
-#endif            
+            
 #endif
     } else if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WEP_64 || 
                    pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WEP_128 ) { 

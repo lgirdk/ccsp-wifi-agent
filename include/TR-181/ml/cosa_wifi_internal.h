@@ -196,9 +196,8 @@ COSA_DML_WIFI_BANDSTEERING, *PCOSA_DML_WIFI_BANDSTEERING;
 	BOOLEAN                         bFeatureMFPConfig;                  \
 	BOOLEAN                         bTxOverflowSelfheal;                  \	
 	BOOLEAN                         bForceDisableWiFiRadio;	              \
-	BOOLEAN				bEnableRadiusGreyList;		\
-        COSA_DML_WIFI_GASCFG            GASCfg[1];                  \
-        COSA_DML_WIFI_GASSTATS          GASStats[1];                  \
+        COSA_DML_WIFI_GASCFG            GASCfg[1];                  \	
+        COSA_DML_WIFI_GASSTATS          GASStats[1];                  \	
         char                            *GASConfiguration;                  \
         char                            ReservedSSIDNames[512];                  \
 	

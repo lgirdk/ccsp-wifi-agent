@@ -879,9 +879,6 @@ _COSA_DML_WIFI_APSEC_CFG
     UCHAR              		    	SecondaryRadiusServerIPAddr[45];
     ULONG                           SecondaryRadiusServerPort;
     char                            SecondaryRadiusSecret[64];
-    UCHAR                           RadiusDASIPAddr[45];
-    ULONG                           RadiusDASPort;
-    char 			    RadiusDASSecret[64];
     char                            MFPConfig[32];
     /* USGv2 Extensions */
     int                             RadiusReAuthInterval;
@@ -1359,17 +1356,6 @@ CosaDmlWiFi_SetPreferPrivatePsmData
     (
         BOOL value
     );
-
-void
-CosaDmlWiFiGetEnableRadiusGreylist
-    (
-	BOOL *value
-    );
-ANSC_STATUS
-CosaDmlWiFiSetEnableRadiusGreylist
-   (
-	BOOL value
-   );
 
 void CosaDmlWiFi_UpdateMfCfg(void);
 
