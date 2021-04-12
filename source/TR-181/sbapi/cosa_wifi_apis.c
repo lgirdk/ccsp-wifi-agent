@@ -13893,8 +13893,23 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
             printf("%s: Setting Auto Channel Selection to TRUE \n",__FUNCTION__);
 	   		CcspWifiTrace(("RDK_LOG_WARN, RDKB_WIFI_CONFIG_CHANGED : %s Setting Auto Channel Selection to TRUE\n",__FUNCTION__));
         } else {
-            printf("%s: Setting Auto Channel Selection to FALSE and Setting the Manually Selected Channel= %lu\n",__FUNCTION__,pCfg->Channel);
-            CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : %s Setting Auto Channel Selection to FALSE and Setting the Manually Selected Channel= %lu \n",__FUNCTION__,pCfg->Channel));
+            //If User has not selected channel fetch the current channel and set. MVXREQ-1104
+            if ( pCfg->Channel == 0 )
+            {
+                wifi_getRadioChannel(wlanIndex, &pCfg->Channel);
+                if ( pCfg->Channel == 0 )
+                {
+                    if (wlanIndex == 0)
+                        pCfg->Channel = 1;
+                    else
+                        pCfg->Channel = 36;
+                }
+                CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : %s Setting Auto Channel Selection to FALSE and Setting the Current running Channel= %lu \n",__FUNCTION__,pCfg->Channel));
+            }
+            else
+            {
+                CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : %s Setting Auto Channel Selection to FALSE and Setting the Manually Selected Channel= %lu \n",__FUNCTION__,pCfg->Channel));
+            }
             wifi_setRadioChannel(wlanIndex, pCfg->Channel);
         }
 
