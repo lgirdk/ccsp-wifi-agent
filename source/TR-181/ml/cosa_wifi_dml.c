@@ -2884,15 +2884,18 @@ Radio_GetParamStringValue
 
     if (strcmp(ParamName, "RegulatoryDomain") == 0)
     {
+        /* Regulatory Domain: Two digits Country Code and I (only inside) */
         /* collect value */
-        if ( AnscSizeOfString(pWifiRadioFull->Cfg.RegulatoryDomain) < *pUlSize)
+        char regulatoryDomain[8]={0};
+        snprintf(regulatoryDomain, sizeof(regulatoryDomain), "%s%s", pWifiRadioFull->Cfg.RegulatoryDomain, "I");
+        if ( AnscSizeOfString(regulatoryDomain) < *pUlSize)
         {
-            AnscCopyString(pValue, pWifiRadioFull->Cfg.RegulatoryDomain);
+            AnscCopyString(pValue, regulatoryDomain);
             return 0;
         }
         else
         {
-            *pUlSize = AnscSizeOfString(pWifiRadioFull->Cfg.RegulatoryDomain)+1;
+            *pUlSize = AnscSizeOfString(regulatoryDomain)+1;
             return 1;
         }
         return 0;
@@ -4062,16 +4065,25 @@ Radio_SetParamStringValue
         return TRUE;
     }
     if (strcmp(ParamName, "RegulatoryDomain") == 0)
-    {
-        if ( AnscEqualString(pWifiRadioFull->Cfg.RegulatoryDomain, pString, TRUE) )
+    {  
+        /* Regulatory Domain: Two digits Country Code and I (only inside) */
+        if ((AnscSizeOfString(pString) == 3) && (pString[2] == 'I')) 
         {
-            return  TRUE;
-        }
+            char regulatoryDomain[4]={0};
+            regulatoryDomain[0] = pString[0];
+            regulatoryDomain[1] = pString[1];
+            regulatoryDomain[2] = 0;
 
-        /* save update to backup */
-        AnscCopyString( pWifiRadioFull->Cfg.RegulatoryDomain, pString );
-        pWifiRadio->bRadioChanged = TRUE;
-        return TRUE;
+            if ( AnscEqualString(pWifiRadioFull->Cfg.RegulatoryDomain, regulatoryDomain, TRUE) )
+            {
+                return  TRUE;
+            }
+
+            /* save update to backup */
+            AnscCopyString( pWifiRadioFull->Cfg.RegulatoryDomain, regulatoryDomain );
+            pWifiRadio->bRadioChanged = TRUE;
+            return TRUE;
+        }
     }
 
     if (strcmp(ParamName, "BasicDataTransmitRates") == 0)
