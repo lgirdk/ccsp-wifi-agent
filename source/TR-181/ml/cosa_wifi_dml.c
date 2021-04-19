@@ -553,7 +553,7 @@ WiFi_GetParamBoolValue
         return TRUE;
     }
 
-    if (AnscEqualString(ParamName, "X_RDK_ShowWiFiCredential", TRUE))
+    if (strcmp(ParamName, "X_RDK_ShowWiFiCredential") == 0)
     {
         CosaDmlWiFiGetShowCredential(pBool);
         return TRUE;
@@ -1184,7 +1184,7 @@ WiFi_SetParamBoolValue
         }
     }
 
-    if (AnscEqualString(ParamName, "X_RDK_ShowWiFiCredential", TRUE))
+    if (strcmp(ParamName, "X_RDK_ShowWiFiCredential") == 0)
     {
         if (ANSC_STATUS_SUCCESS == CosaDmlWiFiSetShowCredential( bValue ))
         {
@@ -3410,7 +3410,7 @@ Radio_GetParamStringValue
         }
         return 0;
     }
-    if(AnscEqualString(ParamName, "X_RDK_DCS_Channels_Exclude", TRUE))
+    if (strcmp(ParamName, "X_RDK_DCS_Channels_Exclude") == 0)
     {
         if(AnscSizeOfString(pWifiRadioFull->Cfg.X_RDK_DCS_Channels_Exclude) < *pUlSize)
         {
@@ -4861,9 +4861,9 @@ Radio_SetParamStringValue
         return TRUE;
         }
     }
-    if(AnscEqualString(ParamName, "X_RDK_DCS_Channels_Exclude", TRUE))
+    if (strcmp(ParamName, "X_RDK_DCS_Channels_Exclude") == 0)
     {
-        if(AnscEqualString(pWifiRadioFull->Cfg.X_RDK_DCS_Channels_Exclude, pString, TRUE))
+        if (strcmp(pWifiRadioFull->Cfg.X_RDK_DCS_Channels_Exclude, pString) == 0)
         {
             return  TRUE;
         }
