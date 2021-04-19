@@ -4981,7 +4981,7 @@ Radio_SetParamStringValue
     }
     if (strcmp(ParamName, "X_RDK_DCS_Channels_Exclude") == 0)
     {
-        if(AnscEqualString(pWifiRadioFull->Cfg.X_RDK_DCS_Channels_Exclude, pString, TRUE))
+        if (strcmp(pWifiRadioFull->Cfg.X_RDK_DCS_Channels_Exclude, pString) == 0)
         {
             return  TRUE;
         }
