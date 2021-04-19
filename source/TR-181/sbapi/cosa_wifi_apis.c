@@ -14950,9 +14950,9 @@ CosaDmlWiFi_setDppReconfig(ULONG apIns,char* ParamName,char *value ){
     char recName[256];
     memset(recName, 0, sizeof(recName));
 
-    if( AnscEqualString(ParamName, "PrivateSigningKey", TRUE)){
+    if (strcmp(ParamName, "PrivateSigningKey") == 0){
         sprintf(recName, DppPrivateSigningKey, apIns);
-    }else if( AnscEqualString(ParamName, "PrivateReconfigAccessKey", TRUE)){
+    }else if (strcmp(ParamName, "PrivateReconfigAccessKey") == 0){
         sprintf(recName, DppPrivateReconfigAccessKey, apIns);
     }else{
         CcspTraceError(("%s:%d: Invalid Config: %s\n", __func__, __LINE__,recName));
@@ -14973,23 +14973,23 @@ CosaDmlWiFi_setDppValue(ULONG apIns, ULONG staIndex,char* ParamName,char *value 
     char recName[256];
     memset(recName, 0, sizeof(recName));
 
-    if( AnscEqualString(ParamName, "ClientMac", TRUE)){
+    if (strcmp(ParamName, "ClientMac") == 0){
         sprintf(recName, DppClientMac, apIns,staIndex);
-    }else if( AnscEqualString(ParamName, "InitiatorBootstrapSubjectPublicKeyInfo", TRUE)){ 
+    }else if (strcmp(ParamName, "InitiatorBootstrapSubjectPublicKeyInfo") == 0){ 
         sprintf(recName, DppInitPubKeyInfo, apIns,staIndex);
-    }else if( AnscEqualString(ParamName, "ResponderBootstrapSubjectPublicKeyInfo", TRUE)){ 
+    }else if (strcmp(ParamName, "ResponderBootstrapSubjectPublicKeyInfo") == 0){ 
         sprintf(recName, DppRespPubKeyInfo, apIns,staIndex);
-    }else if( AnscEqualString(ParamName, "Channels", TRUE)){ 
+    }else if (strcmp(ParamName, "Channels") == 0){ 
         sprintf(recName, DppChannels, apIns,staIndex);
-    }else if( AnscEqualString(ParamName, "MaxRetryCount", TRUE)){ 
+    }else if (strcmp(ParamName, "MaxRetryCount") == 0){ 
         sprintf(recName, DppMaxRetryCnt, apIns,staIndex);
-    }else if( AnscEqualString(ParamName, "Activate", TRUE)){ 
+    }else if (strcmp(ParamName, "Activate") == 0){ 
         sprintf(recName, DppActivate, apIns,staIndex);
-    }else if( AnscEqualString(ParamName, "ActivationStatus", TRUE)){ 
+    }else if (strcmp(ParamName, "ActivationStatus") == 0){ 
         sprintf(recName, DppActivationStatus, apIns,staIndex);
-    }else if( AnscEqualString(ParamName, "EnrolleeResponderStatus", TRUE)){ 
+    }else if (strcmp(ParamName, "EnrolleeResponderStatus") == 0){ 
         sprintf(recName, DppEnrolleeRespStatus, apIns,staIndex);
-    }else if( AnscEqualString(ParamName, "KeyManagement", TRUE)){ 
+    }else if (strcmp(ParamName, "KeyManagement") == 0){ 
         sprintf(recName, DppEnrolleeKeyManagement, apIns,staIndex);
     }else {
         return ANSC_STATUS_FAILURE; 
