@@ -92,5 +92,5 @@ iptables -F
 iptables -I INPUT -i br0 ! -d $ip -j DROP
 
 #DNS
-#rpcclient $ARM_ARPING_IP "cat /etc/resolv.conf" | grep nameserver | grep -v 127.0.0.1 > /etc/resolv.conf
+#rpcclient2 "cat /etc/resolv.conf" | grep nameserver | grep -v 127.0.0.1 > /etc/resolv.conf
 
