@@ -23,12 +23,11 @@ arm_hours=0
 arm_days=0
 arm_minutes=0
 
-ARM_RPC_IP=`cat /etc/device.properties | grep ARM_ARPING_IP | cut -f 2 -d"="`
 
 ARM_CCSP_RESTART="/usr/ccsp/ccsp_restart.sh"
 
 
-uptime_out=`rpcclient $ARM_RPC_IP uptime | grep load`
+uptime_out=`rpcclient2 uptime | grep load`
 
 echo "RPC : $uptime_out"
 
@@ -138,15 +137,15 @@ echo "ATOM_UPTIMEMIN:$atom_minutes"
 
 if [ $arm_days -ne 0 ] && [ $atom_days -lt $arm_days ]; then
 	echo "RDKB: Uptime of ARM is greater than atom Restarting Ccsp"
-	rpcclient $ARM_RPC_IP sh $ARM_CCSP_RESTART
+	rpcclient2 sh $ARM_CCSP_RESTART
 elif [ $arm_hours -ne 0 ] && [ $atom_hours -lt $arm_hours ]; then
 	echo "RDKB: Uptime of ARM is greater than atom Restarting Ccsp"
-	rpcclient $ARM_RPC_IP sh $ARM_CCSP_RESTART
+	rpcclient2 sh $ARM_CCSP_RESTART
 elif [ $arm_minutes -ne 0 ] && [ $atom_minutes -lt $arm_minutes ]; then
 	diff=$((arm_minutes - atom_minutes))
 	echo "arm and atom diff in min : $diff "
 	if [ $diff -gt 1 ];then
 	echo "RDKB: Uptime of ARM is greater than atom Restarting Ccsp"
-	    rpcclient $ARM_RPC_IP sh $ARM_CCSP_RESTART
+	    rpcclient2 sh $ARM_CCSP_RESTART
 	fi
 fi
