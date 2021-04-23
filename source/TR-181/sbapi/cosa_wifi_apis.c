@@ -14657,7 +14657,7 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__,
 #if defined(_LG_MV1_CELENO_)
             CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : restart Radius Relay \n",__FUNCTION__));
             //Trigerring radius relay restart after radius setting changed
-            system("rpcclient 192.168.254.253 'sysevent set radiusrelay-restart'");
+            system("rpcclient2 'sysevent set radiusrelay-restart'");
 #endif
         }
     }
@@ -24888,16 +24888,7 @@ INT CosaDmlWiFi_DisAssociatedDevice_callback(INT apIndex, char *mac, int reason)
 int CosaDml_print_uptime( char *log  ) {
 
 #if defined(_COSA_INTEL_USG_ATOM_)
-    char RemoteIP[128]="";
-    readRemoteIP(RemoteIP, 128,"ARM_ARPING_IP");
-    if (RemoteIP[0] != 0 && strlen(RemoteIP) > 0) {
-        v_secure_system("/usr/bin/rpcclient %s \"print_uptime %s\" &", RemoteIP, log);
-    }
-    //>>zqiu: for AXB6
-    else {
-    v_secure_system("print_uptime \"%s\"", log);
-    }
-    //<<
+    v_secure_system("/usr/bin/rpcclient2 \"print_uptime %s\" &", log);
 #else
     v_secure_system("print_uptime \"%s\"", log);
 #endif
