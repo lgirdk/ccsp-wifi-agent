@@ -107,77 +107,23 @@ void* getSyscfgLogLevel( void *arg )
     pthread_detach(pthread_self());
 	UNREFERENCED_PARAMETER(arg);
 #if defined(_COSA_INTEL_USG_ATOM_) && !defined (_XB6_PRODUCT_REQ_)
-    #define DATA_SIZE 1024
-    FILE *fp1;
-    char buf[DATA_SIZE] = {0};
-    char *urlPtr = NULL;
-    fp1 = fopen("/etc/device.properties", "r");
-    if (fp1 == NULL) {
-        CcspTraceError(("Error opening properties file! \n"));
-        return FALSE;
-    }
-
-    CcspTraceInfo(("Searching for ARM ARP IP\n"));
-
-    while (fgets(buf, DATA_SIZE, fp1) != NULL) {
-           if (strstr(buf, "ARM_ARPING_IP") != NULL) {
-            buf[strcspn(buf, "\r\n")] = 0; // Strip off any carriage returns
-
-            // grab URL from string
-            urlPtr = strstr(buf, "=");
-            urlPtr++;
-            break;
-        }
-    }
-    if (fclose(fp1) != 0) {
-        CcspTraceError(("Error closing properties file! \n"));
-    }
-
-    if (urlPtr != NULL && urlPtr[0] != 0 && strlen(urlPtr) > 0)
     {
-        CcspTraceInfo(("Reported an ARM IP of %s \n", urlPtr));
-        char rpcCmd[128];
         char out[8];
-        errno_t rc = -1;
+
         out[0] = '\0';
-
-        rc = sprintf_s(rpcCmd, sizeof(rpcCmd) , "/usr/bin/rpcclient %s \"syscfg get X_RDKCENTRAL-COM_LoggerEnable\" | grep -v \"RPC\"", urlPtr);
-        if(rc < EOK)
-        {
-            ERR_CHK(rc);
-        }
-        _get_shell_output(rpcCmd, out, sizeof(out));
-
+        _get_shell_output ("/usr/bin/rpcclient2 \"syscfg get X_RDKCENTRAL-COM_LoggerEnable\" | grep -v RPC", out, sizeof(out));
         RDKLogEnable = (BOOL)atoi(out);
 
         out[0] = '\0';
-        rc = sprintf_s(rpcCmd, sizeof(rpcCmd), "/usr/bin/rpcclient %s \"syscfg get X_RDKCENTRAL-COM_LogLevel\" | grep -v \"RPC\"", urlPtr);
-        if(rc < EOK)
-        {
-            ERR_CHK(rc);
-        }
-        _get_shell_output(rpcCmd, out, sizeof(out));
-
-        RDKLogLevel = (ULONG )atoi(out);
+        _get_shell_output ("/usr/bin/rpcclient2 \"syscfg get X_RDKCENTRAL-COM_LogLevel\" | grep -v RPC", out, sizeof(out));
+        RDKLogLevel = (ULONG)atoi(out);
 
         out[0] = '\0';
-        rc = sprintf_s(rpcCmd, sizeof(rpcCmd), "/usr/bin/rpcclient %s \"syscfg get X_RDKCENTRAL-COM_WiFi_LogLevel\" | grep -v \"RPC\"", urlPtr);
-        if(rc < EOK)
-        {
-            ERR_CHK(rc);
-        }
-        _get_shell_output(rpcCmd, out, sizeof(out));
-
+        _get_shell_output ("/usr/bin/rpcclient2 \"syscfg get X_RDKCENTRAL-COM_WiFi_LogLevel\" | grep -v RPC", out, sizeof(out));
         WiFi_RDKLogLevel = (ULONG)atoi(out);
 
         out[0] = '\0';
-        rc = sprintf_s(rpcCmd, sizeof(rpcCmd), "/usr/bin/rpcclient %s \"syscfg get X_RDKCENTRAL-COM_WiFi_LoggerEnable\" | grep -v \"RPC\"", urlPtr);
-        if(rc < EOK)
-        {
-            ERR_CHK(rc);
-        }
-        _get_shell_output(rpcCmd, out, sizeof(out));
-
+        _get_shell_output ("/usr/bin/rpcclient2 \"syscfg get X_RDKCENTRAL-COM_WiFi_LoggerEnable\" | grep -v RPC", out, sizeof(out));
         WiFi_RDKLogEnable = (BOOL)atoi(out);
         
         CcspTraceInfo(("WIFI_DBG:-------Log Info values from arm RDKLogEnable:%d,RDKLogLevel:%u,WiFi_RDKLogLevel:%u,WiFi_RDKLogEnable:%d\n",RDKLogEnable,RDKLogLevel,WiFi_RDKLogLevel, WiFi_RDKLogEnable ));
@@ -644,10 +590,10 @@ int main(int argc, char* argv[])
 
 #if defined(_LG_MV1_CELENO_)
     //Passing wifi initialized status 
-    system("rpcclient 192.168.254.253 'touch /tmp/wifi_initialized'");
+    system("rpcclient2 'touch /tmp/wifi_initialized'");
 
     //Trigerring radius relay start after wifi_initialized
-    system("rpcclient 192.168.254.253 'sysevent set radiusrelay-start'");
+    system("rpcclient2 'sysevent set radiusrelay-start'");
 #endif
 
     char*                           pParamNames[]      = {"Device.WiFi.AccessPoint.15.X_LGI-COM_ActiveTimeout"};
@@ -673,8 +619,8 @@ int main(int argc, char* argv[])
 
         //remove the current entry from crontab, if any
 #if defined(_LG_MV1_CELENO_)
-        system("rpcclient 192.168.254.253 'sed -i \"/Device.WiFi.SSID./d\" /var/spool/cron/crontabs/root'");
-        system("rpcclient 192.168.254.253 'sed -i \'/Device.WiFi.Radio./d\' /var/spool/cron/crontabs/root'");
+        system("rpcclient2 'sed -i \"/Device.WiFi.SSID./d\" /var/spool/cron/crontabs/root'");
+        system("rpcclient2 'sed -i \'/Device.WiFi.Radio./d\' /var/spool/cron/crontabs/root'");
 #else
         system("sed -i '/Device.WiFi.SSID./d' /var/spool/cron/crontabs/root");
 #endif
@@ -682,7 +628,7 @@ int main(int argc, char* argv[])
         //setup the crontab entry
         sscanf(ppReturnVal[0]->parameterValue,"%d/%d/%d-%d:%d", &iDay, &iMonth, &iYear, &iHour, &iMin);
 #if defined(_LG_MV1_CELENO_)
-        snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient 192.168.254.253 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
+        snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient2 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
             iMin, iHour, iDay, iMonth, iGnIndex24);
 #else
         sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false' >> /var/spool/cron/crontabs/root",
@@ -694,7 +640,7 @@ int main(int argc, char* argv[])
 
         //setup the next crontab entry
 #if defined(_LG_MV1_CELENO_)
-        snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient 192.168.254.253 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
+        snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient2 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
             iMin, iHour, iDay, iMonth, iGnIndex50);
 #else
         sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false' >> /var/spool/cron/crontabs/root",
