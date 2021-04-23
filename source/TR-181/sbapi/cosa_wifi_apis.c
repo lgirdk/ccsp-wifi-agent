@@ -11093,7 +11093,7 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__,
 #if defined(_LG_MV1_CELENO_)
             CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : restart Radius Relay \n",__FUNCTION__));
             //Trigerring radius relay restart after radius setting changed
-            system("rpcclient 192.168.254.253 'sysevent set radiusrelay-restart'");
+            system("rpcclient2 'sysevent set radiusrelay-restart'");
 #endif
         }
     }
