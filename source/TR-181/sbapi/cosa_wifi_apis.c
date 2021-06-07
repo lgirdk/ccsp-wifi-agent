@@ -18218,6 +18218,19 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
         getDefaultPassphase(wlanIndex, (char*)pCfg->DefaultKeyPassphrase);
     }
 #endif //WIFI_HAL_VERSION_3
+
+#ifdef _LG_MV1_CELENO_
+    if(wlanIndex == 6 || wlanIndex == 7) /*For Guest wifi SSIDs*/
+    {
+        /*If KeyPassphrase is empty, set the KeyPassphrase same as DefaultKeyPassphrase for Guest wifi*/
+        if(strlen(pCfg->KeyPassphrase) == 0 && strlen(pCfg->DefaultKeyPassphrase) != 0)
+        {
+            wifi_setApSecurityKeyPassphrase(wlanIndex, pCfg->DefaultKeyPassphrase);
+            wifi_getApSecurityKeyPassphrase(wlanIndex, (char*)pCfg->KeyPassphrase);
+        }
+    }
+#endif
+
  //wifi_getApSecurityRadiusServerIPAddr(wlanIndex,&pCfg->RadiusServerIPAddr); //bug
     //wifi_getApSecurityRadiusServerPort(wlanIndex, &pCfg->RadiusServerPort);
 #if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_)
