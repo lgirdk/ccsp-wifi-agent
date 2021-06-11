@@ -16514,14 +16514,33 @@ MacFilter_GetParamStringValue
     )
 {
     UNREFERENCED_PARAMETER(hInsContext);
-    UNREFERENCED_PARAMETER(ParamName);
-    UNREFERENCED_PARAMETER(pValue);
-    UNREFERENCED_PARAMETER(pUlSize);
-    /* check the parameter name and return the corresponding value */
-#if 0
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
     PCOSA_DML_WIFI_AP               pWifiAp      = (PCOSA_DML_WIFI_AP        )pLinkObj->hContext;
-    PCOSA_DML_WIFI_AP_MF_CFG        pWifiApMf    = &pWifiAp->MF;	
+    PCOSA_DML_WIFI_AP_MF_CFG        pWifiApMf    = &pWifiAp->MF;
+    /* check the parameter name and return the corresponding value */
+    if (strcmp(ParamName, "FilteringMode") == 0)
+    {
+        if ( pWifiApMf->bEnabled == TRUE )
+        {
+            if ( pWifiApMf->FilterAsBlackList == TRUE )
+            {
+                AnscCopyString(pWifiAp->AP.Cfg.MacFilterMode,"Deny");
+            }
+            else
+            {
+                AnscCopyString(pWifiAp->AP.Cfg.MacFilterMode,"Allow");
+            }
+        }
+        else
+        {
+            AnscCopyString(pWifiAp->AP.Cfg.MacFilterMode,"Allow-ALL");
+        }
+        /* collect value */
+
+        AnscCopyString(pValue, pWifiAp->AP.Cfg.MacFilterMode);
+        return 0;
+    }
+#if 0	
     if (strcmp(ParamName, "MACAddress") == 0)
     {
         /* collect value */
