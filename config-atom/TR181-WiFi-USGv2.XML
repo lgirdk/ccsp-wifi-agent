@@ -2549,6 +2549,11 @@ INSTMSMT_PH2 -->
                                     <syntax>bool</syntax>
                                     <writable>true</writable>
                                 </parameter>
+                                <parameter>
+                                    <name>FilteringMode</name>
+                                    <type>string</type>
+                                    <syntax>string</syntax>
+                                </parameter>
 <!--
                                 <parameter>
                                     <name>MACAddress</name>
