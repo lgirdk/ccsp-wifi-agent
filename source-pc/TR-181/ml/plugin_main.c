@@ -297,14 +297,6 @@ COSA_Async_Init
             pMoca->Remove(pMoca);
             g_pCosaBEManager->hMoCA = (ANSC_HANDLE)CosaMoCACreate();
         }
-#elif defined(_COSA_DRG_CNS_)
-        PCOSA_DATAMODEL_MOCA pMoca = g_pCosaBEManager->hMoCA;
-        pMoca->Remove(pMoca);
-        g_pCosaBEManager->hMoCA = (ANSC_HANDLE)CosaMoCACreate();
-#elif defined(_COSA_DRG_TPG_)
-        PCOSA_DATAMODEL_WIFI pWifi = g_pCosaBEManager->hWifi;
-        pWifi->Remove(pWifi);
-        g_pCosaBEManager->hWifi = (ANSC_HANDLE)CosaWifiCreate();
 #endif
 
     }
@@ -339,14 +331,6 @@ COSA_IsObjSupported
 
 #endif
 
-#if (defined(_COSA_DRG_CNS_))
-
-    if(AnscEqualString(pObjName, "Device.DNS.Client.", TRUE))
-    {
-        return FALSE;
-    }        
-
-#endif
 
     return TRUE;
 }
