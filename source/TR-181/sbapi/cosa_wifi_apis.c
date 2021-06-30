@@ -17886,7 +17886,10 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     pEntry->Info.ModesSupported = COSA_DML_WIFI_SECURITY_None | 
 				  COSA_DML_WIFI_SECURITY_WPA2_Personal | 
 				  COSA_DML_WIFI_SECURITY_WPA2_Enterprise |
-				  COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise;
+				  COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise |
+				  COSA_DML_WIFI_SECURITY_WPA3_Personal |
+				  COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition |
+				  COSA_DML_WIFI_SECURITY_WPA3_Enterprise;
 #elif defined(_HUB4_PRODUCT_REQ_)
     pEntry->Info.ModesSupported = COSA_DML_WIFI_SECURITY_None |
 				  COSA_DML_WIFI_SECURITY_WPA2_Personal |
@@ -18259,6 +18262,19 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
 	if (strncmp(securityType,"None", strlen("None")) == 0)
     {
 		pCfg->ModeEnabled =  COSA_DML_WIFI_SECURITY_None; 
+    } else if (strncmp(securityType,"11s", strlen("11s")) == 0)
+    {
+        if(strncmp(authMode,"EAPAuthentication", strlen("EAPAuthentication")) == 0)
+        {
+            pCfg->ModeEnabled = COSA_DML_WIFI_SECURITY_WPA3_Enterprise;
+        }
+        else
+        {
+	    pCfg->ModeEnabled = COSA_DML_WIFI_SECURITY_WPA3_Personal;
+        }
+    } else if (strncmp(securityType,"11iand11s", strlen("11iand11s")) == 0)
+    {
+	    pCfg->ModeEnabled = COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition;
     } else if (strncmp(securityType,"11i", strlen("11i")) == 0)
     {
         if(strncmp(authMode,"EAPAuthentication", strlen("EAPAuthentication")) == 0)
@@ -18629,6 +18645,24 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 	   }
             CcspWifiEventTrace(("RDK_LOG_NOTICE, Wifi security mode WPA2-Personal is Enabled\n"));
             CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : Wifi security mode WPA2-Personal is Enabled\n"));
+        } else if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal)
+        {
+            strcpy(securityType,"11s");
+            strcpy(authMode,"PSKAuthentication");
+            CcspWifiEventTrace(("RDK_LOG_NOTICE, Wifi security mode WPA3-Personal is Enabled\n"));
+            CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : Wifi security mode WPA3-Personal is Enabled\n"));
+        } else if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition)
+        {
+            strcpy(securityType,"11iand11s");
+            strcpy(authMode,"PSKAuthentication");
+            CcspWifiEventTrace(("RDK_LOG_NOTICE, Wifi security mode WPA3-Personal-Transition is Enabled\n"));
+            CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : Wifi security mode WPA3-Personal-Transition is Enabled\n"));
+        } else if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Enterprise)
+        {
+            strcpy(securityType,"11s");
+            strcpy(authMode,"EAPAuthentication");
+            CcspWifiEventTrace(("RDK_LOG_NOTICE, Wifi security mode WPA3_Enterprise is Enabled\n"));
+            CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : Wifi security mode WPA3_Enterprise is Enabled\n"));
 	} else if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA2_Enterprise) 
         {
 			//zqiu: Add radius support
@@ -19295,6 +19329,9 @@ ULONG                                          instanceNumber
         }
 #ifdef _XB6_PRODUCT_REQ_
 	else if ( pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA2_Personal ||
+               pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal ||
+               pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition ||
+               pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Enterprise ||
                pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA2_Enterprise )
 #else
 	else if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA_Personal ||
@@ -19500,6 +19537,9 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     } 
 #ifdef _XB6_PRODUCT_REQ_
 	else  if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA2_Personal || 
+                pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal ||
+                pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition ||
+                pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Enterprise ||
                 pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA2_Enterprise )
 #else
 	else  if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA_Personal ||
@@ -30313,6 +30353,15 @@ static void MeshNotifySecurityChange(INT apIndex, PCOSA_DML_WIFI_APSEC_CFG pStor
             break;
         case COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise:
             secMode = "WPA-WPA2-Enterprise";
+            break;
+        case COSA_DML_WIFI_SECURITY_WPA3_Personal:
+            secMode = "WPA3-Personal";
+            break;
+        case COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition:
+            secMode = "WPA3-Personal-Transition";
+            break;
+        case COSA_DML_WIFI_SECURITY_WPA3_Enterprise:
+            secMode = "WPA3-Enterprise";
             break;
         case COSA_DML_WIFI_SECURITY_None:
         default:
