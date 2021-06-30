@@ -13276,7 +13276,7 @@ Security_SetParamStringValue
 
             for(j = 0; j < len; j++)
             {
-                if ((pString[j] == ' ') || (isprint(pString[j]) == 0))
+                if (isprint(pString[j]) == 0)
                 {
                     CcspTraceError(("%s:Invalid %s\n", __FUNCTION__,KeyPassphraseType[i]));
                     return FALSE;
