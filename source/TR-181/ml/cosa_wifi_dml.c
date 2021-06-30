@@ -221,6 +221,9 @@ static const WIFI_SECURITY_PAIR wifi_sec_type_table[] = {
   { "WPA-Enterprise",      COSA_DML_WIFI_SECURITY_WPA_Enterprise },
   { "WPA2-Enterprise",     COSA_DML_WIFI_SECURITY_WPA2_Enterprise },
   { "WPA-WPA2-Enterprise", COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise },
+  { "WPA3-Personal",       COSA_DML_WIFI_SECURITY_WPA3_Personal },
+  { "WPA3-Personal-Transition", COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition },
+  { "WPA3-Enterprise",     COSA_DML_WIFI_SECURITY_WPA3_Enterprise },
 };
 
 #define NUM_WIFI_SEC_TYPES (sizeof(wifi_sec_type_table)/sizeof(wifi_sec_type_table[0]))
@@ -9776,6 +9779,41 @@ Security_GetParamStringValue
             }
         }
 
+		if ( pWifiApSec->Info.ModesSupported & COSA_DML_WIFI_SECURITY_WPA3_Personal)
+        {
+            if (AnscSizeOfString(buf) != 0)
+            {
+                strcat(buf, ",WPA3-Personal");
+            }
+            else
+            {
+                strcat(buf, "WPA3-Personal");
+            }
+        }
+
+		if ( pWifiApSec->Info.ModesSupported & COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition)
+        {
+            if (AnscSizeOfString(buf) != 0)
+            {
+                strcat(buf, ",WPA3-Personal-Transition");
+            }
+            else
+            {
+                strcat(buf, "WPA3-Personal-Transition");
+            }
+        }
+
+		if ( pWifiApSec->Info.ModesSupported & COSA_DML_WIFI_SECURITY_WPA3_Enterprise)
+        {
+            if (AnscSizeOfString(buf) != 0)
+            {
+                strcat(buf, ",WPA3-Enterprise");
+            }
+            else
+            {
+                strcat(buf, "WPA3-Enterprise");
+            }
+        }
 #endif
         if ( AnscSizeOfString(buf) < *pUlSize)
         {
@@ -9851,6 +9889,18 @@ Security_GetParamStringValue
             else if (pWifiApSec->Cfg.ModeEnabled & COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise )
             {
                 AnscCopyString(pValue, "WPA-WPA2-Enterprise");
+            }
+            else if (pWifiApSec->Cfg.ModeEnabled & COSA_DML_WIFI_SECURITY_WPA3_Personal )
+            {
+                AnscCopyString(pValue, "WPA3-Personal");
+            }
+            else if (pWifiApSec->Cfg.ModeEnabled & COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition )
+            {
+                AnscCopyString(pValue, "WPA3-Personal-Transition");
+            }
+            else if (pWifiApSec->Cfg.ModeEnabled & COSA_DML_WIFI_SECURITY_WPA3_Enterprise )
+            {
+                AnscCopyString(pValue, "WPA3-Enterprise");
             }
 #endif
             return 0;
@@ -10470,7 +10520,11 @@ Security_SetParamStringValue
 #if defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_XB8_PRODUCT_REQ_)
          if((TmpMode != COSA_DML_WIFI_SECURITY_None)
             && (TmpMode != COSA_DML_WIFI_SECURITY_WPA2_Personal)
-            && (TmpMode != COSA_DML_WIFI_SECURITY_WPA2_Enterprise))
+            && (TmpMode != COSA_DML_WIFI_SECURITY_WPA2_Enterprise)
+            && (TmpMode != COSA_DML_WIFI_SECURITY_WPA3_Personal)
+            && (TmpMode != COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition)
+            && (TmpMode != COSA_DML_WIFI_SECURITY_WPA3_Enterprise)
+         )
          {
               printf("type not allowed for this device\n");
               return FALSE;
@@ -11046,6 +11100,14 @@ Security_Validate
         return FALSE;
     }*/
 
+    // Check the ModeEnabled against ModesSupported
+    if ((pWifiApSec->Info.ModesSupported & pWifiApSec->Cfg.ModeEnabled) == 0)
+    {
+        AnscCopyString(pReturnParamName, "ModesSupported");
+        *puLength = AnscSizeOfString("ModesSupported");
+        return FALSE;
+    }
+
     // WPA is not allowed by itself.  Only in mixed mode WPA/WPA2
     if (pWifiApSec->Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WPA_Enterprise ||
         pWifiApSec->Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WPA_Personal) {
@@ -11058,6 +11120,18 @@ Security_Validate
             (pWifiApSec->Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WPA_WPA2_Personal) ) &&
           (pWifiApSec->Cfg.EncryptionMethod != COSA_DML_WIFI_AP_SEC_AES_TKIP) &&
 	  (pWifiApSec->Cfg.EncryptionMethod != COSA_DML_WIFI_AP_SEC_AES )   ) {
+        AnscCopyString(pReturnParamName, "X_CISCO_COM_EncryptionMethod");
+        *puLength = AnscSizeOfString("X_CISCO_COM_EncryptionMethod");
+        return FALSE;
+    }
+
+    if (
+        ((pWifiApSec->Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal) ||
+        (pWifiApSec->Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition) ||
+        (pWifiApSec->Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Enterprise))
+        &&
+        (pWifiApSec->Cfg.EncryptionMethod != COSA_DML_WIFI_AP_SEC_AES)
+    ) {
         AnscCopyString(pReturnParamName, "X_CISCO_COM_EncryptionMethod");
         *puLength = AnscSizeOfString("X_CISCO_COM_EncryptionMethod");
         return FALSE;
