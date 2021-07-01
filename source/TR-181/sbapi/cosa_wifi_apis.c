@@ -1628,6 +1628,8 @@ static int gSsidCount = 16;
 #endif
 static int gApCount = 16;
 
+#define DefaultReservedSSIDNames "Liberty Global,Telenet,Virgin Media,Ziggo,Horizon Wi-Free,TELENETHOMESPOT,TelenetWiFree,TelenetSecure,UPC WiFiSpots,UPC Wi-Free,Unitymedia WiFiSpot,Unitymedia Public WiFiSpot,VTR,LibertyPR"
+
 static  COSA_DML_WIFI_RADIO_CFG sWiFiDmlRadioStoredCfg[2];
 static  COSA_DML_WIFI_RADIO_CFG sWiFiDmlRadioRunningCfg[2];
 COSA_DML_WIFI_SSID_CFG sWiFiDmlSsidStoredCfg[WIFI_INDEX_MAX];
@@ -1888,6 +1890,18 @@ int isReservedSSID(char *ReservedNames, char *ssid)
         char name[512] = {0};
         char *save_str = NULL;
 
+        strncpy(name, DefaultReservedSSIDNames, sizeof(name)-1);
+        tmp=strtok_r(name, ",", &save_str);
+        while (tmp != NULL)
+        {
+            if(strcasecmp(ssid,tmp) == 0 )
+            {
+                //Already this string is in the reservered names.
+                return 1;
+            }
+            tmp = strtok_r(NULL, ",", &save_str);
+        }
+
         strncpy(name, ReservedNames, sizeof(name)-1);
         tmp=strtok_r(name, ",", &save_str);
         while (tmp != NULL)
@@ -2012,7 +2026,6 @@ static ANSC_STATUS setPmkCachingintoPSM (int index, BOOLEAN pmkEnable)
 
 void checkforbiddenSSID(int index)
 {
-#if defined(_COSA_INTEL_USG_ATOM_) && defined(_LG_MV1_CELENO_)
     int retPsmGet = CCSP_SUCCESS;
     char SSID[33] = {0};
     char *strValue  = NULL;
@@ -2034,7 +2047,6 @@ void checkforbiddenSSID(int index)
     } else {
         AnscTraceError(("%spsm set failed for Reserved name\n", __FUNCTION__));
     }
-#endif //Applicable only for MV1
 }
 
 void configWifi(BOOLEAN redirect)
@@ -2658,9 +2670,15 @@ CosaDmlWiFi_SetWiFiReservedSSIDNames
     PCOSA_DATAMODEL_WIFI    pMyObject = ( PCOSA_DATAMODEL_WIFI )phContext;
     char tempBuf[512] = {0};
     int retPsmSet = CCSP_SUCCESS;
+
+    if(pMyObject->ReservedSSIDNames[0] == '\0')
+    {
+        strncpy(pMyObject->ReservedSSIDNames,ReservedName,sizeof(pMyObject->ReservedSSIDNames)-1);
     
-    snprintf(tempBuf, sizeof(tempBuf)-1,"%s,%s",pMyObject->ReservedSSIDNames, ReservedName);
-    strncpy(pMyObject->ReservedSSIDNames,tempBuf,sizeof(pMyObject->ReservedSSIDNames)-1);
+    } else {
+        snprintf(tempBuf, sizeof(tempBuf)-1,"%s,%s",pMyObject->ReservedSSIDNames, ReservedName);
+        strncpy(pMyObject->ReservedSSIDNames,tempBuf,sizeof(pMyObject->ReservedSSIDNames)-1);
+    }
     
     retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, ReservedSSIDNames,ccsp_string,tempBuf);
     if (retPsmSet != CCSP_SUCCESS) {
