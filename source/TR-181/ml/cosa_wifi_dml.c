@@ -11175,6 +11175,7 @@ AccessPoint_SetParamStringValue
             system("rpcclient2 'sed -i \'/Device.WiFi.Radio./d\' /var/spool/cron/crontabs/root'");
 #else
             system("sed -i '/Device.WiFi.SSID./d' /var/spool/cron/crontabs/root");
+            system("sed -i '/Device.WiFi.Radio./d' /var/spool/cron/crontabs/root");
 #endif
 
             if (pString[0] != '\0')
@@ -11190,7 +11191,7 @@ AccessPoint_SetParamStringValue
                 snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient2 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
                     iMin, iHour, iDay, iMonth, iGnIndex24);
 #else
-                sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false' >> /var/spool/cron/crontabs/root",
+                sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting bool true' >> /var/spool/cron/crontabs/root",
                     iMin, iHour, iDay, iMonth, iGnIndex24);
 #endif
 
@@ -11202,7 +11203,7 @@ AccessPoint_SetParamStringValue
                 snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient2 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
                     iMin, iHour, iDay, iMonth, iGnIndex50);
 #else
-                sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false' >> /var/spool/cron/crontabs/root",
+                sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting bool true' >> /var/spool/cron/crontabs/root",
                     iMin, iHour, iDay, iMonth, iGnIndex50);
 #endif
 
