@@ -1884,37 +1884,84 @@ static int gWifi_sysevent_fd = 0;
 static token_t gWifi_sysEtoken = TOKEN_NULL;
 #endif
 
-int isReservedSSID(char *ReservedNames, char *ssid)
+/*
+   Copy or convert in place: upper to lower case, drop spaces, underscores and dashes.
+   Don't write more then 'n' chars to destination (ie truncate output if necessary).
+   Return the number of chars consumed from the input string.
+*/
+static size_t normalise_ssid (char *d, char *s, size_t n)
 {
-        char *tmp = NULL;
-        char name[512] = {0};
-        char *save_str = NULL;
+    int inch;
+    char *s_orig;
 
-        strncpy(name, DefaultReservedSSIDNames, sizeof(name)-1);
-        tmp=strtok_r(name, ",", &save_str);
-        while (tmp != NULL)
-        {
-            if(strcasecmp(ssid,tmp) == 0 )
-            {
-                //Already this string is in the reservered names.
-                return 1;
-            }
-            tmp = strtok_r(NULL, ",", &save_str);
-        }
-
-        strncpy(name, ReservedNames, sizeof(name)-1);
-        tmp=strtok_r(name, ",", &save_str);
-        while (tmp != NULL)
-        {
-            if(strcasecmp(ssid,tmp) == 0 )
-            {
-                //Already this string is in the reservered names.
-                return 1;
-            }
-            tmp = strtok_r(NULL, ",", &save_str);
-        }
-
+    if (n == 0)
         return 0;
+
+    s_orig = s;
+
+    while (n > 1) {
+        inch = *s;
+        if (inch == 0)      /* Stop on nul (but nul is not considered to be "consumed") */
+            break;
+        if (inch == ',')    /* Stop on comma (but comma is not considered to be "consumed") */
+            break;
+        s++;
+        if ((inch != ' ') && (inch != '-') && (inch != '_')) {
+            *d++ = tolower(inch);
+            n--;
+        }
+    }
+
+    *d++ = 0;
+
+    return s - s_orig;
+}
+
+int isReservedSSID (char *ReservedNames, char *ssid_raw)
+{
+    char ssid[32 + 1];
+    char ssid_reserved[32 + 1];
+    int i;
+
+    /*
+       Commas are used as separators for the reserved SSID names lists and
+       the normalise_ssid() function won't include then in any normalised
+       SSID. To avoid various corner cases, check whether the new SSID contains
+       a comma. If it does then it will not match any reserved SSID name and we
+       can abort early.
+    */
+    if (strchr (ssid_raw, ',') != NULL)
+    {
+        return 0;
+    }
+
+    normalise_ssid (ssid, ssid_raw, sizeof(ssid));
+
+    /*
+       Two passes: First test new SSID against the default reserved SSID names,
+       then against the custom list.
+    */
+    for (i = 0; i < 2; i++)
+    {
+        char *s = (i == 0) ? DefaultReservedSSIDNames : ReservedNames;
+
+        while (*s != 0)
+        {
+            s += normalise_ssid (ssid_reserved, s, sizeof(ssid_reserved));
+
+            if (strcmp (ssid, ssid_reserved) == 0)
+            {
+                return 1;   /* ssid string found in reserved names lists */
+            }
+
+            while (*s == ',')
+            {
+                s++;
+            }
+        }
+    }
+
+    return 0;
 }
 
 ANSC_STATUS
