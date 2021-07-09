@@ -1564,19 +1564,29 @@ WiFi_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind))
     {
-        if(isReservedSSID(pMyObject->ReservedSSIDNames,pString)) //Check already in the list
+        /*
+           Commas are used as separators for the lists of reserved SSIDs,
+           therefore we need to enforce a rule that no reserved SSID can
+           contain a comma. This also protects against attempts to set a
+           list of SSIDs in one SPV (which is not supported - reserved
+           SSIDs need to be added one at a time).
+        */
+        if (strchr (pString, ',') != NULL)
+        {
+            return FALSE;
+        }
+
+        if (isReservedSSID (pMyObject->ReservedSSIDNames, pString)) //Check already in the list
         {
             return TRUE;
         }
 
-        if(ANSC_STATUS_SUCCESS == CosaDmlWiFi_SetWiFiReservedSSIDNames((ANSC_HANDLE)pMyObject,pString))
+        if (CosaDmlWiFi_SetWiFiReservedSSIDNames ((ANSC_HANDLE) pMyObject, pString) == ANSC_STATUS_SUCCESS)
         {
             return TRUE;
         }
-        else
-        {
-            return FALSE;
-        }
+
+        return FALSE;
     }
     //LGI add end
  
