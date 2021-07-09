@@ -2858,31 +2858,36 @@ printf("%s: deleting records for index %d \n", __FUNCTION__, i);
 }
 */
 //LGI add begin
-ANSC_STATUS
-CosaDmlWiFi_SetWiFiReservedSSIDNames
-    (
-        ANSC_HANDLE phContext,
-        char *ReservedName
-    )
+ANSC_STATUS CosaDmlWiFi_SetWiFiReservedSSIDNames (ANSC_HANDLE phContext, char *ReservedName)
 {
+    PCOSA_DATAMODEL_WIFI pMyObject = (PCOSA_DATAMODEL_WIFI) phContext;
+    size_t len_original, len_new, available, required;
+    char *p;
 
-    PCOSA_DATAMODEL_WIFI    pMyObject = ( PCOSA_DATAMODEL_WIFI )phContext;
-    char tempBuf[512] = {0};
-    int retPsmSet = CCSP_SUCCESS;
+    len_new = strlen (ReservedName);
+    len_original = strlen (pMyObject->ReservedSSIDNames);
+    available = sizeof(pMyObject->ReservedSSIDNames) - len_original;
+    required = (len_original == 0) ? (len_new + 1) : (len_new + 2);
 
-    if(pMyObject->ReservedSSIDNames[0] == '\0')
+    if (required > available)
     {
-        strncpy(pMyObject->ReservedSSIDNames,ReservedName,sizeof(pMyObject->ReservedSSIDNames)-1);
+        return ANSC_STATUS_FAILURE;
+    }    
     
-    } else {
-        snprintf(tempBuf, sizeof(tempBuf)-1,"%s,%s",pMyObject->ReservedSSIDNames, ReservedName);
-        strncpy(pMyObject->ReservedSSIDNames,tempBuf,sizeof(pMyObject->ReservedSSIDNames)-1);
+    p = pMyObject->ReservedSSIDNames + len_original;
+
+    if (len_original != 0)
+    {
+        *p++ = ',';
     }
-    
-    retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, ReservedSSIDNames,ccsp_string,tempBuf);
-    if (retPsmSet != CCSP_SUCCESS) {
+
+    memcpy (p, ReservedName, len_new + 1);
+
+    if (PSM_Set_Record_Value2 (bus_handle, g_Subsystem, ReservedSSIDNames, ccsp_string, pMyObject->ReservedSSIDNames) != CCSP_SUCCESS)
+    {
         return ANSC_STATUS_FAILURE;
     }
+
     //Radio resart is required to check the current SSID
     gRadioRestartRequest[2] = TRUE;
     
