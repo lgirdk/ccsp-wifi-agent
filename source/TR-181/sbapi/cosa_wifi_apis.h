@@ -1340,12 +1340,6 @@ int isReservedSSID
     );
 
 ANSC_STATUS
-CosaDmlWiFi_GetWiFiReservedSSIDNames
-    ( 
-        char *ReservedNames 
-    );
-
-ANSC_STATUS
 CosaDmlWiFi_GetPreferPrivateData
     (
        BOOL *value
