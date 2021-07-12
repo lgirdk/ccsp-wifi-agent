@@ -2894,25 +2894,26 @@ ANSC_STATUS CosaDmlWiFi_SetWiFiReservedSSIDNames (ANSC_HANDLE phContext, char *R
     return ANSC_STATUS_SUCCESS;
 }
 
-ANSC_STATUS
-CosaDmlWiFi_GetWiFiReservedSSIDNames( char  *ReservedNames )
+ANSC_STATUS CosaDmlWiFi_GetWiFiReservedSSIDNames (char *ReservedNames, unsigned int len)
 {
-        int retPsmGet = CCSP_SUCCESS;
-        char *strValue  = NULL;
+    int retPsmGet;
+    char *strValue = NULL;
 
+    retPsmGet = PSM_Get_Record_Value2(bus_handle, g_Subsystem, ReservedSSIDNames, NULL, &strValue);
 
-        retPsmGet = PSM_Get_Record_Value2( bus_handle, g_Subsystem, ReservedSSIDNames, NULL, &strValue );
-        if (retPsmGet == CCSP_SUCCESS)
-        {
-                snprintf(ReservedNames,511,"%s",strValue);
-                ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc( strValue );
-        }
-        else
-        {
-                CcspTraceInfo(("%s Failed to get PSM\n", __FUNCTION__ ));
-                return ANSC_STATUS_FAILURE;
-        }
-        return ANSC_STATUS_SUCCESS;
+    if (retPsmGet == CCSP_SUCCESS)
+    {
+        snprintf(ReservedNames, len, "%s", strValue);
+        ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc( strValue );
+    }
+    else
+    {
+        ReservedNames[0] = 0;
+        CcspTraceInfo(("%s Failed to get PSM\n", __FUNCTION__ ));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    return ANSC_STATUS_SUCCESS;
 }
 //LGI add end
 
@@ -7447,7 +7448,7 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
     CosaDmlWiFi_GetAssocCountThresholdValue(&(pMyObject->iX_RDKCENTRAL_COM_AssocCountThreshold));
     CosaDmlWiFi_GetAssocMonitorDurationValue(&(pMyObject->iX_RDKCENTRAL_COM_AssocMonitorDuration));
     CosaDmlWiFi_GetAssocGateTimeValue(&(pMyObject->iX_RDKCENTRAL_COM_AssocGateTime));
-    CosaDmlWiFi_GetWiFiReservedSSIDNames(pMyObject->ReservedSSIDNames); //LGI addition for forbidden ssid DM
+    CosaDmlWiFi_GetWiFiReservedSSIDNames(pMyObject->ReservedSSIDNames, sizeof(pMyObject->ReservedSSIDNames));
    
     if (!updateBootTimeRunning) { 
         pthread_attr_t attr;
