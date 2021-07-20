@@ -6439,6 +6439,12 @@ CosaDmlWiFiFactoryReset
     int resetSSID[2] = {0,0};
 
 	CcspWifiTrace(("RDK_LOG_WARN,WIFI %s \n",__FUNCTION__));
+
+#if defined(_LG_MV1_CELENO_)
+    /* Stop plume agent before removing the configs */
+    system("rpcclient2 'syscfg set son_admin_status 0'; /etc/plume_init.sh stop");
+#endif
+
     for (i = 1; i <= gRadioCount; i++)
     {
         memset(recName, 0, sizeof(recName));
