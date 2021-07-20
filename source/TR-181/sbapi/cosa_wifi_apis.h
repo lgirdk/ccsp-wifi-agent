@@ -106,6 +106,8 @@
 #define WIFI_INDEX_MIN 6    /* ccsp webui requires 6 default entries of SSID/AccessPoint */
 #endif
 
+#define DefaultReservedSSIDNames "Liberty Global,Telenet,Virgin Media,Ziggo,Horizon Wi-Free,TELENETHOMESPOT,TelenetWiFree,TelenetSecure,UPC WiFiSpots,UPC Wi-Free,Unitymedia WiFiSpot,Unitymedia Public WiFiSpot,VTR,LibertyPR"
+
 #define  MAC_ADDRESS_LENGTH  13
 
  /* Active Measurement Step count */
