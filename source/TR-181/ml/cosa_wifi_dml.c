@@ -880,6 +880,11 @@ WiFi_GetParamStringValue
         AnscCopyString(pValue,pMyObject->ReservedSSIDNames);
         return 0;
     }
+    if (strcmp(ParamName, "X_LGI-COM_DefaultReservedSSID") == 0)
+    {
+        AnscCopyString(pValue,DefaultReservedSSIDNames);
+        return 0;
+    }
     //LGI add end
 
     return 0;
