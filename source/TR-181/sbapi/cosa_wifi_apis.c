@@ -1628,8 +1628,6 @@ static int gSsidCount = 16;
 #endif
 static int gApCount = 16;
 
-#define DefaultReservedSSIDNames "Liberty Global,Telenet,Virgin Media,Ziggo,Horizon Wi-Free,TELENETHOMESPOT,TelenetWiFree,TelenetSecure,UPC WiFiSpots,UPC Wi-Free,Unitymedia WiFiSpot,Unitymedia Public WiFiSpot,VTR,LibertyPR"
-
 static  COSA_DML_WIFI_RADIO_CFG sWiFiDmlRadioStoredCfg[2];
 static  COSA_DML_WIFI_RADIO_CFG sWiFiDmlRadioRunningCfg[2];
 COSA_DML_WIFI_SSID_CFG sWiFiDmlSsidStoredCfg[WIFI_INDEX_MAX];
