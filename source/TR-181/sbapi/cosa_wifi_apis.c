@@ -7975,6 +7975,12 @@ CosaDmlWiFiFactoryReset
 #endif
     {
         // delete current configuration
+
+#if defined(_LG_MV1_CELENO_)
+       /* Stop plume agent before removing the configs */
+       system("rpcclient2 'syscfg set son_admin_status 0'; /etc/plume_init.sh stop");
+#endif
+
         wifi_factoryReset();
 
         //Clear all Wifi DB and Passpoint configurations in case of Factory Reset
