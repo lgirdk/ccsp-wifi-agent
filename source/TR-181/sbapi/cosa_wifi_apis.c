@@ -1673,8 +1673,6 @@ static  COSA_DML_WIFI_RADIO_CFG sWiFiDmlRadioStoredCfg[2];
 static  COSA_DML_WIFI_RADIO_CFG sWiFiDmlRadioRunningCfg[2];
 #endif
 
-#define DefaultReservedSSIDNames "Liberty Global,Telenet,Virgin Media,Ziggo,Horizon Wi-Free,TELENETHOMESPOT,TelenetWiFree,TelenetSecure,UPC WiFiSpots,UPC Wi-Free,Unitymedia WiFiSpot,Unitymedia Public WiFiSpot,VTR,LibertyPR"
-
 COSA_DML_WIFI_SSID_CFG sWiFiDmlSsidStoredCfg[WIFI_INDEX_MAX];
 COSA_DML_WIFI_SSID_CFG sWiFiDmlSsidRunningCfg[WIFI_INDEX_MAX];
 COSA_DML_WIFI_AP_FULL sWiFiDmlApStoredCfg[WIFI_INDEX_MAX];
