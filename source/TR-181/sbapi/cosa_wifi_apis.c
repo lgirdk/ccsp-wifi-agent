@@ -3996,6 +3996,7 @@ CosaDmlWiFiGetRadioSetSecurityDataPsmData
         ULONG                       modeEnabled
     )
 {
+#ifndef _COSA_BCM_ARM_
     char securityType[32];
     char authMode[32];
     int rc = -1;
@@ -4146,6 +4147,18 @@ CosaDmlWiFiGetRadioSetSecurityDataPsmData
     CcspWifiTrace(("RDK_LOG_WARN,WIFI %s wlanIndex = %lu,securityType =%s,authMode = %s\n",__FUNCTION__, wlanIndex,securityType,authMode));
 	CcspWifiTrace(("RDK_LOG_WARN,WIFI %s : Returning Success \n",__FUNCTION__));
     return ANSC_STATUS_SUCCESS;
+#else  /* _COSA_BCM_ARM_ */
+    const char *securityMode;
+
+    CcspWifiTrace(("RDK_LOG_WARN, WIFI %s \n",__FUNCTION__));
+    securityMode = wifi_sec_type_from_value(modeEnabled);
+    CcspWifiTrace(("RDK_LOG_WARN,WIFI %s wlanIndex = %d,securityMode = %s\n",__FUNCTION__, wlanIndex, securityMode ? securityMode : "(null)"));
+    if (!securityMode)
+        securityMode = "None";
+    wifi_setApSecurityModeEnabled(wlanIndex, securityMode);
+    CcspWifiTrace(("RDK_LOG_WARN,WIFI %s : Returning Success\n",__FUNCTION__));
+    return ANSC_STATUS_SUCCESS;
+#endif /* _COSA_BCM_ARM_ */
 }
 ANSC_STATUS
 CosaDmlWiFiGetRadioFactoryResetPsmData
@@ -17979,6 +17992,9 @@ CosaDmlWiFiApSecGetCfg
     int wlanIndex = -1;
     void* pCfgRadiusServerPort = NULL;
     void* pCfgSecondaryRadiusServerPort = NULL;
+#ifdef _COSA_BCM_ARM_
+    char securityMode[32];
+#else
 #if !defined(_INTEL_BUG_FIXES_)
     char securityType[32];
     char authMode[32];
@@ -17986,8 +18002,8 @@ CosaDmlWiFiApSecGetCfg
     char securityType[128];
     char authMode[128];
 #endif
+#endif /* _COSA_BCM_ARM_ */
     int retVal = 0;
-
     if (!pSsid)
     {
         return ANSC_STATUS_FAILURE;
@@ -18010,6 +18026,7 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
 		return ANSC_STATUS_FAILURE;
     }
 
+#ifndef _COSA_BCM_ARM_
     wifi_getApBeaconType(wlanIndex, securityType);
     retVal = wifi_getApBasicAuthenticationMode(wlanIndex, authMode);
     wifiDbgPrintf("wifi_getApBasicAuthenticationMode wanIndex = %d return code = %d for auth mode = %s\n",wlanIndex,retVal,authMode);
@@ -18130,6 +18147,15 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
 	pCfg->ModeEnabled =  COSA_DML_WIFI_SECURITY_None; 
     }
 #endif
+#else /* _COSA_BCM_ARM_ */
+    if (wifi_getApSecurityModeEnabled(wlanIndex, securityMode) != RETURN_OK) {
+        CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : pSsid = %s Fail to get security mode\n",__FUNCTION__, pSsid));
+        return ANSC_STATUS_FAILURE;
+    }
+    pCfg->ModeEnabled = wifi_sec_type_from_name(securityMode);
+    if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_INVALID)
+        pCfg->ModeEnabled = COSA_DML_WIFI_SECURITY_None;
+#endif /* _COSA_BCM_ARM_ */
     //>>Deprecated
     //wifi_getApWepKeyIndex(wlanIndex, (unsigned int *) &pCfg->DefaultKey);
 	//<<
@@ -18310,6 +18336,20 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 
     if (pCfg->ModeEnabled != pStoredCfg->ModeEnabled) {
 		
+		if( ( 0 == wlanIndex ) || \
+		    ( 1 == wlanIndex )
+		   )
+		{
+			if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_None)
+			{
+		          wifi_setApWpsEnable(0, FALSE);
+		          wifi_setApWpsEnable(1, FALSE);
+		          sWiFiDmlApWpsStored[0].Cfg.bEnabled = FALSE;
+			  sWiFiDmlApWpsStored[1].Cfg.bEnabled = FALSE;
+			}
+		}
+
+#ifndef _COSA_BCM_ARM_
 #ifndef _XB6_PRODUCT_REQ_
         if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_None) 
        {
@@ -18562,6 +18602,15 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         CcspWifiTrace(("RDK_LOG_WARN,%s calling setBasicAuthenticationMode ssid : %s authmode : %s \n", __FUNCTION__, pSsid, authMode));
         wifi_setApBasicAuthenticationMode(wlanIndex, authMode);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
+
+#else /* _COSA_BCM_ARM_ */
+        {
+            const char *secType = wifi_sec_type_from_value(pCfg->ModeEnabled);
+            if (!secType)
+                secType = "None";
+            wifi_setApSecurityModeEnabled(wlanIndex, secType);
+        }
+#endif /* _COSA_BCM_ARM_ */
 
         gRestartRadiusRelay = TRUE;
 
@@ -27922,8 +27971,11 @@ CosaDmlWiFiUpdateWiFiConfigurationsForWFACaseThread
        }
 
        //Get Secuity Mode
+#ifndef _COSA_BCM_ARM_
        retSecMode = wifi_getApBeaconType( iLoopCount, acSecurityMode );
-
+#else
+       retSecMode = wifi_getApSecurityModeEnabled(iLoopCount, acTempSecMode);
+#endif
        //Set Security Mode
        CcspTraceInfo(("%s %d SecurityMode-ret:%d Index:%d\n",__FUNCTION__,__LINE__,retSecMode,iLoopCount));
        if( ( 0 == retSecMode ) && ( '\0' != acSecurityMode[ 0 ] ) )
@@ -27931,6 +27983,7 @@ CosaDmlWiFiUpdateWiFiConfigurationsForWFACaseThread
            memset( acParamName, 0, sizeof(acParamName) );
            snprintf( acParamName, sizeof(acParamName), "Device.WiFi.AccessPoint.%d.Security.ModeEnabled", iLoopCount + 1 );
 
+#ifndef _COSA_BCM_ARM_
            if( 0 == strncmp(acSecurityMode,"WPAand11i", strlen("WPAand11i")))
            {
               snprintf( acTempSecMode, sizeof(acTempSecMode), "%s", "WPA-WPA2-Personal" );
@@ -27943,6 +27996,7 @@ CosaDmlWiFiUpdateWiFiConfigurationsForWFACaseThread
            {
               snprintf( acTempSecMode, sizeof(acTempSecMode), "%s", "None" );
            }
+#endif
 
            CosaDmlWiFiSetParamValuesForWFA( acParamName, acTempSecMode, "string" );
            CcspTraceInfo(("%s %d SecurityMode:%s Index:%d\n",__FUNCTION__,__LINE__,acTempSecMode, iLoopCount));
@@ -30318,4 +30372,58 @@ static void MeshNotifySecurityChange(INT apIndex, PCOSA_DML_WIFI_APSEC_CFG pStor
     {
         CcspWifiTrace(("RDK_LOG_ERROR, %s-%d Error in setting sysevent\n", __FUNCTION__, __LINE__));
     }
+}
+
+typedef struct wifi_security_pair {
+  const char     *name;
+  COSA_DML_WIFI_SECURITY       TmpModeType;
+} WIFI_SECURITY_PAIR;
+
+static const WIFI_SECURITY_PAIR wifi_sec_type_table[] = {
+  { "None",                COSA_DML_WIFI_SECURITY_None },
+  { "WEP-64",              COSA_DML_WIFI_SECURITY_WEP_64 },
+  { "WEP-128",             COSA_DML_WIFI_SECURITY_WEP_128 },
+  { "WPA-Personal",        COSA_DML_WIFI_SECURITY_WPA_Personal },
+  { "WPA2-Personal",       COSA_DML_WIFI_SECURITY_WPA2_Personal },
+  { "WPA-WPA2-Personal",   COSA_DML_WIFI_SECURITY_WPA_WPA2_Personal },
+  { "WPA-Enterprise",      COSA_DML_WIFI_SECURITY_WPA_Enterprise },
+  { "WPA2-Enterprise",     COSA_DML_WIFI_SECURITY_WPA2_Enterprise },
+  { "WPA-WPA2-Enterprise", COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise },
+  { "WPA3-Personal",       COSA_DML_WIFI_SECURITY_WPA3_Personal },
+  { "WPA3-Personal-Transition",  COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition },
+  { "WPA3-Enterprise",     COSA_DML_WIFI_SECURITY_WPA3_Enterprise },
+};
+
+#define NUM_WIFI_SEC_TYPES (sizeof(wifi_sec_type_table)/sizeof(wifi_sec_type_table[0]))
+
+COSA_DML_WIFI_SECURITY wifi_sec_type_from_name(const char *name)
+{
+  int rc = -1;
+  int ind = -1;
+  unsigned int i = 0;
+  if((name == NULL))
+     return COSA_DML_WIFI_SECURITY_INVALID;
+  for (i = 0 ; i < NUM_WIFI_SEC_TYPES ; ++i)
+  {
+      rc = strcmp_s(name, strlen(name), wifi_sec_type_table[i].name, &ind);
+      ERR_CHK(rc);
+      if((rc == EOK) && (!ind))
+      {
+          return wifi_sec_type_table[i].TmpModeType;
+      }
+  }
+  return COSA_DML_WIFI_SECURITY_INVALID;
+}
+
+const char *wifi_sec_type_from_value(COSA_DML_WIFI_SECURITY value)
+{
+  unsigned int i = 0;
+  for (i = 0 ; i < NUM_WIFI_SEC_TYPES ; ++i)
+  {
+      if(wifi_sec_type_table[i].TmpModeType == value)
+      {
+          return wifi_sec_type_table[i].name;
+      }
+  }
+  return NULL;
 }
