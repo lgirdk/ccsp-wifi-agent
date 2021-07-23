@@ -20161,8 +20161,10 @@ CosaDmlWiFiApGetAssocDevices
     }
 	//hal would allocate the array
 	diagStatus = wifi_getApAssociatedDeviceDiagnosticResult2(wlanIndex, &wifi_associated_dev_array, &array_size);
-	if(wifi_associated_dev_array && array_size>0 && diagStatus == RETURN_OK) {
+	if(diagStatus == RETURN_OK) {
 		*pulCount = array_size;
+	}
+	if(wifi_associated_dev_array && array_size>0 && diagStatus == RETURN_OK) {
 		//zqiu: TODO: to search the MAC in exsting pWifiApDev Array to find the match, and count Disassociations/AuthenticationFailures and Active
 		pWifiApDev=(PCOSA_DML_WIFI_AP_ASSOC_DEVICE)malloc(sizeof(COSA_DML_WIFI_AP_ASSOC_DEVICE)*array_size);
                 if (pWifiApDev == NULL) {
