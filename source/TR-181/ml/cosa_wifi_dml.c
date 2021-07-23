@@ -97,8 +97,6 @@ extern ULONG g_currentBsUpdate;
 # define KEYPASSPHRASE_SET 2
 # define MFPCONFIG_OPTIONS_SET 3
 
-#define NUM_WIFI_SEC_TYPES (sizeof(wifi_sec_type_table)/sizeof(wifi_sec_type_table[0]))
-
 #define MAX_DM_PATH_LEN 256
 
 #define MAX_BASICRATES_BYTE 6 //2byte + 0x 2byte
@@ -203,46 +201,6 @@ static void set_status(dpp_cmd cmd)
     }
 }
 #endif // !defined(_HUB4_PRODUCT_REQ_)
-
-typedef struct wifi_security_pair {
-  char     *name;
-  COSA_DML_WIFI_SECURITY       TmpModeType;
-} WIFI_SECURITY_PAIR;
-
-static const WIFI_SECURITY_PAIR wifi_sec_type_table[] = {
-  { "None",                COSA_DML_WIFI_SECURITY_None },
-  { "WEP-64",              COSA_DML_WIFI_SECURITY_WEP_64 },
-  { "WEP-128",             COSA_DML_WIFI_SECURITY_WEP_128 },
-  { "WPA-Personal",        COSA_DML_WIFI_SECURITY_WPA_Personal },
-  { "WPA2-Personal",       COSA_DML_WIFI_SECURITY_WPA2_Personal },
-  { "WPA-WPA2-Personal",   COSA_DML_WIFI_SECURITY_WPA_WPA2_Personal },
-  { "WPA-Enterprise",      COSA_DML_WIFI_SECURITY_WPA_Enterprise },
-  { "WPA2-Enterprise",     COSA_DML_WIFI_SECURITY_WPA2_Enterprise },
-  { "WPA-WPA2-Enterprise", COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise },
-  { "WPA3-Personal",       COSA_DML_WIFI_SECURITY_WPA3_Personal },
-  { "WPA3-Personal-Transition",  COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition },
-  { "WPA3-Enterprise",     COSA_DML_WIFI_SECURITY_WPA3_Enterprise },
-};
-
-static int wifi_sec_type_from_name(char *name, int *type_ptr)
-{
-  int rc = -1;
-  int ind = -1;
-  unsigned int i = 0;
-  if((name == NULL) || (type_ptr == NULL))
-     return 0;
-  for (i = 0 ; i < NUM_WIFI_SEC_TYPES ; ++i)
-  {
-      rc = strcmp_s(name, strlen(name), wifi_sec_type_table[i].name, &ind);
-      ERR_CHK(rc);
-      if((rc == EOK) && (!ind))
-      {
-          *type_ptr = wifi_sec_type_table[i].TmpModeType;
-          return 1;
-      }
-  }
-  return 0;
-}
 
 
 static ANSC_STATUS
@@ -10297,7 +10255,8 @@ Security_SetParamStringValue
         
         /* save update to backup */
 
-         if (!wifi_sec_type_from_name(pString, (int *)&TmpMode))
+         TmpMode = wifi_sec_type_from_name(pString);
+         if (TmpMode == COSA_DML_WIFI_SECURITY_INVALID)
          {
               printf("unrecognized type name");
               return FALSE;
