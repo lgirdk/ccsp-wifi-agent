@@ -285,6 +285,7 @@ COSA_DML_WIFI_AP_STATUS, *PCOSA_DML_WIFI_AP_STATUS;
 typedef  enum
 _COSA_DML_WIFI_SECURITY
 {
+    COSA_DML_WIFI_SECURITY_INVALID                         = 0x00000000,
     COSA_DML_WIFI_SECURITY_None                            = 0x00000001,
     COSA_DML_WIFI_SECURITY_WEP_64                          = 0x00000002,
     COSA_DML_WIFI_SECURITY_WEP_128                         = 0x00000004,
@@ -2586,6 +2587,9 @@ INT wifi_getApWpsEnable(INT apIndex, BOOL *output_bool);
 
 ANSC_STATUS setOperatorName(int band, char *pValue);
 ANSC_STATUS setLocationData(int band, char *pValue);
+
+COSA_DML_WIFI_SECURITY wifi_sec_type_from_name(const char *name);
+const char *wifi_sec_type_from_value(COSA_DML_WIFI_SECURITY value);
 
 #if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_)
     INT wifi_setApEnableOnLine(INT index, BOOL status);
