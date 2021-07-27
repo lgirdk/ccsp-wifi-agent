@@ -19094,13 +19094,6 @@ ULONG                                          instanceNumber
     // Make sure there is no entry in the /tmp/conf_finename
     wifi_removeApSecVaribles(wlanIndex);
 
-    // Reset security to off 
-    wifiDbgPrintf("%s %d Set encryptionOFF to reset security \n",__FUNCTION__, __LINE__);
-    CcspWifiTrace(("RDK_LOG_WARN,%s : Set encryptionOFF to reset security \n",__FUNCTION__));
-#if !defined(_XB7_PRODUCT_REQ_) && !defined(_XB8_PRODUCT_REQ_) && !defined(_CBR2_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
-    wifi_disableApEncryption(wlanIndex);
-#endif
-
     // If the Running config has security = WPA or None hostapd must be restarted
     if ( (pRunningCfg->ModeEnabled >= COSA_DML_WIFI_SECURITY_WPA_Personal && 
           pRunningCfg->ModeEnabled <= COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise) ||
