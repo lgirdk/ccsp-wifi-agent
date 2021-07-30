@@ -2976,7 +2976,7 @@ void getDefaultSSID(int wlanIndex, char *DefaultSSID)
 		}
 	}
 #else
-#if _LG_MV1_CELENO_
+#if (_LG_MV1_CELENO_) || (_LG_MV2_PLUS_)
 	if(wifi_getDefaultSsid(wlanIndex, DefaultSSID))
 	{
 		printf("Error in getting wifi default SSID name in:%s\n",__FUNCTION__);
