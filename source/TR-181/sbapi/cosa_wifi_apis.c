@@ -13856,7 +13856,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
  #endif
     }
 
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV2_PLUS_)
     if (pStoredCfg->EnhancedACS.DFSMoveBack != pCfg->EnhancedACS.DFSMoveBack)
     {
         wifi_setRadioDfsMoveBackEnable(wlanIndex, pCfg->EnhancedACS.DFSMoveBack);
@@ -14958,7 +14958,7 @@ CosaDmlWiFiRadioGetCfg
 	wifi_getRadioChannel(wlanIndex, pCfgChannel);
 #endif
     
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV2_PLUS_)
     wifi_getRadioDfsMoveBackEnable(wlanIndex, &pCfg->EnhancedACS.DFSMoveBack);
     wifi_getRadioExcludeDfs(wlanIndex, &pCfg->EnhancedACS.ExcludeDFS);
     memset(pCfg->EnhancedACS.ChannelWeights, 0, sizeof(pCfg->EnhancedACS.ChannelWeights));
