@@ -1951,6 +1951,7 @@ INSTMSMT_PH2 -->
                             <name>Alias</name>
                             <type>string(64)</type>
                             <syntax>string</syntax>
+                            <notify>off</notify>
                             <writable>true</writable>
                         </parameter>
                         <parameter>
@@ -2204,6 +2205,7 @@ INSTMSMT_PH2 -->
                             <name>Alias</name>
                             <type>string(64)</type>
                             <syntax>string</syntax>
+                            <notify>off</notify>
                             <writable>true</writable>
                         </parameter>
                         <parameter>
