@@ -3985,17 +3985,6 @@ printf("%s g_Subsytem = %s wlanIndex %lu ulInstance %lu enabled = %s\n",__FUNCTI
 #endif
     }
     memset(recName, 0, sizeof(recName));
-    sprintf(recName, ApIsolationEnable, ulInstance);
-    retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
-    if (retPsmGet == CCSP_SUCCESS) {
-        BOOL enable = atoi(strValue);
-        pCfg->IsolationEnable = enable;
-        if (enabled == TRUE) {
-            wifi_setApIsolationEnable(wlanIndex, enable);
-        }
-        printf("%s: wifi_setApIsolationEnable %lu, %d \n", __FUNCTION__, wlanIndex, enable);
-	    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
-    }
 
     if ((wlanIndex == 0) || (wlanIndex == 1) || (wlanIndex == 12) || (wlanIndex == 13)) {
         memset(recName, 0, sizeof(recName));
@@ -11380,6 +11369,11 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     pCfg->BSSTransitionImplemented = (pCfg->bEnabled == TRUE) ? TRUE : FALSE;
   
     CosaDmlWiFiGetAccessPointPsmData(pCfg);
+
+    /*Get IsolationEnable from Hal*/
+    wifi_getApIsolationEnable(wlanIndex, &enabled);
+    pCfg->IsolationEnable = (enabled == TRUE) ? TRUE : FALSE;
+
     /*Get the WMM related values from Hal*/
     wifi_getApWmmEnable(wlanIndex, &enabled);
     pCfg->WMMEnable = (enabled == TRUE) ? TRUE : FALSE;
