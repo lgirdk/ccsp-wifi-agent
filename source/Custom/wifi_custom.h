@@ -70,6 +70,6 @@
 
 #define  MESSAGE_BUS_CONFIG_FILE                    "msg_daemon.cfg"
 
-#define  CCSP_WIFI_START_CFG_FILE                    "CcspWifi.cfg"
+#define  CCSP_WIFI_START_CFG_FILE                    "/usr/ccsp/wifi/CcspWifi.cfg"
 
 #endif   /*_WIFI_CUSTOM_H_*/
