@@ -17,24 +17,10 @@
 # limitations under the License.
 ##########################################################################
 
-if CCSP_ARCH_PC
-OPT_SRCDIR = source-pc
-else 
-OPT_SRCDIR = source
-endif
-SUBDIRS = $(OPT_SRCDIR)
+SUBDIRS = source
 
 lib_LTLIBRARIES=libwifi.la
 
-if CCSP_ARCH_PC
-libwifi_la_CPPFLAGS = \
-    -D_ANSC_LINUX \
-    -I$(top_srcdir)/source-pc/TR-181/ml \
-    -I$(top_srcdir)/source-pc/TR-181/sbapi \
-    -I$(top_srcdir)/include/TR-181/ml \
-    -I$(top_srcdir)/source-pc/Custom \
-    -I$(top_srcdir)/include
-else
 libwifi_la_CPPFLAGS = \
     -D_ANSC_LINUX \
     -I$(top_srcdir)/source/TR-181/ml \
@@ -42,21 +28,12 @@ libwifi_la_CPPFLAGS = \
     -I$(top_srcdir)/include/TR-181/ml \
     -I$(top_srcdir)/source/Custom \
     -I$(top_srcdir)/include
-endif
 
 libwifi_la_LDFLAGS =
 libwifi_la_SOURCES =
-if CCSP_ARCH_PC
-EXTRA_DEPENDENCIES = \
-        source-pc/TR-181/sbapi/libCcspWifiAgent_sbapi.la \
-        source-pc/TR-181/ml/libCcspWifiAgent_ml.la
-else
-EXTRA_DEPENDENCIES = \
-        source/TR-181/sbapi/libCcspWifiAgent_sbapi.la \
-        source/TR-181/ml/libCcspWifiAgent_ml.la
-endif
 
 libwifi_la_DEPENDENCIES = \
-	$(EXTRA_DEPENDENCIES)
+        source/TR-181/sbapi/libCcspWifiAgent_sbapi.la \
+        source/TR-181/ml/libCcspWifiAgent_ml.la
 
 libwifi_la_LIBADD = $(libwifi_la_DEPENDENCIES)
