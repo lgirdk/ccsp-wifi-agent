@@ -3028,7 +3028,7 @@ void getDefaultPassphase(int wlanIndex, char *DefaultPassphrase)
         }
     }
 #else
-#if _LG_MV1_CELENO_
+#if _LG_MV1_CELENO_ || (_LG_MV2_PLUS_)
         if(wifi_getDefaultPassword(wlanIndex, DefaultPassphrase))
 	{
 		printf("Error in getting wifi default password in:%s\n",__FUNCTION__);
