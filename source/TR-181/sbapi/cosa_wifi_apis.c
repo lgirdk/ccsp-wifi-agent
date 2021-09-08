@@ -17733,6 +17733,16 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
 		// Error could not find index
 		return ANSC_STATUS_FAILURE;
     }
+
+    // Enterprise modes are only available for community wifi
+    if (wlanIndex != 4 && wlanIndex != 5)
+    {
+        pEntry->Info.ModesSupported &= ~(COSA_DML_WIFI_SECURITY_WPA_Enterprise |
+                COSA_DML_WIFI_SECURITY_WPA2_Enterprise |
+                COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise |
+                COSA_DML_WIFI_SECURITY_WPA3_Enterprise);
+    }
+
 #if defined(_XB6_PRODUCT_REQ_)
     pEntry->Info.ModesSupported = COSA_DML_WIFI_SECURITY_None | 
 				  COSA_DML_WIFI_SECURITY_WPA2_Personal | 
