@@ -11797,6 +11797,15 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
 		return ANSC_STATUS_FAILURE;
     }
 	
+    // Enterprise modes are only available for community wifi
+    if (wlanIndex != 4 && wlanIndex != 5)
+    {
+        pEntry->Info.ModesSupported &= ~(COSA_DML_WIFI_SECURITY_WPA_Enterprise |
+                COSA_DML_WIFI_SECURITY_WPA2_Enterprise |
+                COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise |
+                COSA_DML_WIFI_SECURITY_WPA3_Enterprise);
+    }
+
 #ifdef CISCO_XB3_PLATFORM_CHANGES
     if (pEntry->Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WEP_64)
     {
