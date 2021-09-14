@@ -176,6 +176,33 @@ _COSA_DML_WIFI_STD
 }
 COSA_DML_WIFI_STD, *PCOSA_DML_WIFI_STD;
 
+#ifdef _WIFI_AX_SUPPORT_
+//Define Operating standard supported combination for MV2+
+
+#define WIFI_STD_AXONLY   COSA_DML_WIFI_STD_ax
+
+//5Ghz
+#define WIFI_STD_AXAC     (WIFI_STD_AXONLY | COSA_DML_WIFI_STD_ac)
+#define WIFI_STD_AXACN    (WIFI_STD_AXAC | COSA_DML_WIFI_STD_n)
+#define WIFI_STD_AXACNA   (WIFI_STD_AXACN | COSA_DML_WIFI_STD_a)
+
+//2.4Ghz
+#define WIFI_STD_AXN      (WIFI_STD_AXONLY | COSA_DML_WIFI_STD_n)
+#define WIFI_STD_AXNG     (WIFI_STD_AXN | COSA_DML_WIFI_STD_g)
+#define WIFI_STD_AXNGB    (WIFI_STD_AXNG | COSA_DML_WIFI_STD_b )
+
+#else
+//Define Operating standard supported combination for MV1
+//5Ghz
+#define WIFI_STD_ACONLY   COSA_DML_WIFI_STD_ac
+#define WIFI_STD_ACN      (WIFI_STD_ACONLY | COSA_DML_WIFI_STD_n)
+#define WIFI_STD_ACNA     (WIFI_STD_ACN | COSA_DML_WIFI_STD_a)
+
+//2.4 Ghz
+#define WIFI_STD_NONLY    COSA_DML_WIFI_STD_n
+#define WIFI_STD_NG       (WIFI_STD_NONLY | COSA_DML_WIFI_STD_g)
+#define WIFI_STD_NGB      (WIFI_STD_NGB | COSA_DML_WIFI_STD_b)
+#endif
 
 typedef  enum
 _COSA_DML_WIFI_CHAN_BW
