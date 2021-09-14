@@ -5115,11 +5115,11 @@ static INT CosaDmlWiFiGetRadioStandards(int radioIndex, COSA_DML_WIFI_FREQ_BAND 
     acOnly=FALSE;
     
     wifi_getRadioMode(radioIndex, opStandards, &pureMode);
-    if (pureMode == COSA_DML_WIFI_STD_g )
+    if (pureMode == (COSA_DML_WIFI_STD_g | COSA_DML_WIFI_STD_ax) )
         gOnly = TRUE;
-    else if (pureMode == COSA_DML_WIFI_STD_n)
+    else if (pureMode == (COSA_DML_WIFI_STD_n | COSA_DML_WIFI_STD_ax))
         nOnly = TRUE;
-    else if (pureMode == COSA_DML_WIFI_STD_ac)
+    else if (pureMode == (COSA_DML_WIFI_STD_ac | COSA_DML_WIFI_STD_ax))
         acOnly = TRUE;
 #else
     wifi_getRadioStandard(radioIndex, opStandards, &gOnly, &nOnly, &acOnly);
@@ -14421,13 +14421,30 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
         }
 #ifdef _WIFI_AX_SUPPORT_
         UINT pureMode = 0;
+
+        if (pCfg->OperatingStandards == (COSA_DML_WIFI_STD_ac | COSA_DML_WIFI_STD_ax) )
+        {
+            acOnlyFlag = TRUE;
+        }
+
         if (gOnlyFlag)
-            pureMode = COSA_DML_WIFI_STD_g;
+            pureMode = (COSA_DML_WIFI_STD_g | COSA_DML_WIFI_STD_ax);
         if (nOnlyFlag)
-            pureMode = COSA_DML_WIFI_STD_n;
+            pureMode = (COSA_DML_WIFI_STD_n | COSA_DML_WIFI_STD_ax);
         if(acOnlyFlag)
-            pureMode = COSA_DML_WIFI_STD_ac;
+            pureMode = (COSA_DML_WIFI_STD_ac | COSA_DML_WIFI_STD_ax);
         if(pCfg->OperatingStandards == COSA_DML_WIFI_STD_ax)
+            pureMode = COSA_DML_WIFI_STD_ax;
+
+        if(pureMode == 0)
+        {
+            if (pCfg->OperatingFrequencyBand == COSA_DML_WIFI_FREQ_BAND_2_4G)
+                pureMode = (COSA_DML_WIFI_STD_b | COSA_DML_WIFI_STD_ax);
+            else
+                pureMode = (COSA_DML_WIFI_STD_a | COSA_DML_WIFI_STD_ax);
+        }
+
+        if(pCfg->OperatingStandards == COSA_DML_WIFI_STD_ax) //ax only pure mode, common to both 2.4Ghz and 5Ghz
             pureMode = COSA_DML_WIFI_STD_ax;
 
         CcspWifiTrace(("RDK_LOG_WARN, RDKB_WIFI_CONFIG_CHANGED : %s: wifi_setRadioMode= Wlan%d, Mode: %s, pureMode =: %d\n",__FUNCTION__,wlanIndex,chnMode,pureMode))
