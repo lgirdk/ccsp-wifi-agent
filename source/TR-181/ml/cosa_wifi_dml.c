@@ -4606,6 +4606,40 @@ static BOOL isValidTransmitRate(char *Btr)
      }
      return isValid;
 }
+//Check the input has only a,b,g,n,ac and ax
+BOOL isValidOperStdString(char *OperStd)
+{
+    char *p,str[32];
+    BOOL valid = FALSE;
+    int i, count =0;
+    strncpy(str,OperStd,(sizeof(str) -1));
+    str[sizeof(str) - 1] = '\0';
+//Remove Spaces!
+    for ( i = 0; str[ i ] != '\0'; i++ )
+    {
+        if ( str[i] != ' ' )
+        {
+            str[count++] = str[i];
+        }
+    }
+    str[count] = '\0';
+    p = strtok( str, ",");
+    while ( p!= NULL )
+    {
+        if( (0 == strcmp( p, "a")) ||
+            (0 == strcmp( p, "b")) ||
+            (0 == strcmp( p, "g")) ||
+            (0 == strcmp( p, "n")) ||
+            (0 == strcmp( p, "ac")) ||
+            (0 == strcmp( p, "ax"))
+           )
+            valid = TRUE;
+        else
+            return FALSE;
+        p = strtok(NULL, ",");
+    }
+    return valid;
+}
 BOOL
 Radio_SetParamStringValue
     (
@@ -4722,6 +4756,9 @@ Radio_SetParamStringValue
         wifiRadioOperParam->variant = tmpHalWifiStd;
         pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
 #else //WIFI_HAL_VERSION_3
+        if(!isValidOperStdString(pString))
+            return FALSE;
+
         ULONG                       TmpOpStd;
         char *a = _ansc_strchr(pString, 'a');
         char *ac = _ansc_strstr(pString, "ac");
@@ -4736,14 +4773,24 @@ Radio_SetParamStringValue
         TmpOpStd = 0;
 
         // if a and ac are not NULL and they are the same string, then move past the ac and search for an a by itself
-#ifdef _WIFI_AX_SUPPORT_
-        while ((a && ac && (a  == ac) ) || (a && ax && (a == ax))) {
-#else
         if (a && ac && (a  == ac)) {
-#endif
             a = a+1;
             a = _ansc_strchr(a,'a');
         }
+
+#ifdef _WIFI_AX_SUPPORT_
+        if (a && ax && (a  == ax))
+        {
+            a = a+1;
+            a = _ansc_strchr(a,'a');
+
+            if ( a && ac && (a == ac)) // handling for ax/ac and ax/ac/n/a operational mode
+            {
+                a = a+1;
+                a = _ansc_strchr(a,'a');
+            }
+        }
+#endif
 
         if ( a != NULL )
         {
@@ -4921,6 +4968,31 @@ Radio_SetParamStringValue
     return FALSE;
 }
 
+BOOL isValidOperatingStandards (ULONG OperatingStandards, COSA_DML_WIFI_FREQ_BAND OperatingFrequencyBand)
+{
+#ifdef _WIFI_AX_SUPPORT_
+    if(OperatingFrequencyBand == COSA_DML_WIFI_FREQ_BAND_2_4G){
+        if( (OperatingStandards == WIFI_STD_AXNGB) || (OperatingStandards == WIFI_STD_AXNG) || (OperatingStandards == WIFI_STD_AXN) || (OperatingStandards == WIFI_STD_AXONLY) )
+            return TRUE;
+    } else {
+	if( (OperatingStandards == WIFI_STD_AXACNA) || (OperatingStandards == WIFI_STD_AXACN) || (OperatingStandards == WIFI_STD_AXAC) || (OperatingStandards == WIFI_STD_AXONLY) )
+            return TRUE;
+    }
+
+#else
+    if(OperatingFrequencyBand == COSA_DML_WIFI_FREQ_BAND_2_4G){
+        if((OperatingStandards == WIFI_STD_NONLY) || (OperatingStandards == WIFI_STD_NG) || (OperatingStandards == WIFI_STD_NGB))
+            return TRUE;
+    } else {
+        if((OperatingStandards == WIFI_STD_ACONLY) || (OperatingStandards ==  WIFI_STD_ACN) || (OperatingStandards == WIFI_STD_ACNA))
+            return TRUE;
+    }
+
+#endif
+   return FALSE;
+
+}
+
 /**********************************************************************  
 
     caller:     owner of this object 
@@ -5064,7 +5136,8 @@ Radio_Validate
     fprintf(stderr, "%s: SupportedStandards = %lu, OperatingStandards = %lu\n",
             __FUNCTION__, pWifiRadioFull->StaticInfo.SupportedStandards, pWifiRadioFull->Cfg.OperatingStandards);
 #endif
-    if ( (pWifiRadioFull->StaticInfo.SupportedStandards & pWifiRadioFull->Cfg.OperatingStandards) !=  pWifiRadioFull->Cfg.OperatingStandards) {
+    if ( ((pWifiRadioFull->StaticInfo.SupportedStandards & pWifiRadioFull->Cfg.OperatingStandards) !=  pWifiRadioFull->Cfg.OperatingStandards) ||
+         (!isValidOperatingStandards(pWifiRadioFull->Cfg.OperatingStandards ,pWifiRadioFull->Cfg.OperatingFrequencyBand )) ) {
         fprintf(stderr, "%s: Mismatch of SupportedStandards(%lu) and OperatingStandards(%lu) causing Radio Validation failure\n",
                 __FUNCTION__, pWifiRadioFull->StaticInfo.SupportedStandards, pWifiRadioFull->Cfg.OperatingStandards);
         CcspTraceWarning(("********Radio Validate:Failed OperatingStandards\n"));
