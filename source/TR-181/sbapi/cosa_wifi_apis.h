@@ -201,7 +201,7 @@ COSA_DML_WIFI_STD, *PCOSA_DML_WIFI_STD;
 //2.4 Ghz
 #define WIFI_STD_NONLY    COSA_DML_WIFI_STD_n
 #define WIFI_STD_NG       (WIFI_STD_NONLY | COSA_DML_WIFI_STD_g)
-#define WIFI_STD_NGB      (WIFI_STD_NGB | COSA_DML_WIFI_STD_b)
+#define WIFI_STD_NGB      (WIFI_STD_NG | COSA_DML_WIFI_STD_b)
 #endif
 
 typedef  enum
