@@ -14509,6 +14509,7 @@ WPS_Validate
 	//Verify whether current security mode is in open state or not
 	wlanIndex = pWifiAp->AP.Cfg.InstanceNumber - 1;
 
+#if 0
 #ifdef WIFI_HAL_VERSION_3
     if (wifiApIsSecmodeOpenForPrivateAP(wlanIndex) != ANSC_STATUS_SUCCESS) {
 
@@ -14538,6 +14539,8 @@ WPS_Validate
                 }
 	}
 #endif //WIFI_HAL_VERSION_3
+#endif
+
     return TRUE;
 }
 
