@@ -20196,7 +20196,7 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
 	if(apIndex==0 || apIndex==1 || apIndex==6 || apIndex==7) {	//for private network and guest network
 		if(associated_dev->cli_Active == 1) 
 		{
-			Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 1, 0);
+			Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 0, 0);
 			if ( ANSC_STATUS_SUCCESS == CosaDmlWiFi_GetPreferPrivateData(&bEnabled) )
 			{
 				if (bEnabled == TRUE)
@@ -20207,7 +20207,7 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
 		}
 		else 				
 		{
-			Wifi_Hosts_Sync_Func((void *)mac, (apIndex+1), associated_dev, 1, 0);
+			Wifi_Hosts_Sync_Func((void *)mac, (apIndex+1), associated_dev, 0, 0);
 		}
 	}
 #if defined(_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_)
@@ -20220,11 +20220,11 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
 
                 if(associated_dev->cli_Active == 1)
                 {
-                        Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 1, 0);
+                        Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 0, 0);
                 }
                 else
                 {
-                       Wifi_Hosts_Sync_Func((void *)mac,(apIndex+1), associated_dev, 1, 0);
+                       Wifi_Hosts_Sync_Func((void *)mac,(apIndex+1), associated_dev, 0, 0);
                 }	
 	}
 #if defined(_CBR_PRODUCT_REQ_) || defined (_BWG_PRODUCT_REQ_)
