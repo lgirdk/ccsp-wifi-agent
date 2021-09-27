@@ -12192,6 +12192,7 @@ WPS_Validate
 	//Verify whether current security mode is in open state or not
 	wlanIndex = pWifiAp->AP.Cfg.InstanceNumber - 1;
 
+#if 0
     if( ( 0 == wlanIndex ) || \
 	( 1 == wlanIndex )
        )
@@ -12205,6 +12206,8 @@ WPS_Validate
                     return FALSE;
                 }
 	}
+#endif
+
     return TRUE;
 }
 
