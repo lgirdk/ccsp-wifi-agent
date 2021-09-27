@@ -24862,7 +24862,7 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
 #endif
 		if(associated_dev->cli_Active == 1) 
 		{
-			Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 1, 0);
+			Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 0, 0);
 			if ( ANSC_STATUS_SUCCESS == CosaDmlWiFi_GetPreferPrivateData(&bEnabled) )
 			{
 				if (bEnabled == TRUE)
@@ -24873,7 +24873,7 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
 		}
 		else 				
 		{
-			Wifi_Hosts_Sync_Func((void *)mac, (apIndex+1), associated_dev, 1, 0);
+			Wifi_Hosts_Sync_Func((void *)mac, (apIndex+1), associated_dev, 0, 0);
 		}
 #ifdef WIFI_HAL_VERSION_3
     } else if (isVapHotspot(apIndex)) {
@@ -24893,11 +24893,11 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
 
                 if(associated_dev->cli_Active == 1)
                 {
-                        Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 1, 0);
+                        Wifi_Hosts_Sync_Func(NULL,(apIndex+1), associated_dev, 0, 0);
                 }
                 else
                 {
-                       Wifi_Hosts_Sync_Func((void *)mac,(apIndex+1), associated_dev, 1, 0);
+                       Wifi_Hosts_Sync_Func((void *)mac,(apIndex+1), associated_dev, 0, 0);
                 }	
 #ifdef WIFI_HAL_VERSION_3  
     } else if (isVapLnf(apIndex)) { //L&F
