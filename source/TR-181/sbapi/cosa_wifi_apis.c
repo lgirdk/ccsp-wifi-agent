@@ -18524,6 +18524,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 
     if (pCfg->ModeEnabled != pStoredCfg->ModeEnabled) {
 		
+#if 0
 		if( ( 0 == wlanIndex ) || \
 		    ( 1 == wlanIndex )
 		   )
@@ -18536,6 +18537,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 			  sWiFiDmlApWpsStored[1].Cfg.bEnabled = FALSE;
 			}
 		}
+#endif
 
 #ifndef _COSA_BCM_ARM_
 #ifndef _XB6_PRODUCT_REQ_
