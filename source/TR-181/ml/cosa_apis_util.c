@@ -83,9 +83,6 @@
 
 #endif
 #include "ansc_platform.h"
-#ifdef WIFI_HAL_VERSION_3
-#include "wifi_hal.h"
-#endif
 
 ANSC_STATUS
 CosaUtilStringToHex
@@ -620,11 +617,9 @@ CosaUtilChannelValidate
     wifi_getRadioDfsEnable(uiRadio-1, &dfsEnable);
     unsigned long channelList_5G_dfs [] = {52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140};
 #endif
-#ifndef WIFI_HAL_VERSION_3
     // This should be updated to use the possible channels list  Device.WiFi.Radio.1.PossibleChannels instead of a static list.
     unsigned long channelList_5G [] = {36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140, 149, 153, 157, 161, 165};
     int i;
-#endif
 
     // Channel maybe 0 if radio is disabled or auto channel was set
     if (Channel == 0) {
@@ -666,13 +661,6 @@ CosaUtilChannelValidate
             token = strtok_r(NULL, delimiter, &saveptr);
         }
     }
-#ifdef WIFI_HAL_VERSION_3
-    if(wifiRadioChannelIsValid(uiRadio - 1, Channel) == ANSC_STATUS_SUCCESS)
-    {
-        return 1;
-    }
-    return 0;
-#else
     switch(uiRadio)
     {
         case 1:
@@ -691,7 +679,6 @@ CosaUtilChannelValidate
              break;
      }
      return 0;
-#endif
 }
 
 

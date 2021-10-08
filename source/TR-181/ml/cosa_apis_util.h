@@ -72,7 +72,6 @@
 
 #include "cosa_dml_api_common.h"
 
-#ifndef WIFI_HAL_VERSION_3
 
 #if defined(_HUB4_PRODUCT_REQ_)
 #define RADIO_2G_MIN_CHANNEL           0
@@ -82,7 +81,6 @@
 #define RADIO_2G_MAX_CHANNEL           11
 #endif /* * _HUB4_PRODUCT_REQ_ */
 
-#endif //WIFI_HAL_VERSION_3
 
 typedef struct StaticRoute 
 {
