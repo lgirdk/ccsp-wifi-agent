@@ -245,18 +245,13 @@ void get_self_bss_chan_statistics (int radiocnt , UINT *Tx_perc, UINT  *Rx_perc)
 void upload_radio_chan_util_telemetry()
 {
     int radiocnt = 0;
-#ifndef WIFI_HAL_VERSION_3
     int total_radiocnt = 0;
-#endif
     UINT  Tx_perc = 0, Rx_perc = 0;
     UINT bss_Tx_cu = 0 , bss_Rx_cu = 0;
     char tmp[128] = {0};
     char log_buf[1024] = {0};
     char telemetry_buf[1024] = {0};
     BOOL radio_Enabled = FALSE;
-#ifdef WIFI_HAL_VERSION_3
-    for (radiocnt = 0; radiocnt < (int)getNumberRadios(); radiocnt++)
-#else
     if (wifi_getRadioNumberOfEntries((ULONG*)&total_radiocnt) != RETURN_OK)
     {
         wifi_dbg_print(1, "%s : %d Failed to get radio count\n",__func__,__LINE__);
@@ -264,7 +259,6 @@ void upload_radio_chan_util_telemetry()
     }
 
     for (radiocnt = 0; radiocnt < (int)total_radiocnt; radiocnt++)
-#endif
     {
         if (wifi_getRadioEnable(radiocnt, &radio_Enabled) == RETURN_OK)
         {
@@ -288,20 +282,12 @@ void upload_radio_chan_util_telemetry()
                 // "type": "wifihealth.txt",
                 sprintf(telemetry_buf, "%d,%d,%d", bss_Tx_cu, bss_Rx_cu, g_monitor_module.radio_data[radiocnt].CarrierSenseThreshold_Exceeded);
                 get_formatted_time(tmp);
-#ifdef WIFI_HAL_VERSION_3
-                sprintf(log_buf, "%s CHUTIL_%d_split:%s\n", tmp, getPrivateApFromRadioIndex(radiocnt)+1, telemetry_buf);
-#else
                 sprintf(log_buf, "%s CHUTIL_%d_split:%s\n", tmp, (radiocnt == 2)?15:radiocnt+1, telemetry_buf);
-#endif
                 write_to_file(wifi_health_log, log_buf);
                 wifi_dbg_print(1, "%s", log_buf);
 
                 memset(tmp, 0, sizeof(tmp));
-#ifdef WIFI_HAL_VERSION_3
-                sprintf(tmp, "CHUTIL_%d_split", getPrivateApFromRadioIndex(radiocnt)+1);
-#else
                 sprintf(tmp, "CHUTIL_%d_split", (radiocnt == 2)?15:radiocnt+1);
-#endif
                 t2_event_s(tmp, telemetry_buf);
             }
             else
@@ -323,11 +309,7 @@ void radio_health_telemetry_logger(void)
     unsigned int i = 0;
     char buff[256] = {0}, tmp[128] = {0}, telemetry_buf[64] = {0};
     BOOL radio_Enabled=FALSE;
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0; i < getNumberRadios(); i++)
-#else
     for (i = 0; i < MAX_RADIOS; i++)
-#endif
     {
         memset(buff, 0, sizeof(buff));
         memset(tmp, 0, sizeof(tmp));
@@ -338,11 +320,7 @@ void radio_health_telemetry_logger(void)
             wifi_getRadioBandUtilization(i, &output_percentage);
             snprintf(buff, 256, "%s WIFI_BANDUTILIZATION_%d:%d\n", tmp, i + 1, output_percentage);
             memset(tmp, 0, sizeof(tmp));
-#ifdef WIFI_HAL_VERSION_3
-            snprintf(tmp, sizeof(tmp), "Wifi_%dG_utilization_split", convertRadioIndexToFrequencyNum(i));
-#else
             snprintf(tmp, sizeof(tmp), ((i == 0) ? "Wifi_2G_utilization_split": "Wifi_5G_utilization_split"));
-#endif
             //updating T2 Marker here
             memset(telemetry_buf, 0, sizeof(telemetry_buf));
             snprintf(telemetry_buf, sizeof(telemetry_buf), "%d", output_percentage);
@@ -360,11 +338,7 @@ void upload_ap_telemetry_data()
     char tmp[128];
     unsigned int i;
     BOOL radio_Enabled=FALSE;
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0; i < getNumberRadios(); i++)
-#else
     for (i = 0; i < MAX_RADIOS; i++)
-#endif
     {
         wifi_getRadioEnable(i, &radio_Enabled);
         if(radio_Enabled)
@@ -515,9 +489,6 @@ void upload_client_telemetry_data()
     char nrflag[MAX_VAP] = {0};
     char stflag[MAX_VAP] = {0};
     char snflag[MAX_VAP] = {0};
-#ifdef WIFI_HAL_VERSION_3
-    CHAR eventName[32] = {0};
-#endif
 	// IsCosaDmlWiFivAPStatsFeatureEnabled needs to be set to get telemetry of some stats, the TR object is 
 	// Device.WiFi.X_RDKCENTRAL-COM_vAPStatsEnable
 
@@ -526,51 +497,12 @@ void upload_client_telemetry_data()
     get_device_flag(stflag, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.CliStatList");
 #if !defined (_XB6_PRODUCT_REQ_) && !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_)
 	// see if list has changed
-#ifdef WIFI_HAL_VERSION_3
-    BOOL enableRadioDetailStats[MAX_NUM_RADIOS] = {FALSE};
-#else
 	bool enable24detailstats = false;
 	bool enable5detailstats = false;
-#endif
 	if (strncmp(stflag, g_monitor_module.cliStatsList, MAX_VAP) != 0) {
 		strncpy(g_monitor_module.cliStatsList, stflag, MAX_VAP);
 		// check if we should enable of disable detailed client stats collection on XB3
 
-#ifdef WIFI_HAL_VERSION_3
-    UINT radioIndex = 0; 
-    for (i = 0; i < (UINT)getTotalNumberVAPs(); i++) 
-    {
-        if (stflag[i] == 1) 
-        {
-            radioIndex = getRadioIndexFromAp(i);
-            enableRadioDetailStats[radioIndex] = TRUE;
-        }
-    }
-    for (radioIndex = 0; radioIndex < getNumberRadios(); ++radioIndex)
-    {
-        wifi_radio_operationParam_t* radioOperation = getRadioOperationParam(radioIndex);
-        if (radioOperation == NULL)
-        {
-            CcspTraceWarning(("%s : failed to getRadioOperationParam with radio index \n", __FUNCTION__));
-            return 0;
-        }
-        switch (radioOperation->band)
-        {
-            case WIFI_FREQUENCY_2_4_BAND:
-                wifi_dbg_print(1, "%s:%d: client detailed stats collection for 2.4GHz radio set to %s\n", __func__, __LINE__, 
-                    radioIndex, (enableRadioDetailStats[radioIndex] == TRUE)?"enabled":"disabled");
-            case WIFI_FREQUENCY_5_BAND:
-                wifi_dbg_print(1, "%s:%d: client detailed stats collection for 5GHz radio set to %s\n", __func__, __LINE__, 
-                    radioIndex, (enableRadioDetailStats[radioIndex] == TRUE)?"enabled":"disabled");
-            case WIFI_FREQUENCY_6_BAND:
-                wifi_dbg_print(1, "%s:%d: client detailed stats collection for 6GHz radio set to %s\n", __func__, __LINE__, 
-                    radioIndex, (enableRadioDetailStats[radioIndex] == TRUE)?"enabled":"disabled");
-            default:
-                break;
-        }
-    }
-
-#else
     for (i = 0; i < MAX_VAP; i++) {
 			if ((i%2) == 0) {
 
@@ -591,28 +523,16 @@ void upload_client_telemetry_data()
        	wifi_dbg_print(1, "%s:%d: client detailed stats collection for 5GHz radio set to %s\n", __func__, __LINE__, 
 			(enable5detailstats == true)?"enabled":"disabled");
 
-#endif  //WIFI_HAL_VERSION_3
 #if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
-#ifdef WIFI_HAL_VERSION_3
-    for (radioIndex = 0; radioIndex < getNumberRadios(); radioIndex++)
-    {
-        wifi_setClientDetailedStatisticsEnable(radioIndex, enableRadioDetailStats[radioIndex]);
-    }
-#else
 		wifi_setClientDetailedStatisticsEnable(0, enable24detailstats);
 		wifi_setClientDetailedStatisticsEnable(1, enable5detailstats);
-#endif //WIFI_HAL_VERSION_3
 #endif //(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
 	}
 #endif //!defined (_XB6_PRODUCT_REQ_) && !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_)
     get_device_flag(snflag, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WIFI_TELEMETRY.SNRList");
     memset(buff, 0, MAX_BUFFER);
 
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0; i < getTotalNumberVAPs(); i++) {
-#else
     for (i = 0; i < MAX_VAP; i++) {
-#endif
         sta_map = g_monitor_module.bssid_data[i].sta_map;
         memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
         int compare = i + 1 ;
@@ -642,18 +562,6 @@ void upload_client_telemetry_data()
             "header": "xh_mac_3_split",    "content": "WIFI_MAC_3:", "type": "wifihealth.txt",
             "header": "xh_mac_4_split",    "content": "WIFI_MAC_4:", "type": "wifihealth.txt",
        	     */
-#ifdef WIFI_HAL_VERSION_3
-            if (isVapPrivate(i))
-            {
-                snprintf(eventName, sizeof(eventName), "%uGclientMac_split", convertRadioIndexToFrequencyNum(getRadioIndexFromAp(i)));
-                t2_event_s(eventName, telemetryBuff);
-            }
-            else if (isVapXhs(i))
-            {
-                snprintf(eventName, sizeof(eventName), "xh_mac_%d_split", compare);
-                t2_event_s(eventName, telemetryBuff);
-            }
-#else
        	    if (1 == compare) {
        	        t2_event_s("2GclientMac_split", telemetryBuff);
        	    } else if (2 == compare) {
@@ -663,7 +571,6 @@ void upload_client_telemetry_data()
             } else if (4 == compare) {
                 t2_event_s("xh_mac_4_split", telemetryBuff);
             }
-#endif
        	    wifi_dbg_print(1, "%s", buff);
 
 	    get_formatted_time(tmp);
@@ -673,27 +580,6 @@ void upload_client_telemetry_data()
 	    //    "header": "Total_5G_clients_split", "content": "WIFI_MAC_2_TOTAL_COUNT:","type": "wifihealth.txt",
 	    //    "header": "xh_cnt_1_split","content": "WIFI_MAC_3_TOTAL_COUNT:","type": "wifihealth.txt",
             //    "header": "xh_cnt_2_split","content": "WIFI_MAC_4_TOTAL_COUNT:","type": "wifihealth.txt",
-#ifdef WIFI_HAL_VERSION_3
-        if (isVapPrivate(i))
-        {
-            if (0 == num_devs) {
-                snprintf(eventName, sizeof(eventName), "WIFI_INFO_Zero_%uG_Clients", convertRadioIndexToFrequencyNum(getRadioIndexFromAp(i)));
-                t2_event_d(eventName, 1);
-            } else {
-                snprintf(eventName, sizeof(eventName), "Total_%uG_clients_split", convertRadioIndexToFrequencyNum(getRadioIndexFromAp(i)));
-                t2_event_d(eventName, num_devs);
-            }
-        }else if (isVapXhs(i))
-        {
-            snprintf(eventName, sizeof(eventName), "xh_cnt_%u_split", convertRadioIndexToFrequencyNum(getRadioIndexFromAp(i)));
-            t2_event_d(eventName, num_devs);
-
-        }else if (isVapMesh(i))
-        {
-            snprintf(eventName, sizeof(eventName), "Total_%uG_PodClients_split", convertRadioIndexToFrequencyNum(getRadioIndexFromAp(i)));
-            t2_event_d(eventName, num_devs);
-        }
-#else
             if (1 == compare) {
                 if (0 == num_devs) {
                     t2_event_d("WIFI_INFO_Zero_2G_Clients", 1);
@@ -717,7 +603,6 @@ void upload_client_telemetry_data()
             } else if (14 == compare) {
                     t2_event_d("Total_5G_PodClients_split", num_devs);            
             }
-#endif
             wifi_dbg_print(1, "%s", buff);
 
 	get_formatted_time(tmp);
@@ -754,18 +639,6 @@ void upload_client_telemetry_data()
        	}
        	strncat(buff, "\n", 2);
        	write_to_file(wifi_health_log, buff);
-#ifdef WIFI_HAL_VERSION_3
-            if (isVapPrivate(i))
-            {
-                snprintf(eventName, sizeof(eventName), "%uGRSSI_split", convertRadioIndexToFrequencyNum(getRadioIndexFromAp(i)));
-                t2_event_s(eventName, telemetryBuff);
-            }
-            else if (isVapXhs(i))
-            {
-                snprintf(eventName, sizeof(eventName), "xh_rssi_%u_split", compare);
-                t2_event_s(eventName, telemetryBuff);
-            }
-#else
         if ( 1 == compare ) {
             t2_event_s("2GRSSI_split", telemetryBuff);
         } else if ( 2 == compare ) {
@@ -775,7 +648,6 @@ void upload_client_telemetry_data()
         } else if ( 4 == compare ) {
             t2_event_s("xh_rssi_4_split", telemetryBuff);
         }
-#endif
        	wifi_dbg_print(1, "%s", buff);
 
 		get_formatted_time(tmp);
@@ -793,19 +665,11 @@ void upload_client_telemetry_data()
        	}
        	strncat(buff, "\n", 2);
        	write_to_file(wifi_health_log, buff);
-#ifdef WIFI_HAL_VERSION_3
-        if (isVapPrivate(i))
-        {
-            snprintf(eventName, sizeof(eventName), "WIFI_CW_%d_split", compare);
-            t2_event_s(eventName, telemetryBuff);
-        }
-#else
         if ( 1 == compare ) {
             t2_event_s("WIFI_CW_1_split", telemetryBuff);
         } else if ( 2 == compare ) {
             t2_event_s("WIFI_CW_2_split", telemetryBuff);
         }
-#endif
        	wifi_dbg_print(1, "%s", buff);
 
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && nrflag[i]) {
@@ -841,19 +705,11 @@ void upload_client_telemetry_data()
        		}
        		strncat(buff, "\n", 2);
        		write_to_file(wifi_health_log, buff);
-#ifdef WIFI_HAL_VERSION_3
-            if (isVapPrivate(i))
-            {
-                snprintf(eventName, sizeof(eventName), "WIFI_SNR_%d_split", compare);
-                t2_event_s(eventName, telemetryBuff);
-            }
-#else
                 if ( 1 == compare ) {
                     t2_event_s("WIFI_SNR_1_split", telemetryBuff);
                 } else if ( 2 == compare ) {
                     t2_event_s("WIFI_SNR_2_split", telemetryBuff);
                 }
-#endif
        		wifi_dbg_print(1, "%s", buff);
 		}
 
@@ -873,19 +729,11 @@ void upload_client_telemetry_data()
        	strncat(buff, "\n", 2);
        	write_to_file(wifi_health_log, buff);
 
-#ifdef WIFI_HAL_VERSION_3
-        if (isVapPrivate(i))
-        {
-            snprintf(eventName, sizeof(eventName), "WIFI_TX_%d_split", compare);
-            t2_event_s(eventName, telemetryBuff);
-        }
-#else
         if ( 1 == compare ) {
             t2_event_s("WIFI_TX_1_split", telemetryBuff);
         } else if ( 2 == compare ) {
             t2_event_s("WIFI_TX_2_split", telemetryBuff);
         }
-#endif
        	wifi_dbg_print(1, "%s", buff);
 
 		get_formatted_time(tmp);
@@ -905,19 +753,11 @@ void upload_client_telemetry_data()
        	write_to_file(wifi_health_log, buff);
 
        	//  "header": "WIFI_RX_1_split", "content": "WIFI_RXCLIENTS_1:", "type": "wifihealth.txt",
-#ifdef WIFI_HAL_VERSION_3
-        if (isVapPrivate(i))
-        {
-            snprintf(eventName, sizeof(eventName), "WIFI_RX_%d_split", compare);
-            t2_event_s(eventName, telemetryBuff);
-        }
-#else
        	if ( 1 == compare ) {
        	    t2_event_s("WIFI_RX_1_split", telemetryBuff);
        	} else if ( 2 == compare ) {
        	    t2_event_s("WIFI_RX_2_split", telemetryBuff);
        	}
-#endif
        	wifi_dbg_print(1, "%s", buff);
 	
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && trflag[i]) {
@@ -936,19 +776,11 @@ void upload_client_telemetry_data()
        		}
        		strncat(buff, "\n", 2);
        		write_to_file(wifi_health_log, buff);
-#ifdef WIFI_HAL_VERSION_3
-            if (isVapPrivate(i))
-            {
-                snprintf(eventName, sizeof(eventName), "MAXTX_%d_split", compare);
-                t2_event_s(eventName, telemetryBuff);
-            }
-#else
                 if ( 1 == compare ) {
                     t2_event_s("MAXTX_1_split", telemetryBuff);
                 } else if ( 2 == compare ) {
                     t2_event_s("MAXTX_2_split", telemetryBuff);
                 }
-#endif
        		wifi_dbg_print(1, "%s", buff);
 		}
 
@@ -968,19 +800,11 @@ void upload_client_telemetry_data()
        		}
        		strncat(buff, "\n", 2);
        		write_to_file(wifi_health_log, buff);
-#ifdef WIFI_HAL_VERSION_3
-            if (isVapPrivate(i))
-            {
-                snprintf(eventName, sizeof(eventName), "MAXRX_%d_split", compare);
-                t2_event_s(eventName, telemetryBuff);
-            }
-#else
                 if ( 1 == compare ) {
                     t2_event_s("MAXRX_1_split", telemetryBuff);
                 } else if ( 2 == compare ) {
                     t2_event_s("MAXRX_2_split", telemetryBuff);
                 }
-#endif
        		wifi_dbg_print(1, "%s", buff);
 		}
 
@@ -1056,19 +880,11 @@ void upload_client_telemetry_data()
        		}
        		strncat(buff, "\n", 2);
        		write_to_file(wifi_health_log, buff);
-#ifdef WIFI_HAL_VERSION_3
-            if (isVapPrivate(i))
-            {
-                snprintf(eventName, sizeof(eventName), "WIFI_PACKETSSENTCLIENTS_%d_split", compare);
-                t2_event_s(eventName, telemetryBuff);
-            }
-#else
                 if ( 1 == compare ) {
                     t2_event_s("WIFI_PACKETSSENTCLIENTS_1_split", telemetryBuff);
                 } else if ( 2 == compare ) {
                     t2_event_s("WIFI_PACKETSSENTCLIENTS_2_split", telemetryBuff);
                 }
-#endif
        		wifi_dbg_print(1, "%s", buff);
 		}
 
@@ -1107,19 +923,11 @@ void upload_client_telemetry_data()
        		}
        		strncat(buff, "\n", 2);
        		write_to_file(wifi_health_log, buff);
-#ifdef WIFI_HAL_VERSION_3
-            if (isVapPrivate(i))
-            {
-                snprintf(eventName, sizeof(eventName), "WIFI_ERRORSSENT_%d_split", compare);
-                t2_event_s(eventName, telemetryBuff);
-            }
-#else
                 if ( 1 == compare ) {
                     t2_event_s("WIFI_ERRORSSENT_1_split", telemetryBuff);
                 } else if ( 2 == compare ) {
                     t2_event_s("WIFI_ERRORSSENT_2_split", telemetryBuff);
                 }
-#endif
        		wifi_dbg_print(1, "%s", buff);
 		}
 
@@ -1140,19 +948,11 @@ void upload_client_telemetry_data()
        		}
        		strncat(buff, "\n", 2);
        		write_to_file(wifi_health_log, buff);
-#ifdef WIFI_HAL_VERSION_3
-            if (isVapPrivate(i))
-            {
-                snprintf(eventName, sizeof(eventName), "WIFIRetransCount%d_split", compare);
-                t2_event_s(eventName, telemetryBuff);
-            }
-#else
                 if ( 1 == compare ) {
                     t2_event_s("WIFIRetransCount1_split", telemetryBuff);
                 } else if ( 2 == compare ) {
                     t2_event_s("WIFIRetransCount2_split", telemetryBuff);
                 }
-#endif
        		wifi_dbg_print(1, "%s", buff);
 		}
 
@@ -1213,11 +1013,7 @@ void upload_client_telemetry_data()
        	// Every hour, for private SSID(s) we need to calculate the good rssi time and bad rssi time 
 		// and write into wifi log in following format
        	// WIFI_GOODBADRSSI_$apindex: $MAC,$GoodRssiTime,$BadRssiTime; $MAC,$GoodRssiTime,$BadRssiTime; ....
-#ifdef  WIFI_HAL_VERSION_3
-                if (i < (UINT)getTotalNumberVAPs()) {
-#else
                 if (i < 2) {
-#endif
 			get_formatted_time(tmp);
        		memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
                 snprintf(buff, 2048, "%s WIFI_GOODBADRSSI_%d:", tmp, i + 1);
@@ -1245,19 +1041,11 @@ void upload_client_telemetry_data()
        		}
        		strncat(buff, "\n", 2);
        		write_to_file(wifi_health_log, buff);
-#ifdef WIFI_HAL_VERSION_3
-            if (isVapPrivate(i))
-            {
-                snprintf(eventName, sizeof(eventName), "GB_RSSI_%d_split", compare);
-                t2_event_s(eventName, telemetryBuff);
-            }
-#else
                 if ( 1 == compare ) {
                     t2_event_s("GB_RSSI_1_split", telemetryBuff);
                 } else if ( 2 == compare ) {
                     t2_event_s("GB_RSSI_2_split", telemetryBuff);
                 }
-#endif
        		wifi_dbg_print(1, "%s", buff);		
 		}
 
@@ -1288,19 +1076,11 @@ void upload_client_telemetry_data()
 				}
 				strncat(buff, "\n", 2);
 				write_to_file(wifi_health_log, buff);
-#ifdef WIFI_HAL_VERSION_3
-            if (isVapPrivate(i))
-            {
-                snprintf(eventName, sizeof(eventName), "WIFI_REC_%d_split", compare);
-                t2_event_s(eventName, telemetryBuff);
-            }
-#else
                                 if ( 1 == compare ) {
                                     t2_event_s("WIFI_REC_1_split", telemetryBuff);
                                 } else if ( 2 == compare ) {
                                     t2_event_s("WIFI_REC_2_split", telemetryBuff);
                                 }
-#endif
 				wifi_dbg_print(1, "%s", buff);
 			}
 		}
@@ -1312,11 +1092,7 @@ void upload_client_telemetry_data()
 		g_monitor_module.sta_health_rssi_threshold = rssi;
 	}
 
-#ifdef WIFI_HAL_VERSION_3
-        for (i = 0; i < getTotalNumberVAPs(); i++) {
-#else
         for (i = 0; i < MAX_VAP; i++) {
-#endif		// update rapid reconnect time limit if changed
             if (CosaDmlWiFi_GetRapidReconnectThresholdValue(i, &rapid_reconn_max) == ANSC_STATUS_SUCCESS) {
                 g_monitor_module.bssid_data[i].ap_params.rapid_reconnect_threshold = rapid_reconn_max;
             }  
@@ -1435,11 +1211,7 @@ get_device_flag(char flag[], char *psmcli)
             int len = sizeof(buf_int)/sizeof(buf_int[0]);
             for(i = 0;  i < len; i ++)
             {
-#ifdef WIFI_HAL_VERSION_3
-                if((buf_int[i] <= (int)getTotalNumberVAPs()) && (buf_int[i] > 0))
-#else
                 if((buf_int[i] <= MAX_VAP) && (buf_int[i] > 0))
-#endif
                 {
                     flag[(buf_int[i] - 1)] = 1;
                     if(isPsmsetneeded)
@@ -1490,9 +1262,6 @@ upload_client_debug_stats(void)
     ULONG txpower = 0;
     ULONG txpwr_pcntg = 0;
     BOOL enable = false;
-#ifdef WIFI_HAL_VERSION_3
-    CHAR eventName[32] = {0};
-#endif
     if  (false == sWiFiDmlvApStatsFeatureEnableCfg)
     {
         wifi_dbg_print(1, "Client activity stats feature is disabled\n");
@@ -1500,11 +1269,7 @@ upload_client_debug_stats(void)
     }
 
     char vap_status[16]= {0};
-#ifdef WIFI_HAL_VERSION_3
-    for (apIndex = 0; apIndex < (int)getTotalNumberVAPs(); apIndex++)
-#else
     for (apIndex = 0; apIndex < MAX_VAP; apIndex++)
-#endif
     {
         if (false == IsCosaDmlWiFiApStatsEnable(apIndex))
         {
@@ -1517,28 +1282,6 @@ upload_client_debug_stats(void)
 
         if(strncasecmp(vap_status,"Up",2)==0)
         {
-#ifdef WIFI_HAL_VERSION_3
-            wifi_getRadioChannel(getRadioIndexFromAp(apIndex), &channel);
-            memset(tmp, 0, sizeof(tmp));
-            get_formatted_time(tmp);
-            write_to_file(wifi_health_log, "\n%s WIFI_CHANNEL_%d:%lu\n", tmp, apIndex+1, channel);
-            if (isVapPrivate(apIndex))
-            {
-                snprintf(eventName, sizeof(eventName), "WIFI_CH_%d_split", apIndex + 1 );
-                t2_event_d(eventName, channel);
-                if (getRadioIndexFromAp(apIndex) == 1)
-                {
-                    if( 1 == channel )
-                    {
-                        //         "header": "WIFI_INFO_UNI3_channel", "content": "WIFI_CHANNEL_2:1", "type": "wifihealth.txt",
-                        t2_event_d("WIFI_INFO_UNI3_channel", 1);
-                    } else if (( 3 == channel || 4 == channel)) \
-                    { 
-                        t2_event_d("WIFI_INFO_UNII_channel", 1);
-                    }
-                }
-            }
-#else
             wifi_getRadioChannel(apIndex%2, &channel);
             memset(tmp, 0, sizeof(tmp));
             get_formatted_time(tmp);
@@ -1557,7 +1300,6 @@ upload_client_debug_stats(void)
                     t2_event_d("WIFI_INFO_UNII_channel", 1);
                 }
             }
-#endif
 
             sta_map = g_monitor_module.bssid_data[apIndex].sta_map;
             sta = hash_map_get_first(sta_map);
@@ -1837,48 +1579,28 @@ upload_client_debug_stats(void)
                 }
                 sta = hash_map_get_next(sta_map, sta);
             }
-#ifdef WIFI_HAL_VERSION_3
-            if (isVapPrivate(apIndex))
-#else
             if ((apIndex == 0) || (apIndex == 1))
-#endif
             {
                 txpower = 0;
                 enable = false;
                 memset (buf, 0, CLIENT_STATS_MAX_LEN_BUF);
 
               /* adding transmit power and countrycode */
-#ifdef WIFI_HAL_VERSION_3
-                wifi_getRadioCountryCode(getRadioIndexFromAp(apIndex), buf);
-#else //WIFI_HAL_VERSION_3
                 wifi_getRadioCountryCode(apIndex, buf);
-#endif //WIFI_HAL_VERSION_3
                 memset(tmp, 0, sizeof(tmp));
                 get_formatted_time(tmp);
                 write_to_file(wifi_health_log, "\n%s WIFI_COUNTRY_CODE_%d:%s", tmp, apIndex+1, buf);
- #ifdef WIFI_HAL_VERSION_3
-                wifi_getRadioTransmitPower(getRadioIndexFromAp(apIndex), &txpower);
- #else
                 wifi_getRadioTransmitPower(apIndex, &txpower);//Absolute power API for XB6 to be added
- #endif
                 memset(tmp, 0, sizeof(tmp));
                 get_formatted_time(tmp);
                 write_to_file(wifi_health_log, "\n%s WIFI_TX_PWR_dBm_%d:%lu", tmp, apIndex+1, txpower);
                 //    "header": "WIFI_TXPWR_1_split",   "content": "WIFI_TX_PWR_dBm_1:", "type": "wifihealth.txt",
                 //    "header": "WIFI_TXPWR_2_split",   "content": "WIFI_TX_PWR_dBm_2:", "type": "wifihealth.txt",
-#ifdef WIFI_HAL_VERSION_3
-                if (isVapPrivate(apIndex))
-                {
-                    snprintf(eventName, sizeof(eventName), "WIFI_TXPWR_%d_split", apIndex + 1 );
-                    t2_event_d(eventName, txpower);
-                }
-#else
                 if(1 == (apIndex+1)) {
                     t2_event_d("WIFI_TXPWR_1_split", txpower);
                 } else if (2 == (apIndex+1)) {
                     t2_event_d("WIFI_TXPWR_2_split", txpower);
                 }
-#endif
                 //XF3-5424
 #if defined(DUAL_CORE_XB3) || (defined(_XB6_PRODUCT_REQ_) && defined(_XB7_PRODUCT_REQ_) && !defined(_COSA_BCM_ARM_)) || defined(_HUB4_PRODUCT_REQ_) 
                 static char *TransmitPower = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.Radio.%d.TransmitPower";
@@ -1893,36 +1615,23 @@ upload_client_debug_stats(void)
                     ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
                 }
 #else
-#ifdef WIFI_HAL_VERSION_3
-                wifi_getRadioPercentageTransmitPower(getRadioIndexFromAp(apIndex), &txpwr_pcntg);
-#else //WIFI_HAL_VERSION_3
                 wifi_getRadioPercentageTransmitPower(apIndex, &txpwr_pcntg);//percentage API for XB3 to be added.
-#endif //WIFI_HAL_VERSION_3
 #endif
                 memset(tmp, 0, sizeof(tmp));
                 get_formatted_time(tmp);
                 write_to_file(wifi_health_log, "\n%s WIFI_TX_PWR_PERCENTAGE_%d:%lu", tmp, apIndex+1, txpwr_pcntg);
-#ifdef WIFI_HAL_VERSION_3
-                snprintf(eventName, sizeof(eventName), "WIFI_TXPWR_PCNTG_%u_split", apIndex + 1 );
-                t2_event_d("WIFI_TXPWR_PCNTG_1_split", txpwr_pcntg);
-#else
                 if(1 == (apIndex+1)) {
                     t2_event_d("WIFI_TXPWR_PCNTG_1_split", txpwr_pcntg);
                 } else if (2 == (apIndex+1)) {
                     t2_event_d("WIFI_TXPWR_PCNTG_2_split", txpwr_pcntg);
                 }
-#endif
 
                 wifi_getBandSteeringEnable(&enable);
                 memset(tmp, 0, sizeof(tmp));
                 get_formatted_time(tmp);
                 write_to_file(wifi_health_log, "\n%s WIFI_ACL_%d:%d", tmp, apIndex+1, enable);
 
-#ifdef WIFI_HAL_VERSION_3
-                wifi_getRadioAutoChannelEnable(getRadioIndexFromAp(apIndex), &enable);
-#else
                 wifi_getRadioAutoChannelEnable(apIndex, &enable);
-#endif
                 if (true == enable)
                 {
                     memset(tmp, 0, sizeof(tmp));
@@ -1930,19 +1639,11 @@ upload_client_debug_stats(void)
                     write_to_file(wifi_health_log, "\n%s WIFI_ACS_%d:true\n", tmp, apIndex+1);
                     // "header": "WIFI_ACS_1_split",  "content": "WIFI_ACS_1:", "type": "wifihealth.txt",
                     // "header": "WIFI_ACS_2_split", "content": "WIFI_ACS_2:", "type": "wifihealth.txt",
-#ifdef WIFI_HAL_VERSION_3
-                    if (isVapPrivate(apIndex))
-                    {
-                        snprintf(eventName, sizeof(eventName), "WIFI_ACS_%d_split", apIndex + 1 );
-                        t2_event_s(eventName, "true");
-                    }
-#else
                     if ( 1 == (apIndex+1) ) {
                         t2_event_s("WIFI_ACS_1_split", "true");
                     } else if ( 2 == (apIndex+1) ) {
                         t2_event_s("WIFI_ACS_2_split", "true");
                     }
-#endif
                 }
                 else
                 {
@@ -1951,19 +1652,11 @@ upload_client_debug_stats(void)
                     write_to_file(wifi_health_log, "\n%s WIFI_ACS_%d:false\n", tmp, apIndex+1);
                     // "header": "WIFI_ACS_1_split",  "content": "WIFI_ACS_1:", "type": "wifihealth.txt",
                     // "header": "WIFI_ACS_2_split", "content": "WIFI_ACS_2:", "type": "wifihealth.txt",
-#ifdef WIFI_HAL_VERSION_3
-                    if (isVapPrivate(apIndex))
-                    {
-                        snprintf(eventName, sizeof(eventName), "WIFI_ACS_%d_split", apIndex + 1 );
-                        t2_event_s(eventName,  "false");
-                    }
-#else
                     if ( 1 == (apIndex+1) ) {
                         t2_event_s("WIFI_ACS_1_split", "false");
                     } else if ( 2 == (apIndex+1) ) {
                         t2_event_s("WIFI_ACS_2_split", "false");
                     }
-#endif
                 }
             }
         }
@@ -1980,22 +1673,14 @@ process_stats_flag_changed(unsigned int ap_index, client_stats_enable_t *flag)
 
 	write_to_file(wifi_health_log, "WIFI_STATS_FEATURE_ENABLE:%s\n",
                 (flag->enable) ? "true" : "false");
-#ifdef WIFI_HAL_VERSION_3
-        for(idx = 0; idx < (int)getTotalNumberVAPs(); idx++)
-#else
 	for(idx = 0; idx < MAX_VAP; idx++)
-#endif
         {
             reset_client_stats_info(idx);
         }
     }
     else if (1 == flag->type) //Device.WiFi.AccessPoint.<vAP>.X_RDKCENTRAL-COM_StatsEnable = 1
     {
-#ifdef WIFI_HAL_VERSION_3
-        if(ap_index < getTotalNumberVAPs())
-#else
         if(MAX_VAP > ap_index)
-#endif
         {
             reset_client_stats_info(ap_index);
             write_to_file(wifi_health_log, "WIFI_STATS_ENABLE_%d:%s\n", ap_index+1,
@@ -2007,17 +1692,6 @@ process_stats_flag_changed(unsigned int ap_index, client_stats_enable_t *flag)
 static void
 radio_stats_flag_changed(unsigned int radio_index, client_stats_enable_t *flag)
 {
-#ifdef WIFI_HAL_VERSION_3
-    for(UINT apIndex = 0; apIndex < getTotalNumberVAPs(); apIndex++)
-    {
-        if (radio_index == getRadioIndexFromAp(apIndex))
-        {
-            reset_client_stats_info(apIndex);
-        }
-        write_to_file(wifi_health_log, "WIFI_RADIO_STATUS_ENABLE_%d:%s\n", radio_index+1,
-        (flag->enable) ? "true" : "false");
-    }
-#else
 	int idx = 0;
 	if (0 == radio_index)	//2.4GHz
 	{
@@ -2036,7 +1710,6 @@ radio_stats_flag_changed(unsigned int radio_index, client_stats_enable_t *flag)
 		write_to_file(wifi_health_log, "WIFI_RADIO_STATUS_ENABLE_%d:%s\n", radio_index+1,
 				(flag->enable) ? "true" : "false");
 	}
-#endif
 }
 
 static void
@@ -2064,36 +1737,6 @@ upload_channel_width_telemetry(void)
     char bandwidth[4] = {0};
     char tmp[128] = {0};
     char buff[1024] = {0};
-#ifdef WIFI_HAL_VERSION_3
-    CHAR eventName[32] = {0};
-    BOOL radioEnabled = FALSE;
-    UINT numRadios = getNumberRadios();
-    for (UINT i = 0; i < numRadios; ++i)
-    {
-        if (wifi_getRadioEnable(i, &radioEnabled))
-        {
-            CcspTraceWarning(("%s : failed to wifi_getRadioEnable with radio index \n", __FUNCTION__, i));
-            radioEnabled = FALSE;
-        }
-        if (radioEnabled)
-        {
-            wifi_getRadioOperatingChannelBandwidth(i, buffer);
-            get_sub_string(buffer, bandwidth);
-            get_formatted_time(tmp);
-            snprintf(buff, 1024, "%s WiFi_config_%dG_chan_width_split:%s\n", tmp, convertRadioIndexToFrequencyNum(i), bandwidth);
-            write_to_file(wifi_health_log, buff);
-
-            snprintf(eventName, sizeof(eventName), "WIFI_CWconfig_%d_split", i + 1 );
-            t2_event_s(eventName, bandwidth);
-
-
-            memset(buffer, 0, sizeof(buffer));
-            memset(bandwidth, 0, sizeof(bandwidth));
-            memset(tmp, 0, sizeof(tmp));
-        }
-    }
-
-#else
     BOOL radio_0_Enabled=FALSE;
     BOOL radio_1_Enabled=FALSE;
     wifi_getRadioEnable(1, &radio_1_Enabled);
@@ -2124,7 +1767,6 @@ upload_channel_width_telemetry(void)
         // "header": "WIFI_CWconfig_2_split", "content": "WiFi_config_5G_chan_width_split:", "type": "wifihealth.txt",
         t2_event_s("WIFI_CWconfig_2_split", bandwidth);
     }
-#endif
 }
 
 static void
@@ -2155,15 +1797,8 @@ upload_ap_telemetry_pmf(void)
 	// "header":  "WIFI_INFO_PMF_CONFIG_1"
 	// "content": "WiFi_INFO_PMF_config_ath0:"
 	// "type": "wifihealth.txt",
-#ifdef WIFI_HAL_VERSION_3
-    for(i = 0; i < (int)getTotalNumberVAPs(); i++) 
-    {
-        if (isVapPrivate(i))
-        {
-#else
 	for(i=0;i<2;i++) // for(i=0;i<MAX_VAP;i++)
 	{
-#endif
 		memset(pmf_config, 0, sizeof(pmf_config));
 		wifi_getApSecurityMFPConfig(i, pmf_config);
 		sprintf(telemetry_buf, "%s", pmf_config);
@@ -2176,9 +1811,6 @@ upload_ap_telemetry_pmf(void)
 		memset(tmp, 0, sizeof(tmp));
 		sprintf(tmp, "WIFI_INFO_PMF_CONFIG_%d", i+1);
 		t2_event_s(tmp, telemetry_buf);
-#ifdef WIFI_HAL_VERSION_3
-        }
-#endif
     }
 	wifi_dbg_print(1, "Exiting %s:%d \n", __FUNCTION__, __LINE__);
 }
@@ -2338,17 +1970,11 @@ void process_diagnostics	(unsigned int ap_index, wifi_associated_dev3_t *dev, un
         wifi_dbg_print(1, "Polled station info for, vap:%d bssid:%s ClientMac:%s Uplink rate:%d Downlink rate:%d Packets Sent:%d Packets Recieved:%d Errors Sent:%d Retrans:%d\n",
              ap_index+1, bssid, to_sta_key(sta->dev_stats.cli_MACAddress, sta_key), sta->dev_stats.cli_LastDataUplinkRate, sta->dev_stats.cli_LastDataDownlinkRate,
              sta->dev_stats.cli_PacketsSent, sta->dev_stats.cli_PacketsReceived, sta->dev_stats.cli_ErrorsSent, sta->dev_stats.cli_RetransCount);
-#ifdef WIFI_HAL_VERSION_3
-        wifi_dbg_print(1, "Polled radio NF %d \n",g_monitor_module.radio_data[getRadioIndexFromAp(ap_index)].NoiseFloor);
-        wifi_dbg_print(1, "Polled channel info for radio %d : channel util:%d, channel interference:%d \n",
-                getRadioIndexFromAp(ap_index), g_monitor_module.radio_data[getRadioIndexFromAp(ap_index)].channelUtil, g_monitor_module.radio_data[getRadioIndexFromAp(ap_index)].channelInterference);
-#else
         wifi_dbg_print(1, "Polled radio NF %d \n",g_monitor_module.radio_data[ap_index % 2].NoiseFloor);
         wifi_dbg_print(1, "Polled channel info for radio 2.4 : channel util:%d, channel interference:%d \n",
                 g_monitor_module.radio_data[0].channelUtil, g_monitor_module.radio_data[0].channelInterference);
         wifi_dbg_print(1, "Polled channel info for radio 5 : channel util:%d, channel interference:%d \n",
                 g_monitor_module.radio_data[1].channelUtil, g_monitor_module.radio_data[1].channelInterference);
-#endif
 
         hal_sta++;
 
@@ -2392,13 +2018,7 @@ void process_deauthenticate	(unsigned int ap_index, auth_deauth_dev_t *dev)
         wifi_dbg_print(1, "%s:%d Device:%s deauthenticated on ap:%d with reason : %d\n", __func__, __LINE__, to_sta_key(dev->sta_mac, sta_key), ap_index, dev->reason);
 
         /*Wrong password on private, Xfinity Home and LNF SSIDs*/
-#ifdef WIFI_HAL_VERSION_3
-        //As per wifi_hal.h 1=wrong password.So from WIFI_HAL_VERSION_3, we use 1 for displaying the WIFI_PASSWORD_FAIL instead of 2. as 2=timeout is from wifi_hal.h
-        //event_type: 0=unknown reason; 1=wrong password; 2=timeout;
-        if ((dev->reason == 1) && ( isVapPrivate(ap_index) || isVapXhs(ap_index) || isVapLnfPsk(ap_index) ) )
-#else
         if ((dev->reason == 2) && ( ap_index == 0 || ap_index == 1 || ap_index == 2 || ap_index == 3 || ap_index == 6 || ap_index == 7 )) 
-#endif
         {
 	       get_formatted_time(tmp);
        	 
@@ -2407,11 +2027,7 @@ void process_deauthenticate	(unsigned int ap_index, auth_deauth_dev_t *dev)
 	       write_to_file(wifi_health_log, buff);
         }
         /*ARRISXB6-11979 Possible Wrong WPS key on private SSIDs*/
-#ifdef WIFI_HAL_VERSION_3
-        if ((dev->reason == 2 || dev->reason == 14 || dev->reason == 19) && ( isVapPrivate(ap_index) )) 
-#else
         if ((dev->reason == 2 || dev->reason == 14 || dev->reason == 19) && ( ap_index == 0 || ap_index == 1 )) 
-#endif
         {
 	       get_formatted_time(tmp);
        	 
@@ -2468,11 +2084,7 @@ void process_connect	(unsigned int ap_index, auth_deauth_dev_t *dev)
 	sta->dev_stats.cli_Active = true;
         /*To avoid duplicate entries in hash map of different vAPs eg:RDKB-21582
           Also when clients moved away from a vAP and connect back to other vAP this will be usefull*/
-#ifdef WIFI_HAL_VERSION_3
-        for (i = 0; i < getTotalNumberVAPs(); i++) {
-#else
         for (i = 0; i < MAX_VAP; i++) {
-#endif
               if ( i == ap_index)
                     continue;
               memset(vap_status,0,16);
@@ -2820,12 +2432,8 @@ static unsigned char updateNasIpStatus (int apIndex)
 #if defined (DUAL_CORE_XB3)
     
     static unsigned char erouterIpInitialized = 0;
-#ifdef WIFI_HAL_VERSION_3
-    if(isVapHotspotSecure(apIndex)) {
-#else
     if ((apIndex == 8) || (apIndex == 9)) {
 
-#endif
         if (!erouterIpInitialized) {
             if (FALSE == erouterGetIpAddress()) {
                 return 0;
@@ -2857,18 +2465,10 @@ static void logVAPUpStatus()
     wifi_dbg_print(1, "Entering %s:%d \n",__FUNCTION__,__LINE__);
 	get_formatted_time(tmp);
     sprintf(log_buf,"%s WIFI_VAP_PERCENT_UP:",tmp);
-#ifdef WIFI_HAL_VERSION_3
-    for(i = 0; i < (int)getTotalNumberVAPs(); i++)
-#else
     for(i=0;i<MAX_VAP;i++)
-#endif
     {
         vapup_percentage=((int)(vap_up_arr[i])*100)/(vap_iteration);
-#ifdef WIFI_HAL_VERSION_3
-        char delimiter = (i+1) < ((int)getTotalNumberVAPs()+1) ?';':' ';
-#else
         char delimiter = (i+1) < (MAX_VAP+1) ?';':' ';
-#endif
         sprintf(vap_buf,"%d,%d%c",(i+1),vapup_percentage, delimiter);
         strcat(log_buf,vap_buf);
         strcat(telemetry_buf,vap_buf);
@@ -2888,11 +2488,7 @@ static void captureVAPUpStatus()
     char vap_status[16];
     wifi_dbg_print(1, "Entering %s:%d \n",__FUNCTION__,__LINE__);
     vap_iteration++;
-#ifdef WIFI_HAL_VERSION_3
-    for(i=0; i<(int)getTotalNumberVAPs() ;i++)
-#else
     for(i=0;i<MAX_VAP;i++)
-#endif
     {
         memset(vap_status,0,16);
         wifi_getApStatus(i,vap_status);
@@ -2976,11 +2572,7 @@ void associated_client_diagnostics ()
     snprintf(s_mac, MIN_MAC_LEN+1, "%02x%02x%02x%02x%02x%02x", g_monitor_module.inst_msmt.sta_mac[0],
        g_monitor_module.inst_msmt.sta_mac[1],g_monitor_module.inst_msmt.sta_mac[2], g_monitor_module.inst_msmt.sta_mac[3],
                 g_monitor_module.inst_msmt.sta_mac[4], g_monitor_module.inst_msmt.sta_mac[5]);
-#ifdef WIFI_HAL_VERSION_3
-    radioIndex = getRadioIndexFromAp(index);
-#else
      radioIndex = ((index % 2) == 0)? 0:1;
-#endif
 
     wifi_dbg_print(1, "%s:%d: get radio NF %d\n", __func__, __LINE__, g_monitor_module.radio_data[radioIndex].NoiseFloor);
 
@@ -2989,13 +2581,8 @@ void associated_client_diagnostics ()
             wifi_dbg_print(1, "%s:%d: get channel stats for radio %d\n", __func__, __LINE__, radioIndex);
             g_monitor_module.radio_data[radioIndex].channelUtil = chan_util;
             g_monitor_module.radio_data[radioIndex].channelInterference = 0;
-#ifdef WIFI_HAL_VERSION_3 
-            g_monitor_module.radio_data[getRadioIndexFromAp(radioIndex + 1)].channelUtil = 0;
-            g_monitor_module.radio_data[getRadioIndexFromAp(radioIndex + 1)].channelInterference = 0;
-#else
             g_monitor_module.radio_data[((radioIndex + 1) % 2)].channelUtil = 0;
             g_monitor_module.radio_data[((radioIndex + 1) % 2)].channelInterference = 0;
-#endif
     }
  
     wifi_dbg_print(1, "%s:%d: get single connected client %s stats\n", __func__, __LINE__, s_mac);
@@ -3020,11 +2607,7 @@ void radio_diagnostics()
     char            RadioChanBand[64] = {0};
     ULONG           Channel = 0;
     unsigned int    radiocnt = 0;
-#ifdef WIFI_HAL_VERSION_3
-    for (radiocnt = 0; radiocnt < getNumberRadios(); radiocnt++)
-#else
     for (radiocnt = 0; radiocnt < MAX_RADIOS; radiocnt++)
-#endif
     {
         memset(&radioTrafficStats, 0, sizeof(wifi_radioTrafficStats2_t));
         memset(&g_monitor_module.radio_data[radiocnt], 0, sizeof(radio_data_t));
@@ -3074,11 +2657,7 @@ void associated_devices_diagnostics	()
 	unsigned int i, num_devs = 0;
 
 	//wifi_dbg_print(1, "%s:%d:Enter\n", __func__, __LINE__);  
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0; i < getTotalNumberVAPs(); i++) { 
-#else
 	for (i = 0; i < MAX_VAP; i++) { 
-#endif
 		if (wifi_getApAssociatedDeviceDiagnosticResult3(i, &dev_array, &num_devs) == RETURN_OK) {
         	process_diagnostics(i, dev_array, num_devs);
         
@@ -3226,11 +2805,7 @@ int init_wifi_monitor ()
         unsigned int uptimeval = 0;
 	char mac_str[32];
 	
-#ifdef WIFI_HAL_VERSION_3
-	for (i = 0; i < getTotalNumberVAPs(); i++) {
-#else
 	for (i = 0; i < MAX_VAP; i++) {
-#endif
                /*TODO CID: 110946 Out-of-bounds access - Fix in QTN code*/
 	       if (wifi_getSSIDMACAddress(i, mac_str) == RETURN_OK) {
 			to_mac_bytes(mac_str, g_monitor_module.bssid_data[i].bssid);
@@ -3272,11 +2847,7 @@ int init_wifi_monitor ()
 	} else {
 		g_monitor_module.sta_health_rssi_threshold = rssi;
 	}
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0; i < getTotalNumberVAPs(); i++) {
-#else
     for (i = 0; i < MAX_VAP; i++) {
-#endif
         // update rapid reconnect time limit if changed
         if (CosaDmlWiFi_GetRapidReconnectThresholdValue(i, &rapid_reconn_max) != ANSC_STATUS_SUCCESS) {
             g_monitor_module.bssid_data[i].ap_params.rapid_reconnect_threshold = 180;
@@ -3290,11 +2861,7 @@ int init_wifi_monitor ()
 	pthread_cond_init(&g_monitor_module.cond, NULL);
     pthread_mutex_init(&g_monitor_module.lock, NULL);
 
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0; i < getTotalNumberVAPs(); i++) {
-#else
     for (i = 0; i < MAX_VAP; i++) {
-#endif
 		g_monitor_module.bssid_data[i].sta_map = hash_map_create();
 		if (g_monitor_module.bssid_data[i].sta_map == NULL) {
 			deinit_wifi_monitor();
@@ -3360,11 +2927,7 @@ void deinit_wifi_monitor	()
 	sysevent_close(g_monitor_module.sysevent_fd, g_monitor_module.sysevent_token);
         if(g_monitor_module.queue != NULL)
             queue_destroy(g_monitor_module.queue);
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0; i < getTotalNumberVAPs(); i++) {
-#else
     for (i = 0; i < MAX_VAP; i++) {
-#endif
         if(g_monitor_module.bssid_data[i].sta_map != NULL)
 	        hash_map_destroy(g_monitor_module.bssid_data[i].sta_map);
 	}
@@ -3529,11 +3092,7 @@ void instant_msmt_macAddr(char *mac_addr)
     strncpy(g_monitor_module.instantMac, mac_addr, MIN_MAC_LEN);
   
     to_mac_bytes(mac_addr, bmac);
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0; i < (int)getTotalNumberVAPs(); i++) {
-#else
         for (i = 0; i < MAX_VAP; i++) {
-#endif	  
 if( is_device_associated(i, mac_addr)  == true)
           {
                wifi_dbg_print(1, "%s:%d: found client %s on ap %d\n", __func__, __LINE__, mac_addr,i);
@@ -3592,11 +3151,7 @@ void monitor_enable_instant_msmt(mac_address_t sta_mac, bool enable)
 			
 	wifi_dbg_print(1, "%s:%d: instant measurements not active should look for sta:%s\n", __func__, __LINE__, sta);
 
-#ifdef WIFI_HAL_VERSION_3
-        for (i = 0; i < getTotalNumberVAPs(); i++) {
-#else
         for (i = 0; i < MAX_VAP; i++) {
-#endif
 		if ( is_device_associated(i, sta) == true ) {		
 			wifi_dbg_print(1, "%s:%d: found sta:%s on ap index:%d starting instant measurements\n", __func__, __LINE__, sta, i);
 			event = (wifi_monitor_data_t *)malloc(sizeof(wifi_monitor_data_t));
@@ -4028,11 +3583,7 @@ void SetActiveMsmtStepDstMac(char *DstMac, ULONG StepIns)
     memset(g_active_msmt.active_msmt.Step[StepIns].DestMac, 0, sizeof(mac_address_t));
     to_mac_bytes(DstMac, bmac);
 
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0; i < (int)getTotalNumberVAPs(); i++) 
-#else
     for (i = 0; i < MAX_VAP; i++) 
-#endif    
     {
           if ( is_device_associated(i, DstMac)  == true)
           {
@@ -4421,11 +3972,7 @@ void pktGen_BlastClient ()
         if ( index >= 0)
         {
 #if defined (DUAL_CORE_XB3)
-#ifdef WIFI_HAL_VERSION_3
-            wifi_setClientDetailedStatisticsEnable(getRadioIndexFromAp(index), TRUE);
-#else
             wifi_setClientDetailedStatisticsEnable((index % 2), TRUE);
-#endif
 
 #endif
             pthread_attr_init(&Attr);
@@ -4453,11 +4000,7 @@ void pktGen_BlastClient ()
             if (index >= 0)
             {
 #if defined (DUAL_CORE_XB3)
-#ifdef WIFI_HAL_VERSION_3
-                wifi_setClientDetailedStatisticsEnable(getRadioIndexFromAp(index), FALSE);
-#else
                 wifi_setClientDetailedStatisticsEnable((index % 2), FALSE);
-#endif
 #endif
             }
             return;
@@ -4530,11 +4073,7 @@ void pktGen_BlastClient ()
 #if defined (DUAL_CORE_XB3)
         if (index >= 0)
         {
-#ifdef WIFI_HAL_VERSION_3
-            wifi_setClientDetailedStatisticsEnable(getRadioIndexFromAp(index), FALSE);
-#else
             wifi_setClientDetailedStatisticsEnable((index % 2), FALSE);
-#endif
         }
 #endif
         // Analyze samples and get Throughput
@@ -4623,15 +4162,11 @@ void *WiFiBlastClient(void* data)
     config.packetCount = NoOfSamples;
 
     /* Get the radio ChannelsInUse param value for all the radios */
-#ifdef WIFI_HAL_VERSION_3
-    total_radiocnt = (int)getNumberRadios();
-#else
     if (wifi_getRadioNumberOfEntries((ULONG*)&total_radiocnt) != RETURN_OK)
     {
         wifi_dbg_print(1, "%s : %d Failed to get radio count\n",__func__,__LINE__);
         return NULL;
     }
-#endif
     for (radiocnt = 0; radiocnt < (int)total_radiocnt; radiocnt++)
     {
         memset(ChannelsInUse, '\0', sizeof(ChannelsInUse));

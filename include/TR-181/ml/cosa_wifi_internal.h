@@ -239,22 +239,12 @@ CosaWifiInitialize
         ANSC_HANDLE                 hThisObject
     );
 
-#ifdef WIFI_HAL_VERSION_3
-ANSC_STATUS
-CosaWifiReInitialize
-    (
-        ANSC_HANDLE                 hThisObject,
-        ULONG                       uIndex,
-        BOOL                        initNeeded
-    );
-#else
 ANSC_STATUS
 CosaWifiReInitialize
     (
         ANSC_HANDLE                 hThisObject,
         ULONG                       uIndex
     );
-#endif
 
 ANSC_STATUS
 CosaWifiRemove
@@ -413,20 +403,11 @@ ValidateActiveMsmtPlanID
        UCHAR *pPlanId
    );
 
-#ifdef WIFI_HAL_VERSION_3
-ANSC_STATUS
-CosaWifiReInitializeRadioAndAp
-    (
-        ANSC_HANDLE hThisObject,
-        CHAR *indexes
-    );
-#else
 ANSC_STATUS
 CosaWifiReInitializeRadioAndAp
     (
         ANSC_HANDLE hThisObject,
         ULONG indexes
     );
-#endif
 
 #endif 
