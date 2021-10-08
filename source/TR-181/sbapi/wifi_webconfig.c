@@ -60,19 +60,11 @@
 
 static char *WiFiSsidVersion = "eRT.com.cisco.spvtg.ccsp.Device.WiFi.%s_version";
 
-#ifdef WIFI_HAL_VERSION_3
-wifi_vap_info_map_t vap_map_per_radio[MAX_NUM_RADIOS];
-static bool SSID_UPDATED[MAX_NUM_RADIOS] = {FALSE};
-static bool PASSPHRASE_UPDATED[MAX_NUM_RADIOS] = {FALSE};
-static bool gradio_restart[MAX_NUM_RADIOS] = {FALSE};
-const char *MFPConfigOptions[3] = {"Disabled", "Optional", "Required"};
-#else
 static bool SSID1_UPDATED = FALSE;
 static bool SSID2_UPDATED = FALSE;
 static bool PASSPHRASE1_UPDATED = FALSE;
 static bool PASSPHRASE2_UPDATED = FALSE;
 static bool gradio_restart[2];
-#endif
 static bool gHostapd_restart_reqd = FALSE;
 static bool gbsstrans_support[WIFI_INDEX_MAX];
 static bool gwirelessmgmt_support[WIFI_INDEX_MAX];
@@ -103,7 +95,6 @@ static char *FR   = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.FactoryReset";
 
 extern char notifyWiFiChangesVal[16] ;
 
-#ifndef WIFI_HAL_VERSION_3
 static char *ApIsolationEnable    = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.ApIsolationEnable";
 static char *BSSTransitionActivated    = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.BSSTransitionActivated";
 static char *vAPStatsEnable = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.vAPStatsEnable";
@@ -112,7 +103,6 @@ static char *RapidReconnThreshold        = "eRT.com.cisco.spvtg.ccsp.tr181pa.Dev
 static char *RapidReconnCountEnable      = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.RapidReconnCountEnable";
 static char *BssMaxNumSta       = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.BssMaxNumSta";
 static char *ApMFPConfig         = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.Security.MFPConfig";
-#endif //WIFI_HAL_VERSION_3
 
 wifi_vap_info_map_t vap_curr_cfg;
 wifi_config_t  wifi_cfg;
@@ -157,17 +147,6 @@ void webconf_auth_mode_to_str(char *auth_mode_str, COSA_DML_WIFI_SECURITY sec_mo
     case COSA_DML_WIFI_SECURITY_WPA2_Enterprise:
         strcpy(auth_mode_str, "WPA2-Enterprise");
         break;
-#ifdef WIFI_HAL_VERSION_3
-    case COSA_DML_WIFI_SECURITY_WPA3_Personal:
-        strcpy(auth_mode_str, "WPA3-Personal");
-        break;
-    case COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition:
-        strcpy(auth_mode_str, "WPA3-Personal-Transition");
-        break;
-    case COSA_DML_WIFI_SECURITY_WPA3_Enterprise:
-        strcpy(auth_mode_str, "WPA3-Enterprise");
-        break;
-#endif
     case COSA_DML_WIFI_SECURITY_None:
         default:
         strcpy(auth_mode_str, "None");
@@ -227,17 +206,6 @@ void webconf_auth_mode_to_int(char *auth_mode_str, COSA_DML_WIFI_SECURITY * auth
     else if (strcmp(auth_mode_str, "WPA2-Enterprise") == 0) {
         *auth_mode = COSA_DML_WIFI_SECURITY_WPA2_Enterprise;
     }
-#ifdef WIFI_HAL_VERSION_3
-    else if (strcmp(auth_mode_str, "WPA3-Enterprise") == 0) {
-        *auth_mode = COSA_DML_WIFI_SECURITY_WPA3_Enterprise;
-    }
-    else if ((strcmp(auth_mode_str, "WPA3-Personal") == 0)) {
-        *auth_mode = COSA_DML_WIFI_SECURITY_WPA3_Personal;
-    }
-    else if ((strcmp(auth_mode_str, "WPA3-Personal-Transition") == 0)) {
-        *auth_mode = COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition;
-    }
-#endif /* WIFI_HAL_VERSION_3 */
 #endif 
 }
 
@@ -270,18 +238,6 @@ int webconf_populate_initial_dml_config(webconf_wifi_t *current_config, uint8_t 
     PSINGLE_LINK_ENTRY pSLinkEntry = NULL;
     PCOSA_DML_WIFI_SSID  pWifiSsid = NULL;
     PCOSA_DML_WIFI_AP      pWifiAp = NULL;
-#ifdef WIFI_HAL_VERSION_3
-    UINT apIndex, radioIndex;
-    for (apIndex = 0; apIndex < getTotalNumberVAPs(); apIndex++) 
-    {
-        if ( (ssid == WIFI_WEBCONFIG_PRIVATESSID && isVapPrivate(apIndex)) || (ssid == WIFI_WEBCONFIG_HOMESSID && isVapXhs(apIndex)) )
-        {
-            if((pSLinkEntry = AnscQueueGetEntryByIndex(&pMyObject->SsidQueue, apIndex)) == NULL) 
-            {
-                CcspTraceError(("%s Data Model object not found!\n",__FUNCTION__));
-                return RETURN_ERR;
-            }
-#else
     int wlan_index=0,i;
 
     if (ssid == WIFI_WEBCONFIG_PRIVATESSID) {
@@ -294,18 +250,13 @@ int webconf_populate_initial_dml_config(webconf_wifi_t *current_config, uint8_t 
             CcspTraceError(("%s Data Model object not found!\n",__FUNCTION__));
             return RETURN_ERR;
         }
-#endif
 
 
         if((pWifiSsid = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry)->hContext) == NULL) {
             CcspTraceError(("%s Error linking Data Model object!\n",__FUNCTION__));
             return RETURN_ERR;
         }
-#ifdef WIFI_HAL_VERSION_3
-            if((pSLinkEntry = AnscQueueGetEntryByIndex(&pMyObject->AccessPointQueue, apIndex)) == NULL) {
-#else
         if((pSLinkEntry = AnscQueueGetEntryByIndex(&pMyObject->AccessPointQueue, i)) == NULL) {
-#endif
             CcspTraceError(("%s Error linking Data Model object!\n",__FUNCTION__));
             return RETURN_ERR;
         }
@@ -314,19 +265,6 @@ int webconf_populate_initial_dml_config(webconf_wifi_t *current_config, uint8_t 
             CcspTraceError(("%s Error linking Data Model object!\n",__FUNCTION__));
             return RETURN_ERR;
         }
-#ifdef WIFI_HAL_VERSION_3
-            radioIndex = getRadioIndexFromAp(apIndex);
-            strncpy(current_config->ssid[radioIndex].ssid_name, pWifiSsid->SSID.Cfg.SSID,COSA_DML_WIFI_MAX_SSID_NAME_LEN);
-            current_config->ssid[radioIndex].enable = pWifiSsid->SSID.Cfg.bEnabled;
-            current_config->ssid[radioIndex].ssid_advertisement_enabled = pWifiAp->AP.Cfg.SSIDAdvertisementEnabled;
-            strncpy(current_config->security[radioIndex].passphrase, (char*)pWifiAp->SEC.Cfg.KeyPassphrase,
-                    sizeof(current_config->security[radioIndex].passphrase)-1);
-            webconf_auth_mode_to_str(current_config->security[radioIndex].mode_enabled,
-                    pWifiAp->SEC.Cfg.ModeEnabled);
-            webconf_enc_mode_to_str(current_config->security[radioIndex].encryption_method,
-                    pWifiAp->SEC.Cfg.EncryptionMethod);
-        }
-#else
         if ((i % 2) == 0) {
 
             strncpy(current_config->ssid_2g.ssid_name, pWifiSsid->SSID.Cfg.SSID,COSA_DML_WIFI_MAX_SSID_NAME_LEN);
@@ -349,7 +287,6 @@ int webconf_populate_initial_dml_config(webconf_wifi_t *current_config, uint8_t 
             webconf_enc_mode_to_str(current_config->security_5g.encryption_method,
                                      pWifiAp->SEC.Cfg.EncryptionMethod);
         }
-#endif
 
     }
     return RETURN_OK;
@@ -384,79 +321,6 @@ int webconf_update_dml_params(webconf_wifi_t *ps, uint8_t ssid)
     PSINGLE_LINK_ENTRY pSLinkEntry = NULL;
     PCOSA_DML_WIFI_SSID  pWifiSsid = NULL;
     PCOSA_DML_WIFI_AP      pWifiAp = NULL;
-#ifdef WIFI_HAL_VERSION_3
-    UINT apIndex, radioIndex;
-    for (apIndex = 0; apIndex < getTotalNumberVAPs(); apIndex++) 
-    {
-        if ( (ssid == WIFI_WEBCONFIG_PRIVATESSID && isVapPrivate(apIndex)) || (ssid == WIFI_WEBCONFIG_HOMESSID && isVapXhs(apIndex)) )
-        {
-            radioIndex = getRadioIndexFromAp(apIndex);
-            if (curr_config->ssid[radioIndex].ssid_changed) 
-            {
-                if((pSLinkEntry = AnscQueueGetEntryByIndex(&pMyObject->SsidQueue, apIndex)) == NULL) 
-                {
-                    CcspTraceError(("%s Data Model object not found!\n",__FUNCTION__));
-                    return RETURN_ERR;
-                }
-
-                if((pWifiSsid = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry)->hContext) == NULL) 
-                {
-                    CcspTraceError(("%s Error linking Data Model object!\n",__FUNCTION__));
-                    return RETURN_ERR;
-                }
-                if((pSLinkEntry = AnscQueueGetEntryByIndex(&pMyObject->AccessPointQueue, apIndex)) == NULL) 
-                {
-                    CcspTraceError(("%s Error linking Data Model object!\n",__FUNCTION__));
-                    return RETURN_ERR;
-                }
-
-                if((pWifiAp = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry)->hContext) == NULL) 
-                {
-                    CcspTraceError(("%s Error linking Data Model object!\n",__FUNCTION__));
-                    return RETURN_ERR;
-                }
-                
-                strncpy(pWifiSsid->SSID.Cfg.SSID, ps->ssid[radioIndex].ssid_name, sizeof(pWifiSsid->SSID.Cfg.SSID)-1);
-                pWifiSsid->SSID.Cfg.bEnabled = ps->ssid[radioIndex].enable;
-                pWifiAp->AP.Cfg.SSIDAdvertisementEnabled = ps->ssid[radioIndex].ssid_advertisement_enabled;
-
-                memcpy(&sWiFiDmlSsidStoredCfg[pWifiSsid->SSID.Cfg.InstanceNumber-1], &pWifiSsid->SSID.Cfg, sizeof(COSA_DML_WIFI_SSID_CFG));
-                memcpy(&sWiFiDmlApStoredCfg[pWifiAp->AP.Cfg.InstanceNumber-1].Cfg, &pWifiAp->AP.Cfg, sizeof(COSA_DML_WIFI_AP_CFG));
-                memcpy(&sWiFiDmlSsidRunningCfg[pWifiSsid->SSID.Cfg.InstanceNumber-1], &pWifiSsid->SSID.Cfg, sizeof(COSA_DML_WIFI_SSID_CFG));
-                memcpy(&sWiFiDmlApRunningCfg[pWifiAp->AP.Cfg.InstanceNumber-1].Cfg, &pWifiAp->AP.Cfg, sizeof(COSA_DML_WIFI_AP_CFG));
-                
-                curr_config->ssid[radioIndex].ssid_changed = false;
-            }
-
-            if (curr_config->security[radioIndex].sec_changed) 
-            {
-                if((pSLinkEntry = AnscQueueGetEntryByIndex(&pMyObject->AccessPointQueue, apIndex)) == NULL) {
-                    CcspTraceError(("%s Error linking Data Model object!\n",__FUNCTION__));
-                    return RETURN_ERR;
-                }
-
-                if((pWifiAp = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry)->hContext) == NULL) {
-                    CcspTraceError(("%s Error linking Data Model object!\n",__FUNCTION__));
-                    return RETURN_ERR;
-                }
-                
-                webconf_auth_mode_to_int(ps->security[radioIndex].mode_enabled, &pWifiAp->SEC.Cfg.ModeEnabled); 
-                strncpy((char*)pWifiAp->SEC.Cfg.KeyPassphrase, ps->security[radioIndex].passphrase,sizeof(pWifiAp->SEC.Cfg.KeyPassphrase)-1);
-                strncpy((char*)pWifiAp->SEC.Cfg.PreSharedKey, ps->security[radioIndex].passphrase,sizeof(pWifiAp->SEC.Cfg.PreSharedKey)-1);
-#ifdef WIFI_HAL_VERSION_3
-                strncpy((char*)pWifiAp->SEC.Cfg.SAEPassphrase, ps->security[radioIndex].passphrase,sizeof(pWifiAp->SEC.Cfg.SAEPassphrase)-1);
-#endif
-                webconf_enc_mode_to_int(ps->security[radioIndex].encryption_method, &pWifiAp->SEC.Cfg.EncryptionMethod);
-
-                memcpy(&sWiFiDmlApSecurityStored[apIndex].Cfg, &pWifiAp->SEC.Cfg, sizeof(COSA_DML_WIFI_APSEC_CFG));
-                memcpy(&sWiFiDmlApSecurityRunning[apIndex].Cfg, &pWifiAp->SEC.Cfg, sizeof(COSA_DML_WIFI_APSEC_CFG));
-                
-                curr_config->security[radioIndex].sec_changed = false;
-             }
-
-        }
-    }
-#else
     uint8_t wlan_index = 0; 
 
     if (ssid == WIFI_WEBCONFIG_PRIVATESSID) {
@@ -572,7 +436,6 @@ int webconf_update_dml_params(webconf_wifi_t *ps, uint8_t ssid)
         
         curr_config->security_5g.sec_changed = false;
     }
-#endif
     return RETURN_OK;
 }
  
@@ -592,13 +455,6 @@ int webconf_apply_wifi_ssid_params (webconf_wifi_t *pssid_entry, uint8_t wlan_in
     webconf_ssid_t *wlan_ssid = NULL, *cur_conf_ssid = NULL;
     BOOLEAN bForceDisableFlag = FALSE;
 
-#ifdef WIFI_HAL_VERSION_3
-    UINT radioIndex = getRadioIndexFromAp(wlan_index);
-    {
-        wlan_ssid = &pssid_entry->ssid[radioIndex];
-        cur_conf_ssid = &curr_config->ssid[radioIndex];        
-    }
-#else
     if ((wlan_index % 2) ==0) 
     {
         wlan_ssid = &pssid_entry->ssid_2g;
@@ -607,7 +463,6 @@ int webconf_apply_wifi_ssid_params (webconf_wifi_t *pssid_entry, uint8_t wlan_in
         wlan_ssid = &pssid_entry->ssid_5g;
         cur_conf_ssid = &curr_config->ssid_5g;
     }
-#endif
     ssid = wlan_ssid->ssid_name;
     enable = wlan_ssid->enable;
     adv_enable = wlan_ssid->ssid_advertisement_enabled;
@@ -648,19 +503,11 @@ int webconf_apply_wifi_ssid_params (webconf_wifi_t *pssid_entry, uint8_t wlan_in
         CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : Notify Mesh of SSID change\n",__FUNCTION__));
         v_secure_system("/usr/bin/sysevent set wifi_SSIDName \"RDK|%d|%s\"",wlan_index, ssid);
 #endif
-#ifdef WIFI_HAL_VERSION_3
-        if (isVapPrivate(wlan_index))
-        {
-            SSID_UPDATED[getRadioIndexFromAp(wlan_index)] = TRUE;
-        }
-        
-#else
         if (wlan_index == 0) {
             SSID1_UPDATED = TRUE;
         } else if (wlan_index == 1) {
             SSID2_UPDATED = TRUE;
         }
-#endif
     } else if (bForceDisableFlag == TRUE) {
         CcspWifiTrace(("RDK_LOG_WARN, WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n"));
     }
@@ -689,15 +536,11 @@ int webconf_apply_wifi_ssid_params (webconf_wifi_t *pssid_entry, uint8_t wlan_in
                      __FUNCTION__,wlan_index, enable));
 #if (!defined(_XB6_PRODUCT_REQ_) || defined (_XB7_PRODUCT_REQ_))
         COSA_DML_WIFI_SECURITY auth_mode;
-#ifdef WIFI_HAL_VERSION_3
-        webconf_auth_mode_to_int(curr_config->security[getRadioIndexFromAp(wlan_index)].mode_enabled, &auth_mode);
-#else
         if ((wlan_index % 2) ==0) {
             webconf_auth_mode_to_int(curr_config->security_2g.mode_enabled, &auth_mode);
         } else {
             webconf_auth_mode_to_int(curr_config->security_5g.mode_enabled, &auth_mode);
         }
-#endif
         if (enable) {
             BOOL enable_wps = FALSE;
 #ifdef CISCO_XB3_PLATFORM_CHANGES
@@ -810,15 +653,11 @@ int webconf_apply_wifi_ssid_params (webconf_wifi_t *pssid_entry, uint8_t wlan_in
                                                              __FUNCTION__, wlan_index));
             return retval;
         }
-#ifdef WIFI_HAL_VERSION_3
-        curr_config->security[getRadioIndexFromAp(wlan_index)].sec_changed = true;
-#else
         if (!wlan_index) {
             curr_config->security_2g.sec_changed = true;
         } else {
             curr_config->security_5g.sec_changed = true;
         }
-#endif
 #endif
 
 #if defined(ENABLE_FEATURE_MESHWIFI)
@@ -855,11 +694,6 @@ int webconf_apply_wifi_security_params(webconf_wifi_t *pssid_entry, uint8_t wlan
 
     COSA_DML_WIFI_SECURITY sec_mode = COSA_DML_WIFI_SECURITY_None;
 
-#ifdef WIFI_HAL_VERSION_3
-    UINT radioIndex = getRadioIndexFromAp(wlan_index);
-    wlan_security = &pssid_entry->security[radioIndex];
-    cur_sec_cfg = &curr_config->security[radioIndex]; 
-#else
     if ((wlan_index % 2) ==0) {
         wlan_security = &pssid_entry->security_2g;
         cur_sec_cfg = &curr_config->security_2g; 
@@ -867,7 +701,6 @@ int webconf_apply_wifi_security_params(webconf_wifi_t *pssid_entry, uint8_t wlan
         wlan_security = &pssid_entry->security_5g;
         cur_sec_cfg = &curr_config->security_5g;
     }
-#endif    
     passphrase = wlan_security->passphrase;
     mode = wlan_security->mode_enabled;
     encryption = wlan_security->encryption_method;
@@ -934,14 +767,8 @@ int webconf_apply_wifi_security_params(webconf_wifi_t *pssid_entry, uint8_t wlan
 #endif
 
     /* Apply Security Values to hal */
-#ifdef WIFI_HAL_VERSION_3
-        if ((isVapPrivate(wlan_index)) && 
-            (sec_mode == COSA_DML_WIFI_SECURITY_None)) {
-
-#else
     if (((wlan_index == 0) || (wlan_index == 1)) &&
         (sec_mode == COSA_DML_WIFI_SECURITY_None)) {
-#endif
         retval = wifi_setApWpsEnable(wlan_index, FALSE);
         if (retval != RETURN_OK) {
             CcspTraceError(("%s: Failed to set AP Wps Status\n", __FUNCTION__));
@@ -994,18 +821,11 @@ int webconf_apply_wifi_security_params(webconf_wifi_t *pssid_entry, uint8_t wlan
         strncpy(cur_sec_cfg->passphrase, passphrase, sizeof(cur_sec_cfg->passphrase)-1);
         apply_params.hostapd_restart = true;
         cur_sec_cfg->sec_changed = true;
-#ifdef WIFI_HAL_VERSION_3
-        if (isVapPrivate(wlan_index))
-        {
-            PASSPHRASE_UPDATED[getRadioIndexFromAp(wlan_index)] = TRUE;
-        }
-#else
         if (wlan_index == 0) {
             PASSPHRASE1_UPDATED = TRUE;
         } else if (wlan_index == 1) {
             PASSPHRASE2_UPDATED = TRUE;
         }
-#endif
         CcspWifiEventTrace(("RDK_LOG_NOTICE, KeyPassphrase changed \n "));
         CcspWifiTrace(("RDK_LOG_WARN, KeyPassphrase changed \n "));
         CcspWifiTrace(("RDK_LOG_WARN, RDKB_WIFI_CONFIG_CHANGED : %s KeyPassphrase changed for index = %d\n",
@@ -1045,15 +865,11 @@ int webconf_apply_wifi_security_params(webconf_wifi_t *pssid_entry, uint8_t wlan
 #if (!defined(_XB6_PRODUCT_REQ_) || defined (_XB7_PRODUCT_REQ_))
     BOOL up;
 
-#ifdef WIFI_HAL_VERSION_3
-    up = pssid_entry->ssid[getRadioIndexFromAp(wlan_index)].enable;
-#else
     if ((wlan_index % 2) == 0) {
         up = pssid_entry->ssid_2g.enable;
     } else {
         up = pssid_entry->ssid_5g.enable;
     }
-#endif        
 
     if ((cur_sec_cfg->sec_changed) && (up == TRUE)) {
         BOOL enable_wps = FALSE;
@@ -1109,48 +925,6 @@ int webconf_apply_wifi_security_params(webconf_wifi_t *pssid_entry, uint8_t wlan
     return RETURN_OK;
 }
 
-#ifdef WIFI_HAL_VERSION_3
-ANSC_STATUS  updateDMLConfigPerRadio(UINT radioIndex)
-{
-    UINT vapCount = 0;
-    UINT vapArrayInstance = 0;
-    UINT vapIndex = 0;
-    PCOSA_DATAMODEL_WIFI pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
-    PCOSA_DML_WIFI_SSID             pWifiSsid           = (PCOSA_DML_WIFI_SSID      )NULL;
-    PCOSA_DML_WIFI_AP               pWifiAp             = (PCOSA_DML_WIFI_AP        )NULL;
-    PCOSA_CONTEXT_LINK_OBJECT       pLinkObj            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    for (vapCount = 0; vapCount < vap_map_per_radio[radioIndex].num_vaps; vapCount++)
-    {
-        //Update the DML cache from VAP structure
-        vapIndex = vap_map_per_radio[radioIndex].vap_array[vapCount].vap_index;
-        vapArrayInstance = vapIndex+1;
-        CcspWifiTrace(("RDK_LOG_INFO, %s Updating VAP DML Structure for vapIndex : %d \n", __FUNCTION__, vapIndex));
-
-        pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
-        pLinkObj = CosaSListGetEntryByInsNum((PSLIST_HEADER)&pMyObject->SsidQueue, vapArrayInstance);
-        pWifiSsid = pLinkObj->hContext;
-
-        CosaDmlWiFiSsidGetCfg((ANSC_HANDLE)pMyObject->hPoamWiFiDm, &(pWifiSsid->SSID.Cfg));
-        CosaDmlWiFiSsidGetSinfo((ANSC_HANDLE)pMyObject->hPoamWiFiDm, vapArrayInstance, &(pWifiSsid->SSID.StaticInfo));
-
-        pLinkObj = CosaSListGetEntryByInsNum((PSLIST_HEADER)&pMyObject->AccessPointQueue, vapArrayInstance);
-        pWifiAp = pLinkObj->hContext;
-
-        CosaDmlWiFiApGetEntry((ANSC_HANDLE)pMyObject->hPoamWiFiDm, pWifiSsid->SSID.StaticInfo.Name, &pWifiAp->AP);
-        ccspWifiDbgPrint(CCSP_WIFI_TRACE, " %s Updating AP DML structure for vapindex : %d Instancenumber : %d Name : %s\n", __FUNCTION__, vapIndex, sWiFiDmlApStoredCfg[vapIndex].Cfg.InstanceNumber,  pWifiSsid->SSID.StaticInfo.Name);
-        CosaDmlWiFiApSecGetEntry((ANSC_HANDLE)pMyObject->hPoamWiFiDm, pWifiSsid->SSID.StaticInfo.Name, &pWifiAp->SEC);
-        CosaDmlWiFiApWpsGetEntry((ANSC_HANDLE)pMyObject->hPoamWiFiDm, pWifiSsid->SSID.StaticInfo.Name, &pWifiAp->WPS);
-        CcspWifiTrace(("RDK_LOG_INFO, %s Successful Update VAP DML Structure for vapIndex : %d \n", __FUNCTION__, vapIndex));
-
-        //Call the respective setPSM function to update the PSM Values
-        CosaDmlWiFiSetAccessPointPsmData(&pWifiAp->AP.Cfg);
-        CosaDmlWiFiSetApMacFilterPsmData(vapIndex, &pWifiAp->MF);
-        CcspWifiTrace(("RDK_LOG_INFO, %s Successful Update PSM for vapIndex : %d \n", __FUNCTION__, vapIndex));
-
-    }
-    return ANSC_STATUS_SUCCESS;
-}
-#endif
 
 int wifi_reset_radio()
 {
@@ -1161,11 +935,7 @@ int wifi_reset_radio()
 #ifdef DUAL_CORE_XB3
     wifi_initRadio(0);
 #endif
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0;i < getNumberRadios();i++)
-#else
     for (i = 0;i < 2;i++)
-#endif
 {
         if (gradio_restart[i]) {
 #if defined(_INTEL_WAV_)
@@ -1173,11 +943,7 @@ int wifi_reset_radio()
 #elif !defined(DUAL_CORE_XB3)
             wifi_initRadio(i);
 #endif
-#if defined WIFI_HAL_VERSION_3
-            retval = CosaWifiReInitialize((ANSC_HANDLE)pMyObject, i, (i==0)?TRUE:FALSE);
-#else
             retval = CosaWifiReInitialize((ANSC_HANDLE)pMyObject, i);
-#endif //WIFI_HAL_VERSION_3
             if (retval != RETURN_OK) { 
                 CcspTraceError(("%s: CosaWifiReInitialize Failed for Radio %d\n",__FUNCTION__,i, retval));
             }
@@ -1191,12 +957,6 @@ int wifi_reset_radio()
             v_secure_system("/usr/bin/sysevent set wifi_RadioChannel 'RDK|%lu|%lu'", (ULONG)i, channel);
 #endif
         }
-#ifdef WIFI_HAL_VERSION_3
-        else
-        {
-            updateDMLConfigPerRadio(i);
-        }
-#endif //WIFI_HAL_VERSION_3
     }
 
     Load_Hotspot_APIsolation_Settings();
@@ -1213,7 +973,6 @@ int wifi_reset_radio()
  */
 char *wifi_apply_radio_settings()
 {
-#ifndef WIFI_HAL_VERSION_3
     int retval = RETURN_ERR;
 
     if (gradio_restart[0] || gradio_restart[1]) {
@@ -1265,7 +1024,6 @@ char *wifi_apply_radio_settings()
     gHostapd_restart_reqd = false;
     apply_params.hostapd_restart = false;
     }
-#endif
     return NULL;
 }
 
@@ -1286,15 +1044,11 @@ int webconf_validate_wifi_ssid_params (webconf_wifi_t *pssid_entry, uint8_t wlan
     char ssid_lower[COSA_DML_WIFI_MAX_SSID_NAME_LEN] = {0};
 
 
-#ifdef WIFI_HAL_VERSION_3
-    ssid_name = pssid_entry->ssid[getRadioIndexFromAp(wlan_index)].ssid_name;
-#else
     if ((wlan_index % 2) == 0) {
         ssid_name = pssid_entry->ssid_2g.ssid_name;
     } else {
         ssid_name = pssid_entry->ssid_5g.ssid_name;
     }
-#endif
 
     ssid_len = strlen(ssid_name);
     if ((ssid_len == 0) || (ssid_len > COSA_DML_WIFI_MAX_SSID_NAME_LEN)) {
@@ -1358,12 +1112,6 @@ int webconf_validate_wifi_security_params (webconf_wifi_t *pssid_entry, uint8_t 
     char *encryption_method = NULL;
     int pass_len = 0;
 
-#ifdef WIFI_HAL_VERSION_3
-    UINT radioIndex = getRadioIndexFromAp(wlan_index);
-    passphrase = pssid_entry->security[radioIndex].passphrase;
-    mode_enabled = pssid_entry->security[radioIndex].mode_enabled;
-    encryption_method = pssid_entry->security[radioIndex].encryption_method;    
-#else
     if ((wlan_index % 2) == 0) {
         passphrase = pssid_entry->security_2g.passphrase;
         mode_enabled = pssid_entry->security_2g.mode_enabled;
@@ -1374,7 +1122,6 @@ int webconf_validate_wifi_security_params (webconf_wifi_t *pssid_entry, uint8_t 
         encryption_method = pssid_entry->security_5g.encryption_method;
     }
 
-#endif  
 
     /* Sanity Checks */
     if ((strcmp(mode_enabled, "None") != 0) && (strcmp(mode_enabled, "WEP-64") != 0) && (strcmp(mode_enabled, "WEP-128") !=0) &&
@@ -1434,12 +1181,6 @@ int webconf_apply_wifi_param_handler (webconf_wifi_t *pssid_entry, pErr execRetV
     char *err = NULL;
     uint8_t i = 0, wlan_index = 0;
 
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0; i < getTotalNumberVAPs(); i++) 
-    {
-        if ( (ssid == WIFI_WEBCONFIG_PRIVATESSID && isVapPrivate(i)) || (ssid == WIFI_WEBCONFIG_HOMESSID && isVapXhs(i)) )
-        {
-#else
     if (ssid == WIFI_WEBCONFIG_PRIVATESSID) {
         wlan_index = 0;
     } else if (ssid == WIFI_WEBCONFIG_HOMESSID) {
@@ -1447,7 +1188,6 @@ int webconf_apply_wifi_param_handler (webconf_wifi_t *pssid_entry, pErr execRetV
     }
 
     for (i = wlan_index;i < (wlan_index+2); i++) {
-#endif
         retval  = webconf_apply_wifi_ssid_params(pssid_entry, i, execRetVal);
         if (retval != RETURN_OK) {
             CcspTraceError(("%s: Failed to apply ssid params for ap index %d\n",
@@ -1461,9 +1201,6 @@ int webconf_apply_wifi_param_handler (webconf_wifi_t *pssid_entry, pErr execRetV
                              __FUNCTION__, wlan_index));
             return retval;
         }
-#ifdef WIFI_HAL_VERSION_3
-    }
-#endif
     } 
     err = wifi_apply_radio_settings();
     if (err != NULL) {
@@ -1485,12 +1222,6 @@ int webconf_validate_wifi_param_handler (webconf_wifi_t *pssid_entry, pErr execR
 {
     uint8_t i = 0, wlan_index = 0;
     int retval = RETURN_ERR;
-#ifdef WIFI_HAL_VERSION_3
-    for (i = 0; i < getTotalNumberVAPs(); i++) 
-    {
-        if ( (ssid == WIFI_WEBCONFIG_PRIVATESSID && isVapPrivate(i)) || (ssid == WIFI_WEBCONFIG_HOMESSID && isVapXhs(i)) )
-        {
-#else
     if (ssid == WIFI_WEBCONFIG_PRIVATESSID) {
         wlan_index = 0;
     } else if (ssid == WIFI_WEBCONFIG_HOMESSID) {
@@ -1498,7 +1229,6 @@ int webconf_validate_wifi_param_handler (webconf_wifi_t *pssid_entry, pErr execR
     }
 
     for (i = wlan_index;i < (wlan_index+2); i++) {
-#endif
         retval = webconf_validate_wifi_ssid_params(pssid_entry, i, execRetVal);
         if (retval != RETURN_OK) {
             CcspTraceError(("%s: Failed to validate ssid params for ap index %d\n",
@@ -1512,9 +1242,6 @@ int webconf_validate_wifi_param_handler (webconf_wifi_t *pssid_entry, pErr execR
                              __FUNCTION__, wlan_index));
             return retval;
         }
-#ifdef WIFI_HAL_VERSION_3
-        }
-#endif
     }
     return RETURN_OK;
 }
@@ -1764,33 +1491,6 @@ pErr webconf_wifi_ssid_config_handler(void *Data)
     {
         parameterSigStruct_t       val = {0};
         char param_name[64] = {0};
-#ifdef WIFI_HAL_VERSION_3
-        UINT radioIndex = 0;
-        for (UINT apIndex = 0; apIndex < getTotalNumberVAPs(); apIndex++)
-        {
-            if (isVapPrivate(apIndex))
-            {
-                radioIndex = getRadioIndexFromAp(apIndex);
-                if (SSID_UPDATED[radioIndex])
-                {
-                    snprintf(param_name, sizeof(param_name), "Device.WiFi.SSID.%u.SSID", apIndex + 1);
-                    val.parameterName = param_name;
-                    val.newValue = ps->ssid[radioIndex].ssid_name;
-                    WiFiPramValueChangedCB(&val, 0, NULL);
-                    SSID_UPDATED[radioIndex] = FALSE;
-                }
-
-                if (PASSPHRASE_UPDATED[radioIndex])
-                {
-                    snprintf(param_name, sizeof(param_name), "Device.WiFi.AccessPoint.%u.Security.X_COMCAST-COM_KeyPassphrase", apIndex + 1);
-                    val.parameterName = param_name;
-                    val.newValue = ps->security[radioIndex].passphrase;
-                    WiFiPramValueChangedCB(&val, 0, NULL);
-                    PASSPHRASE_UPDATED[radioIndex] = FALSE;
-                }
-            }
-        }
-#else
         if (SSID1_UPDATED) {
             strncpy(param_name, "Device.WiFi.SSID.1.SSID", sizeof(param_name));
             val.parameterName = param_name;
@@ -1819,7 +1519,6 @@ pErr webconf_wifi_ssid_config_handler(void *Data)
             WiFiPramValueChangedCB(&val, 0, NULL);
             PASSPHRASE2_UPDATED = FALSE;
         }
-#endif
     }       
 
 
@@ -1845,15 +1544,10 @@ int wifi_WebConfigSet(const void *buf, size_t len,uint8_t ssid)
     webconf_wifi_t *ps = NULL;  
     unsigned int i = 0;
 
-#ifdef WIFI_HAL_VERSION_3
-    char ssid_str[MAX_NUM_RADIOS][20] = {0};
-    char sec_str[MAX_NUM_RADIOS][20] = {0};
-#else
     char ssid_2g_str[20] = {0};
     char ssid_5g_str[20] = {0};
     char sec_2g_str[20] = {0};
     char sec_5g_str[20] = {0};
-#endif
 
     msgpack_unpacked_init( &msg );
     len +=  1;
@@ -1892,83 +1586,20 @@ int wifi_WebConfigSet(const void *buf, size_t len,uint8_t ssid)
     memset(ps, 0, sizeof(webconf_wifi_t));
     
     if (ssid == WIFI_WEBCONFIG_PRIVATESSID) {
-#ifdef WIFI_HAL_VERSION_3
-        for (UINT radioIndex = 0; radioIndex < getNumberRadios(); ++radioIndex)
-        {
-            UINT band = convertRadioIndexToFrequencyNum(radioIndex);
-            snprintf(ssid_str[radioIndex],sizeof(ssid_str[radioIndex]),"private_ssid_%ug", band);
-            snprintf(sec_str[radioIndex],sizeof(sec_str[radioIndex]),"private_security_%ug", band);
-        }
-#else
         snprintf(ssid_2g_str,sizeof(ssid_2g_str),"private_ssid_2g");
         snprintf(ssid_5g_str,sizeof(ssid_5g_str),"private_ssid_5g");
         snprintf(sec_2g_str,sizeof(sec_2g_str),"private_security_2g");
         snprintf(sec_5g_str,sizeof(sec_5g_str),"private_security_5g");
-#endif
     } else if (ssid == WIFI_WEBCONFIG_HOMESSID) {
-#ifdef WIFI_HAL_VERSION_3
-        for (UINT radioIndex = 0; radioIndex < getNumberRadios(); ++radioIndex)
-        {
-            UINT band = convertRadioIndexToFrequencyNum(radioIndex);
-            snprintf(ssid_str[radioIndex],sizeof(ssid_str[radioIndex]),"home_ssid_%ug",band);
-            snprintf(sec_str[radioIndex],sizeof(sec_str[radioIndex]),"home_security_%ug", band);
-        }
-#else
         snprintf(ssid_2g_str,sizeof(ssid_2g_str),"home_ssid_2g");
         snprintf(ssid_5g_str,sizeof(ssid_5g_str),"home_ssid_5g");
         snprintf(sec_2g_str,sizeof(sec_2g_str),"home_security_2g");
         snprintf(sec_5g_str,sizeof(sec_5g_str),"home_security_5g");
-#endif
     } else {
         CcspTraceError(("%s: Invalid ssid type\n",__FUNCTION__));
     }
     /* Parsing Config Msg String to Wifi Structure */
     for(i = 0;i < map->size;i++) {
-#ifdef WIFI_HAL_VERSION_3
-        for (UINT radioIndex = 0; radioIndex < getNumberRadios(); ++radioIndex)
-        {
-            if (strncmp(map_ptr->key.via.str.ptr, ssid_str[radioIndex], map_ptr->key.via.str.size) == 0) {
-                if (webconf_copy_wifi_ssid_params(map_ptr->val, &ps->ssid[radioIndex]) != RETURN_OK) {
-                    CcspTraceError(("%s:Failed to copy wifi ssid params for wlan index 0",__FUNCTION__));
-                    msgpack_unpacked_destroy( &msg );
-                    if (ps) {  
-                        free(ps);
-                        ps = NULL;  
-                    } 
-                    return RETURN_ERR; 
-                }  
-            } 
-            else if (strncmp(map_ptr->key.via.str.ptr, sec_str[radioIndex], map_ptr->key.via.str.size) == 0) {
-                if (webconf_copy_wifi_security_params(map_ptr->val, &ps->security[radioIndex]) != RETURN_OK) {
-                    CcspTraceError(("%s:Failed to copy wifi security params for wlan index 0",__FUNCTION__));
-                    msgpack_unpacked_destroy( &msg );
-                    if (ps) {
-                        free(ps);
-                        ps = NULL;
-                    } 
-                    return RETURN_ERR;
-                }
-            }  
-        }
-        if (strncmp(map_ptr->key.via.str.ptr, "subdoc_name", map_ptr->key.via.str.size) == 0) {
-            if (map_ptr->val.type == MSGPACK_OBJECT_STR) {
-                strncpy(ps->subdoc_name, map_ptr->val.via.str.ptr, map_ptr->val.via.str.size);
-                CcspTraceError(("subdoc name %s\n", ps->subdoc_name));
-            }
-        }
-        else if (strncmp(map_ptr->key.via.str.ptr, "version", map_ptr->key.via.str.size) == 0) {
-            if (map_ptr->val.type == MSGPACK_OBJECT_POSITIVE_INTEGER) {
-                ps->version = (uint64_t) map_ptr->val.via.u64;
-                CcspTraceError(("Version type %d version %lu\n",map_ptr->val.type,ps->version));                
-                }
-        }
-        else if (strncmp(map_ptr->key.via.str.ptr, "transaction_id", map_ptr->key.via.str.size) == 0) {
-            if (map_ptr->val.type == MSGPACK_OBJECT_POSITIVE_INTEGER) {
-                ps->transaction_id = (uint16_t) map_ptr->val.via.u64;
-                CcspTraceError(("Tx id type %d tx id %d\n",map_ptr->val.type,ps->transaction_id));
-            }
-        }
-#else
         if (strncmp(map_ptr->key.via.str.ptr, ssid_2g_str,map_ptr->key.via.str.size) == 0) {
             if (webconf_copy_wifi_ssid_params(map_ptr->val, &ps->ssid_2g) != RETURN_OK) {
                 CcspTraceError(("%s:Failed to copy wifi ssid params for wlan index 0",__FUNCTION__));
@@ -2031,7 +1662,6 @@ int wifi_WebConfigSet(const void *buf, size_t len,uint8_t ssid)
                 CcspTraceError(("Tx id type %d tx id %d\n",map_ptr->val.type,ps->transaction_id));
             }
         }
-#endif
         ++map_ptr;
     }
 
@@ -2063,155 +1693,6 @@ int wifi_WebConfigSet(const void *buf, size_t len,uint8_t ssid)
 
 char *wifi_apply_ssid_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr_cfg, BOOL is_tunnel,BOOL is_vap_enabled)
 {
-#ifdef WIFI_HAL_VERSION_3
-//Here we populate the structure curr_cfg , since we will can createVAP API to apply the settings
-    BOOLEAN bForceDisableFlag = FALSE;
-    uint8_t wlan_index = curr_cfg->vap_index;
-
-    if(ANSC_STATUS_FAILURE == CosaDmlWiFiGetCurrForceDisableWiFiRadio(&bForceDisableFlag))
-    {
-        CcspTraceError(("%s Failed to fetch ForceDisableWiFiRadio flag!!!\n",__FUNCTION__));
-        return "Dml fetch failed";
-    }
-
-    /* Apply SSID Enable/Disable */
-    if ((curr_cfg->u.bss_info.enabled != vap_cfg->u.bss_info.enabled) && (!bForceDisableFlag))
-    {
-        curr_cfg->u.bss_info.enabled = vap_cfg->u.bss_info.enabled;
-        curr_cfg->u.bss_info.wps.enable = vap_cfg->u.bss_info.wps.enable;
-        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d ssid enabled: %d wps enable : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.enabled, curr_cfg->u.bss_info.wps.enable);
-        if (curr_cfg->u.bss_info.enabled)
-        {
-            gradio_restart[curr_cfg->radio_index] = TRUE;
-        }
-
-    }
-    else if (bForceDisableFlag == TRUE)
-    {
-        CcspWifiTrace(("RDK_LOG_WARN, %s %d WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n", __FUNCTION__, __LINE__));
-    }
-
-    if (is_tunnel)
-    {
-        return NULL;
-    }
-
-    if (( ((vap_cfg->u.bss_info.ssid != NULL) && (strcmp(vap_cfg->u.bss_info.ssid, curr_cfg->u.bss_info.ssid) !=0)) || (is_vap_enabled)) && (!bForceDisableFlag))
-    {
-        t2_event_d("WIFI_INFO_XHCofigchanged", 1);
-        strncpy(curr_cfg->u.bss_info.ssid, vap_cfg->u.bss_info.ssid, sizeof(curr_cfg->u.bss_info.ssid)-1);
-        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated ssid : %s\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.ssid);
-    }
-    else if (bForceDisableFlag == TRUE)
-    {
-        CcspWifiTrace(("RDK_LOG_WARN, %s %d WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n", __FUNCTION__, __LINE__));
-    }
-
-    if (vap_cfg->u.bss_info.showSsid != curr_cfg->u.bss_info.showSsid || is_vap_enabled)
-    {
-        if (vap_cfg->u.bss_info.enabled == TRUE)
-        {
-            curr_cfg->u.bss_info.showSsid = vap_cfg->u.bss_info.showSsid;
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated showSsid : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.ssid);
-        }
-    }
-
-    if (vap_cfg->u.bss_info.isolation != curr_cfg->u.bss_info.isolation)
-    {
-        if (vap_cfg->u.bss_info.enabled == TRUE)
-        {
-            curr_cfg->u.bss_info.isolation = vap_cfg->u.bss_info.isolation;
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated isolation : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.isolation);
-        }
-        else
-        {
-            CcspTraceError(("%s: Isolation enable cannot be changed when vap is disabled\n",__FUNCTION__));
-        }
-    }
-
-    if (vap_cfg->u.bss_info.bssMaxSta != curr_cfg->u.bss_info.bssMaxSta)
-    {
-        if (vap_cfg->u.bss_info.enabled == TRUE)
-        {
-            curr_cfg->u.bss_info.bssMaxSta = vap_cfg->u.bss_info.bssMaxSta;
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated bssMaxSta : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.bssMaxSta);
-        }
-        else
-        {
-            CcspTraceError(("%s: bssMaxSta cannot be applied when vap is disabled\n",__FUNCTION__));
-        }
-    }
-
-
-    if (vap_cfg->u.bss_info.nbrReportActivated != curr_cfg->u.bss_info.nbrReportActivated)
-    {
-        if (vap_cfg->u.bss_info.enabled == TRUE)
-        {
-            curr_cfg->u.bss_info.nbrReportActivated = vap_cfg->u.bss_info.nbrReportActivated;
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated nbrReportActivated : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.nbrReportActivated);
-        }
-        else
-        {
-            CcspTraceError(("%s: Neighboreport cannot be applied when vap is disabled\n",__FUNCTION__));
-        }
-    }
-
-
-    if (vap_cfg->u.bss_info.vapStatsEnable != curr_cfg->u.bss_info.vapStatsEnable)
-    {
-        if (vap_cfg->u.bss_info.enabled == TRUE)
-        {
-            curr_cfg->u.bss_info.vapStatsEnable = vap_cfg->u.bss_info.vapStatsEnable;
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated vapStatsEnable : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.vapStatsEnable);
-        }
-        else
-        {
-            CcspTraceError(("%s: Vapstats enable cannot be applied when vap is disabled\n",__FUNCTION__));
-        }
-    }
-
-    if (vap_cfg->u.bss_info.bssTransitionActivated != curr_cfg->u.bss_info.bssTransitionActivated)
-    {
-        if (vap_cfg->u.bss_info.enabled == TRUE)
-        {
-            curr_cfg->u.bss_info.bssTransitionActivated = vap_cfg->u.bss_info.bssTransitionActivated;
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated bssTransitionActivated : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.bssTransitionActivated);
-        }
-        else
-        {
-            CcspTraceError(("%s: Bss transition cannot be applied when vap is disabled\n",__FUNCTION__));
-        }
-    }
-
-    if (vap_cfg->u.bss_info.mgmtPowerControl != curr_cfg->u.bss_info.mgmtPowerControl)
-    {
-        if (vap_cfg->u.bss_info.enabled == TRUE)
-        {
-            curr_cfg->u.bss_info.mgmtPowerControl = vap_cfg->u.bss_info.mgmtPowerControl;
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated mgmtPowerControl : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.mgmtPowerControl);
-        }
-        else
-        {
-            CcspTraceError(("%s: Frame power control cannot be applied when vap is disabled\n",__FUNCTION__));
-        }
-    }
-
-    if (vap_cfg->u.bss_info.security.mfp != curr_cfg->u.bss_info.security.mfp)
-    {
-        if (vap_cfg->u.bss_info.enabled == TRUE)
-        {
-            curr_cfg->u.bss_info.security.mfp = vap_cfg->u.bss_info.security.mfp;
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated mfpConfig : %s\n", __FUNCTION__, wlan_index,
-                         MFPConfigOptions[curr_cfg->u.bss_info.security.mfp]);
-        }
-        else
-        {
-            CcspTraceError(("%s: MFP Config cannot be applied when vap is disabled\n",__FUNCTION__));
-        }
-    }
-    return NULL;
-
-#else //WIFI_HAL_VERSION_3
     int retval = RETURN_ERR;
     BOOLEAN bForceDisableFlag = FALSE;
     uint8_t wlan_index = vap_cfg->vap_index;
@@ -2381,19 +1862,11 @@ char *wifi_apply_ssid_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr_cfg
         CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : Notify Mesh of SSID change\n",__FUNCTION__));
         v_secure_system("/usr/bin/sysevent set wifi_SSIDName \"RDK|%d|%s\"",wlan_index, vap_cfg->u.bss_info.ssid);
 #endif
-#ifdef WIFI_HAL_VERSION_3
-        UINT apIndex = 0;
-        if ( (getVAPIndexFromName(vap_cfg->vap_name, &apIndex) == ANSC_STATUS_SUCCESS) && (isVapPrivate(apIndex)) )
-        {
-            SSID_UPDATED[getRadioIndexFromAp(apIndex)] = TRUE;
-        }
-#else
         if (strcmp(vap_cfg->vap_name, "private_ssid_2g") == 0) {
             SSID1_UPDATED = TRUE;
         } else if (strcmp(vap_cfg->vap_name, "private_ssid_5g") == 0) {
             SSID2_UPDATED = TRUE;
         }
-#endif
         } else {
             strncpy(curr_cfg->u.bss_info.ssid,vap_cfg->u.bss_info.ssid, sizeof(curr_cfg->u.bss_info.ssid)-1);
         }
@@ -2542,12 +2015,6 @@ char *wifi_apply_ssid_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr_cfg
             CcspTraceError(("%s: Frame power control cannot be applied when vap is disabled\n",__FUNCTION__));
         }
     }
-#if defined(WIFI_HAL_VERSION_3)
-    if (vap_cfg->u.bss_info.security.mfp != curr_cfg->u.bss_info.security.mfp)
-    {
-        curr_cfg->u.bss_info.security.mfp = vap_cfg->u.bss_info.security.mfp;
-    }
-#else
     if (0 != strcmp(vap_cfg->u.bss_info.security.mfpConfig, curr_cfg->u.bss_info.security.mfpConfig)) {
         if (vap_cfg->u.bss_info.enabled == TRUE) { 
         retval = wifi_setApSecurityMFPConfig(wlan_index,vap_cfg->u.bss_info.security.mfpConfig);
@@ -2568,120 +2035,11 @@ char *wifi_apply_ssid_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr_cfg
             CcspTraceError(("%s: MFP Config cannot be applied when vap is disabled\n",__FUNCTION__));
         }
     }
-#endif
     return NULL; 
-#endif //WIFI_HAL_VERSION_3
 }
 
 char *wifi_apply_security_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr_cfg,BOOL is_vap_enabled)
 {
-#ifdef WIFI_HAL_VERSION_3
-//Here we populate the structure curr_cfg , since we will can createVAP API to apply the settings
-    BOOLEAN bForceDisableFlag = FALSE;
-    uint8_t wlan_index = curr_cfg->vap_index;
-
-    if(ANSC_STATUS_FAILURE == CosaDmlWiFiGetCurrForceDisableWiFiRadio(&bForceDisableFlag))
-    {
-        CcspTraceError(("%s Failed to fetch ForceDisableWiFiRadio flag!!!\n",__FUNCTION__));
-        return "Dml fetch failed";
-    }
-
-    if (vap_cfg->u.bss_info.security.mode != curr_cfg->u.bss_info.security.mode)
-    {
-        if (vap_cfg->u.bss_info.enabled == TRUE)
-        {
-            curr_cfg->u.bss_info.security.mode = vap_cfg->u.bss_info.security.mode;
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated SecurityMode : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.security.mode);
-        }
-        else
-        {
-            CcspTraceError(("%s: Security Mode cannot be changed when vap is disabled\n",__FUNCTION__));
-        }
-    }
-
-    if ((vap_cfg->u.bss_info.security.mode >= wifi_security_mode_wpa_personal) &&
-            (vap_cfg->u.bss_info.security.mode <= wifi_security_mode_wpa3_enterprise) &&
-            (strcmp(vap_cfg->u.bss_info.security.u.key.key,curr_cfg->u.bss_info.security.u.key.key) != 0) &&
-            (!bForceDisableFlag))
-    {
-        if (vap_cfg->u.bss_info.enabled == TRUE)
-        {
-            strncpy(curr_cfg->u.bss_info.security.u.key.key,vap_cfg->u.bss_info.security.u.key.key,
-                    sizeof(curr_cfg->u.bss_info.security.u.key.key)-1);
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated SecurityKey : %s\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.security.u.key.key);
-
-            if (isVapPrivate(wlan_index))
-            {
-                PASSPHRASE_UPDATED[getRadioIndexFromAp(wlan_index)] = TRUE;
-            }
-        }
-        else
-        {
-            CcspTraceError(("Passphrase cannot be changed when vap is disabled \n", __FUNCTION__));
-        }
-    }
-    else if (bForceDisableFlag == TRUE)
-    {
-        CcspWifiTrace(("RDK_LOG_WARN, WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n"));
-    }
-
-    if ((vap_cfg->u.bss_info.security.encr != curr_cfg->u.bss_info.security.encr) &&
-            (vap_cfg->u.bss_info.security.mode >= (wifi_security_modes_t)COSA_DML_WIFI_SECURITY_WPA_Personal) &&
-            (vap_cfg->u.bss_info.security.mode <= (wifi_security_modes_t)COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise))
-    {
-        if (vap_cfg->u.bss_info.enabled == TRUE)
-        {
-            curr_cfg->u.bss_info.security.encr = vap_cfg->u.bss_info.security.encr;
-
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated Encryption : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.security.encr);
-            curr_cfg->u.bss_info.sec_changed = true;
-        }
-        else
-        {
-            CcspTraceError(("Encryption mode cannot changed when vap is disabled \n", __FUNCTION__));
-        }
-    }
-
-    if ((strcmp(vap_cfg->vap_name,"hotspot_secure_2g") == 0 || strcmp(vap_cfg->vap_name,"hotspot_secure_5g") == 0) &&
-            ((strcmp((const char *)vap_cfg->u.bss_info.security.u.radius.ip, (const char *)curr_cfg->u.bss_info.security.u.radius.ip) != 0 ||
-              vap_cfg->u.bss_info.security.u.radius.port != curr_cfg->u.bss_info.security.u.radius.port ||
-              strcmp(vap_cfg->u.bss_info.security.u.radius.key, curr_cfg->u.bss_info.security.u.radius.key) != 0) || (is_vap_enabled)))
-    {
-        strncpy((char*)curr_cfg->u.bss_info.security.u.radius.ip,(char*) vap_cfg->u.bss_info.security.u.radius.ip,
-                sizeof(curr_cfg->u.bss_info.security.u.radius.ip)-1);
-        strncpy(curr_cfg->u.bss_info.security.u.radius.key, vap_cfg->u.bss_info.security.u.radius.key,
-                sizeof(curr_cfg->u.bss_info.security.u.radius.key)-1);
-        curr_cfg->u.bss_info.security.u.radius.port = vap_cfg->u.bss_info.security.u.radius.port;
-        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated ip : %s key : %s port : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.security.u.radius.ip,
-                curr_cfg->u.bss_info.security.u.radius.key, curr_cfg->u.bss_info.security.u.radius.port);
-    }
-
-    if ((strcmp(vap_cfg->vap_name,"hotspot_secure_2g") == 0 || strcmp(vap_cfg->vap_name,"hotspot_secure_5g") == 0) &&
-            ((strcmp((const char *)vap_cfg->u.bss_info.security.u.radius.s_ip, (const char *)curr_cfg->u.bss_info.security.u.radius.s_ip) != 0 ||
-              vap_cfg->u.bss_info.security.u.radius.s_port != curr_cfg->u.bss_info.security.u.radius.s_port ||
-              strcmp(vap_cfg->u.bss_info.security.u.radius.s_key, curr_cfg->u.bss_info.security.u.radius.s_key) != 0) || (is_vap_enabled)))
-    {
-        strncpy((char*)curr_cfg->u.bss_info.security.u.radius.s_ip, (char*)vap_cfg->u.bss_info.security.u.radius.s_ip,
-                sizeof(curr_cfg->u.bss_info.security.u.radius.s_ip)-1);
-        strncpy(curr_cfg->u.bss_info.security.u.radius.s_key, vap_cfg->u.bss_info.security.u.radius.s_key,
-                sizeof(curr_cfg->u.bss_info.security.u.radius.s_key)-1);
-        curr_cfg->u.bss_info.security.u.radius.s_port = vap_cfg->u.bss_info.security.u.radius.s_port;
-        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated s_ip : %s s_key : %s s_port : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.security.u.radius.s_ip,
-                curr_cfg->u.bss_info.security.u.radius.s_key, curr_cfg->u.bss_info.security.u.radius.s_port);
-    }
-    if (vap_cfg->u.bss_info.security.mfp != curr_cfg->u.bss_info.security.mfp)
-    {
-        curr_cfg->u.bss_info.security.mfp = vap_cfg->u.bss_info.security.mfp;
-        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d mfp : %d\n",__FUNCTION__, wlan_index, curr_cfg->u.bss_info.security.mfp);
-    }
-    if ( (vap_cfg->u.bss_info.security.mode == wifi_security_mode_wpa3_transition) &&
-         (vap_cfg->u.bss_info.security.wpa3_transition_disable != curr_cfg->u.bss_info.security.wpa3_transition_disable) )
-    {
-        curr_cfg->u.bss_info.security.wpa3_transition_disable = vap_cfg->u.bss_info.security.wpa3_transition_disable;
-    }
-    return NULL;
-
-#else //WIFI_HAL_VERSION_3
     int retval = RETURN_ERR;
     BOOLEAN bForceDisableFlag = FALSE;
     uint8_t wlan_index = vap_cfg->vap_index;
@@ -2802,18 +2160,11 @@ char *wifi_apply_security_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr
 
         gHostapd_restart_reqd = true;
         vap_cfg->u.bss_info.sec_changed = true; 
-#ifdef WIFI_HAL_VERSION_3
-        if (isVapPrivate(wlan_index))
-        {
-            PASSPHRASE_UPDATED[getRadioIndexFromAp(wlan_index)] = TRUE;
-        }
-#else
         if (wlan_index == 0) {
             PASSPHRASE1_UPDATED = TRUE;
         } else if (wlan_index == 1) {
             PASSPHRASE2_UPDATED = TRUE;
         }
-#endif
         CcspWifiEventTrace(("RDK_LOG_NOTICE, KeyPassphrase changed \n "));
         CcspWifiTrace(("RDK_LOG_WARN, KeyPassphrase changed \n "));
         CcspWifiTrace(("RDK_LOG_WARN, RDKB_WIFI_CONFIG_CHANGED : %s KeyPassphrase changed for index = %d\n",
@@ -2942,7 +2293,6 @@ char *wifi_apply_security_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr
 #endif /* #if (!defined(_XB6_PRODUCT_REQ_) || defined (_XB7_PRODUCT_REQ_)) */
     vap_cfg->u.bss_info.sec_changed = false;
     return NULL;
-#endif //WIFI_HAL_VERSION_3
 }
 
 char *wifi_apply_interworking_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr_cfg)
@@ -3102,17 +2452,7 @@ int wifi_get_initial_vap_config(wifi_vap_info_t *vap_cfg, uint8_t vap_index)
     vap_cfg->u.bss_info.isolation     = pWifiAp->AP.Cfg.IsolationEnable;
     vap_cfg->u.bss_info.security.mode = pWifiAp->SEC.Cfg.ModeEnabled;
     vap_cfg->u.bss_info.security.encr = pWifiAp->SEC.Cfg.EncryptionMethod;
-#if defined(WIFI_HAL_VERSION_3)
-    if (strncmp(pWifiAp->SEC.Cfg.MFPConfig, "Disabled", sizeof("Disabled")) == 0) {
-        vap_cfg->u.bss_info.security.mfp = wifi_mfp_cfg_disabled;
-    } else if (strncmp(pWifiAp->SEC.Cfg.MFPConfig, "Required", sizeof("Required")) == 0) {
-        vap_cfg->u.bss_info.security.mfp = wifi_mfp_cfg_required;
-    } else if (strncmp(pWifiAp->SEC.Cfg.MFPConfig, "Optional", sizeof("Optional")) == 0) {
-        vap_cfg->u.bss_info.security.mfp = wifi_mfp_cfg_optional;
-    }
-#else
     strncpy(vap_cfg->u.bss_info.security.mfpConfig, pWifiAp->SEC.Cfg.MFPConfig, sizeof(vap_cfg->u.bss_info.security.mfpConfig)-1);
-#endif
     vap_cfg->u.bss_info.bssMaxSta = pWifiAp->AP.Cfg.BssMaxNumSta;
     vap_cfg->u.bss_info.nbrReportActivated = pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated;
     vap_cfg->u.bss_info.vapStatsEnable = pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_StatsEnable;
@@ -3152,23 +2492,8 @@ int wifi_get_initial_vap_config(wifi_vap_info_t *vap_cfg, uint8_t vap_index)
         strncpy(vap_cfg->u.bss_info.security.u.radius.s_key, pWifiAp->SEC.Cfg.SecondaryRadiusSecret,
                 sizeof(vap_cfg->u.bss_info.security.u.radius.s_key)-1);
     } else if((vap_index != 4) || (vap_index != 5)) {
-#ifdef WIFI_HAL_VERSION_3
-            if ((pWifiAp->SEC.Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal) ||
-                (pWifiAp->SEC.Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition) ||
-                (pWifiAp->SEC.Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Enterprise))
-            {
-                strncpy(vap_cfg->u.bss_info.security.u.key.key, (char*)pWifiAp->SEC.Cfg.SAEPassphrase,
-                    sizeof(vap_cfg->u.bss_info.security.u.key.key)-1);
-            }
-            else
-            {
-                strncpy(vap_cfg->u.bss_info.security.u.key.key, (char *)pWifiAp->SEC.Cfg.KeyPassphrase,
-                    sizeof(vap_cfg->u.bss_info.security.u.key.key)-1);
-            }
-#else
             strncpy(vap_cfg->u.bss_info.security.u.key.key, (char *)pWifiAp->SEC.Cfg.KeyPassphrase,
                     sizeof(vap_cfg->u.bss_info.security.u.key.key)-1);
-#endif
     }
 
         
@@ -3249,7 +2574,6 @@ int wifi_get_initial_common_config(wifi_config_t *curr_cfg)
     return RETURN_OK;
 }
 
-#ifndef WIFI_HAL_VERSION_3
 int wifi_update_dml_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr_cfg, uint8_t vap_index)
 {
     PCOSA_DATAMODEL_WIFI pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
@@ -3366,18 +2690,6 @@ int wifi_update_dml_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr_cfg, 
         }
     }
 
-#if defined(WIFI_HAL_VERSION_3)
-    if (vap_cfg->u.bss_info.security.mfp != curr_cfg->u.bss_info.security.mfp)
-    {
-        snprintf(pWifiAp->SEC.Cfg.MFPConfig, sizeof(pWifiAp->SEC.Cfg.MFPConfig),
-                        "%s", MFPConfigOptions[vap_cfg->u.bss_info.security.mfp]);
-        sprintf(recName, ApMFPConfig, vap_index+1);
-        retPsmSet = PSM_Set_Record_Value2(bus_handle, g_Subsystem, recName, ccsp_string, pWifiAp->SEC.Cfg.MFPConfig);
-        if (retPsmSet != CCSP_SUCCESS) {
-            CcspTraceError(("%s Failed to set MFPConfig  psm value\n",__FUNCTION__));
-        }
-    }
-#else
     if(strcmp(pWifiAp->SEC.Cfg.MFPConfig, curr_cfg->u.bss_info.security.mfpConfig) != 0) {
         strncpy(pWifiAp->SEC.Cfg.MFPConfig,vap_cfg->u.bss_info.security.mfpConfig, sizeof(vap_cfg->u.bss_info.security.mfpConfig)-1);
         sprintf(recName, ApMFPConfig, vap_index+1);
@@ -3386,7 +2698,6 @@ int wifi_update_dml_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr_cfg, 
             CcspTraceError(("%s Failed to set MFPConfig  psm value\n",__FUNCTION__));
         }
     }
-#endif
 
     if ((strcmp(vap_cfg->vap_name,"hotspot_secure_2g") == 0 || strcmp(vap_cfg->vap_name,"hotspot_secure_5g") == 0)) {
 #ifdef WIFI_HAL_VERSION_3_PHASE2
@@ -3488,7 +2799,6 @@ int wifi_update_dml_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr_cfg, 
 
     return RETURN_OK;     
 }
-#endif //WIFI_HAL_VERSION_3
 int wifi_update_common_config(wifi_config_t *wifi_cfg)
 {
     PCOSA_DATAMODEL_WIFI pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
@@ -3520,11 +2830,7 @@ int wifi_update_common_config(wifi_config_t *wifi_cfg)
 
 int wifi_vap_cfg_rollback_handler() 
 {
-#ifdef WIFI_HAL_VERSION_3
-    wifi_vap_info_t *tempWifiVapInfo;
-#else
     wifi_vap_info_map_t current_cfg;
-#endif
 
     uint8_t i;
     char *err = NULL;
@@ -3533,7 +2839,6 @@ int wifi_vap_cfg_rollback_handler()
 
     CcspTraceInfo(("Inside %s\n",__FUNCTION__));
     for (i=0; i < vap_curr_cfg.num_vaps; i++) {
-#ifndef WIFI_HAL_VERSION_3
         if (RETURN_OK != wifi_get_initial_vap_config(&current_cfg.vap_array[i],
                      vap_curr_cfg.vap_array[i].vap_index)) {
             CcspTraceError(("%s: Failed to fetch initial dml config\n",__FUNCTION__));
@@ -3557,28 +2862,16 @@ int wifi_vap_cfg_rollback_handler()
             return RETURN_ERR;
         }
         err = wifi_apply_interworking_config(&current_cfg.vap_array[i], &vap_curr_cfg.vap_array[i]);
-#else //WIFI_HAL_VERSION_3
-        tempWifiVapInfo = getVapInfo(vap_curr_cfg.vap_array[i].vap_index);
-        if (tempWifiVapInfo == NULL)
-        {
-            CcspTraceError(("%s Unable to get VAP info for vapIndex : %d\n", __FUNCTION__, vap_curr_cfg.vap_array[i].vap_index));
-            return RETURN_ERR;
-        }
-
-        err = wifi_apply_interworking_config(tempWifiVapInfo, &vap_curr_cfg.vap_array[i]);
-#endif //WIFI_HAL_VERSION_3
         if (err != NULL) {
             CcspTraceError(("%s: Failed to apply interworking config for index %d\n",err,
                                               vap_curr_cfg.vap_array[i].vap_index));
             return RETURN_ERR;
         }
     }
-#ifndef WIFI_HAL_VERSION_3
     if (wifi_apply_radio_settings() != NULL) {
         CcspTraceError(("%s: Failed to Apply Radio settings\n", __FUNCTION__));
         return RETURN_ERR;
     }
-#endif //WIFI_HAL_VERSION_3
 
     CcspTraceInfo(("%s: Rollback applied successfully\n",__FUNCTION__));
     return RETURN_OK;
@@ -3593,19 +2886,6 @@ int wifi_update_captiveportal (char *ssid, char *password, char *vap_name) {
     if ( strcmp(notifyWiFiChangesVal,"true") != 0 ) {
         return RETURN_OK;
     }
-#ifdef WIFI_HAL_VERSION_3
-    UINT apIndex = 0;
-    wlan_index = 2;
-    pwd_updated = NULL;
-    ssid_updated = NULL;
-    if ( (getVAPIndexFromName(vap_name, &apIndex) == ANSC_STATUS_SUCCESS) && (isVapPrivate(apIndex)) )
-    {
-        ssid_updated = &SSID_UPDATED[getRadioIndexFromAp(apIndex)];
-        pwd_updated = &PASSPHRASE_UPDATED[getRadioIndexFromAp(apIndex)];
-        wlan_index  = apIndex + 1;
-        return RETURN_ERR;
-    }
-#else
     if (strcmp(vap_name,"private_ssid_2g") == 0) {
         ssid_updated = &SSID1_UPDATED;
         pwd_updated = &PASSPHRASE1_UPDATED;
@@ -3615,7 +2895,6 @@ int wifi_update_captiveportal (char *ssid, char *password, char *vap_name) {
         pwd_updated = &PASSPHRASE2_UPDATED;
         wlan_index = 2; 
     }
-#endif
     if (*ssid_updated) {
         sprintf(param_name, "Device.WiFi.SSID.%d.SSID",wlan_index);
         val.parameterName = param_name;
@@ -3712,97 +2991,6 @@ void Tunnel_event_callback(char *info, void *data)
     return;
 }
 
-#ifdef WIFI_HAL_VERSION_3
-#if defined(ENABLE_FEATURE_MESHWIFI)
-ANSC_STATUS notifyMeshEvents(wifi_vap_info_t *vap_cfg)
-{
-    char mode[32] = {0};
-    char securityType[32] = {0};
-    char authMode[32] = {0};
-    char method[32] = {0};
-    char encryption[32] = {0};
-    UINT wlan_index = 0;
-
-    if (vap_cfg == NULL)
-    {
-        CcspWifiTrace(("RDK_LOG_WARN, WIFI %s : vap_cfg is NULL", __FUNCTION__));
-        return ANSC_STATUS_FAILURE;
-    }
-
-    wlan_index = vap_cfg->vap_index;
-
-    CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : Notify Mesh of SSID change\n",__FUNCTION__));
-    v_secure_system("/usr/bin/sysevent set wifi_SSIDName \"RDK|%d|%s\"",wlan_index, vap_cfg->u.bss_info.ssid);
-
-    CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : Notify Mesh of SSID Advertise changes\n",__FUNCTION__));
-    v_secure_system("/usr/bin/sysevent set wifi_SSIDAdvertisementEnable \"RDK|%d|%s\"",
-            wlan_index, vap_cfg->u.bss_info.showSsid?"true":"false");
-
-    webconf_auth_mode_to_str(mode, vap_cfg->u.bss_info.security.mode);
-    /* Copy hal specific strings for respective Authentication Mode */
-    if (strcmp(mode, "None") == 0 ) {
-        strcpy(securityType,"None");
-        strcpy(authMode,"None");
-    }
-#ifndef _XB6_PRODUCT_REQ_
-    else if (strcmp(mode, "WEP-64") == 0 || strcmp(mode, "WEP-128") == 0) {
-        strcpy(securityType, "Basic");
-        strcpy(authMode,"None");
-    }
-    else if (strcmp(mode, "WPA-Personal") == 0) {
-        strcpy(securityType,"WPA");
-        strcpy(authMode,"PSKAuthentication");
-    } else if (strcmp(mode, "WPA2-Personal") == 0) {
-        strcpy(securityType,"11i");
-        strcpy(authMode,"PSKAuthentication");
-    } else if (strcmp(mode, "WPA-Enterprise") == 0) {
-    } else if (strcmp(mode, "WPA-WPA2-Personal") == 0) {
-        strcpy(securityType,"WPAand11i");
-        strcpy(authMode,"PSKAuthentication");
-    }
-#else
-    else if ((strcmp(mode, "WPA2-Personal") == 0)) {
-        strcpy(securityType,"11i");
-        strcpy(authMode,"SharedAuthentication");
-    }
-#endif
-    else if (strcmp(mode, "WPA2-Enterprise") == 0) {
-        strcpy(securityType,"11i");
-        strcpy(authMode,"EAPAuthentication");
-    } else if (strcmp(mode, "WPA-WPA2-Enterprise") == 0) {
-        strcpy(securityType,"WPAand11i");
-        strcpy(authMode,"EAPAuthentication");
-    }
-
-    webconf_enc_mode_to_str(encryption,vap_cfg->u.bss_info.security.encr);
-    if ((strcmp(encryption, "TKIP") == 0))
-    {
-        strcpy(method,"TKIPEncryption");
-    }
-    else if ((strcmp(encryption, "AES") == 0))
-    {
-        strcpy(method,"AESEncryption");
-    }
-#ifndef _XB6_PRODUCT_REQ_
-    else if ((strcmp(encryption, "AES+TKIP") == 0))
-    {
-        strcpy(method,"TKIPandAESEncryption");
-    }
-#endif
-
-    if (vap_cfg->u.bss_info.sec_changed)
-    {
-        CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : Notify Mesh of Security changes\n",__FUNCTION__));
-        v_secure_system("/usr/bin/sysevent set wifi_ApSecurity \"RDK|%d|%s|%s|%s\"",wlan_index, vap_cfg->u.bss_info.security.u.key.key, authMode, method);
-    }
-
-    vap_cfg->u.bss_info.sec_changed = FALSE;
-
-    return ANSC_STATUS_SUCCESS;
-
-}
-#endif //ENABLE_FEATURE_MESHWIFI
-#endif //WIFI_HAL_VERSION_3
 
 /**
  * Function to Parse Msg packed Wifi Config
@@ -3828,15 +3016,6 @@ int wifi_vapConfigSet(const char *buf, size_t len, pErr execRetVal)
     char *strValue = NULL;
     int   retPsmGet  = CCSP_SUCCESS;
     BOOL vap_enabled = FALSE;
-#ifdef WIFI_HAL_VERSION_3
-    UINT radioIndex = 0;
-    UINT vapIndex = 0;
-    UINT vapArrayIndexPerRadio = 0;
-    UINT vapCount =0;
-    UINT radioCount =0;
-    wifi_vap_info_t *tempWifiVapInfo;
-    ANSC_STATUS ret;
-#endif
 
     if (!buf || !execRetVal) {
         CcspTraceError(("%s: Empty input parameters for subdoc set\n",__FUNCTION__));
@@ -3910,10 +3089,8 @@ int wifi_vapConfigSet(const char *buf, size_t len, pErr execRetVal)
 
     free(buffer);
 
-#ifndef WIFI_HAL_VERSION_3
     memset(&vap_curr_cfg, 0, sizeof(vap_curr_cfg));
     vap_curr_cfg.num_vaps = 0;
-#endif //WIFI_HAL_VERSION_3
 
     memset(&wifi_cfg,0,sizeof(wifi_cfg));
 
@@ -3923,113 +3100,6 @@ int wifi_vapConfigSet(const char *buf, size_t len, pErr execRetVal)
         execRetVal->ErrorCode = VALIDATION_FALIED;
         return RETURN_ERR;
     }
-#ifdef WIFI_HAL_VERSION_3
-    for (radioCount=0; radioCount < getNumberRadios(); radioCount++)
-    {
-        memset(&vap_map_per_radio[radioCount], 0, sizeof(wifi_vap_info_map_t));
-    }
-
-    for (vapCount = 0; vapCount < vap_map.num_vaps; vapCount++)
-    {
-        vapIndex = vap_map.vap_array[vapCount].vap_index;
-        //get the RadioIndex for corresponding vap_index
-        radioIndex = getRadioIndexFromAp(vapIndex);
-
-        ccspWifiDbgPrint(CCSP_WIFI_TRACE, " %s For radioIndex %d vapIndex : %d \n", __FUNCTION__, radioIndex, vapIndex);
-
-        vapArrayIndexPerRadio = vap_map_per_radio[radioIndex].num_vaps;
-
-        /* Get Initial dml config */
-        tempWifiVapInfo = getVapInfo(vapIndex);
-        if (tempWifiVapInfo == NULL)
-        {
-            CcspTraceError(("%s Unable to get VAP info for vapIndex : %d\n", __FUNCTION__, vapIndex));
-            strncpy(execRetVal->ErrorMsg, "getVapInfo Failed", sizeof(execRetVal->ErrorMsg)-1);
-            execRetVal->ErrorCode = WIFI_HAL_FAILURE;
-            return RETURN_ERR;
-        }
-
-        memcpy(&vap_map_per_radio[radioIndex].vap_array[vapArrayIndexPerRadio], tempWifiVapInfo, sizeof(wifi_vap_info_t));
-
-        vap_enabled = FALSE;
-        if (vap_map_per_radio[radioIndex].vap_array[vapArrayIndexPerRadio].u.bss_info.enabled == FALSE &&
-                vap_map.vap_array[vapCount].u.bss_info.enabled == TRUE)
-        {
-            vap_enabled = TRUE;
-        }
-
-        /*Update ssid parameters*/
-        err = wifi_apply_ssid_config(&vap_map.vap_array[vapCount], &vap_map_per_radio[radioIndex].vap_array[vapArrayIndexPerRadio], FALSE,vap_enabled);
-        if (err != NULL) {
-              CcspTraceError(("%s: Failed to apply ssid config for index %d\n", err,
-                          vap_map.vap_array[vapCount].vap_index));
-              strncpy(execRetVal->ErrorMsg, err, sizeof(execRetVal->ErrorMsg)-1);
-              execRetVal->ErrorCode = WIFI_HAL_FAILURE;
-              return RETURN_ERR;
-        }
-
-        /* Update security parameters*/
-        err = wifi_apply_security_config(&vap_map.vap_array[vapCount], &vap_map_per_radio[radioIndex].vap_array[vapArrayIndexPerRadio], vap_enabled);
-        if (err != NULL) {
-              CcspTraceError(("%s: Failed to apply security config for index %d\n", err,
-                          vap_map.vap_array[vapCount].vap_index));
-              strncpy(execRetVal->ErrorMsg, err, sizeof(execRetVal->ErrorMsg)-1);
-              execRetVal->ErrorCode = WIFI_HAL_FAILURE;
-              return RETURN_ERR;
-        }
-
-        /*Update Interworking parameters */
-        err = wifi_apply_interworking_config(&vap_map.vap_array[vapCount], &vap_map_per_radio[radioIndex].vap_array[vapArrayIndexPerRadio]);
-        if (err != NULL) {
-              CcspTraceError(("%s: Failed to apply interworking config for index %d\n", err,
-                          vap_map.vap_array[vapCount].vap_index));
-              strncpy(execRetVal->ErrorMsg, err, sizeof(execRetVal->ErrorMsg)-1);
-              execRetVal->ErrorCode = WIFI_HAL_FAILURE;
-              return RETURN_ERR;
-        }
-
-        vap_map_per_radio[radioIndex].num_vaps++;
-    }
-
-    for (radioCount = 0; radioCount < getNumberRadios(); radioCount++)
-    {
-        ccspWifiDbgPrint(CCSP_WIFI_TRACE, " %s For radioIndex %d num_vaps : %d to be configured\n", __FUNCTION__, radioCount, vap_map_per_radio[radioCount].num_vaps);
-        //For Each Radio call the createVAP
-        if (vap_map_per_radio[radioCount].num_vaps != 0)
-        {
-            ret =  wifi_createVAP(radioCount, &vap_map_per_radio[radioCount]);
-            if (ret != ANSC_STATUS_SUCCESS)
-            {
-                CcspTraceError((" %s wifi_createVAP returned with error %d\n", __FUNCTION__, ret));
-                strncpy(execRetVal->ErrorMsg, "wifi_createVAP Failed", sizeof(execRetVal->ErrorMsg)-1);
-                execRetVal->ErrorCode = WIFI_HAL_FAILURE;
-                return RETURN_ERR;
-            }
-
-            ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wifi_createVAP Successful for Radio : %d\n", __FUNCTION__, radioCount);
-
-            //Update the global wifi_vap_info_t structure.
-            for (vapCount = 0; vapCount < vap_map_per_radio[radioCount].num_vaps; vapCount++)
-            {
-                tempWifiVapInfo = getVapInfo(vap_map_per_radio[radioCount].vap_array[vapCount].vap_index);
-                if (tempWifiVapInfo == NULL)
-                {
-                    CcspTraceError((" %s %d Unable to get VAP info for vapIndex : %d\n", __FUNCTION__, __LINE__, vap_map_per_radio[radioCount].vap_array[vapCount].vap_index));
-                    strncpy(execRetVal->ErrorMsg, "getVapInfo Failed", sizeof(execRetVal->ErrorMsg)-1);
-                    execRetVal->ErrorCode = WIFI_HAL_FAILURE;
-                    return RETURN_ERR;
-                }
-                memcpy(tempWifiVapInfo, &vap_map_per_radio[radioCount].vap_array[vapCount], sizeof(wifi_vap_info_t));
-#if defined(ENABLE_FEATURE_MESHWIFI)
-                notifyMeshEvents(tempWifiVapInfo);
-#endif //ENABLE_FEATURE_MESHWIFI
-            }
-        }
-    }
-
-    wifi_reset_radio();
-
-#else //WIFI_HAL_VERSION_3
     for (i = 0; i < (int)vap_map.num_vaps; i++) {
         vap_curr_cfg.vap_array[i].vap_index = vap_map.vap_array[i].vap_index;
         strncpy(vap_curr_cfg.vap_array[i].vap_name, vap_map.vap_array[i].vap_name,
@@ -4102,7 +3172,6 @@ int wifi_vapConfigSet(const char *buf, size_t len, pErr execRetVal)
             return RETURN_ERR;
         }
     }
-#endif //WIFI_HAL_VERSION_3
 
     err = wifi_apply_common_config(&wifi,&wifi_cfg);
     if (err != NULL) {
@@ -4111,7 +3180,6 @@ int wifi_vapConfigSet(const char *buf, size_t len, pErr execRetVal)
         execRetVal->ErrorCode = WIFI_HAL_FAILURE;
     }
 
-#ifndef WIFI_HAL_VERSION_3
     if (gHostapd_restart_reqd) {
         err = wifi_apply_radio_settings();
         if (err != NULL) {
@@ -4121,10 +3189,8 @@ int wifi_vapConfigSet(const char *buf, size_t len, pErr execRetVal)
             return RETURN_ERR;
         }
     }
-#endif //WIFI_HAL_VERSION_3
 
     for (i = 0; i < (int)vap_map.num_vaps; i++) {
-#ifndef WIFI_HAL_VERSION_3
         /* Update TR-181 params */
         retval = wifi_update_dml_config(&vap_map.vap_array[i], &vap_curr_cfg.vap_array[i],
                                          vap_map.vap_array[i].vap_index);
@@ -4134,14 +3200,8 @@ int wifi_vapConfigSet(const char *buf, size_t len, pErr execRetVal)
                     sizeof(execRetVal->ErrorMsg)-1); 
             return RETURN_ERR;
         }
-#endif
-#ifdef WIFI_HAL_VERSION_3
-        UINT apIndex = 0;
-        if ( (getVAPIndexFromName(vap_map.vap_array[i].vap_name, &apIndex) == ANSC_STATUS_SUCCESS) && (isVapPrivate(apIndex)) )
-#else
         if (strcmp(vap_map.vap_array[i].vap_name, "private_ssid_2g") == 0 ||
             strcmp(vap_map.vap_array[i].vap_name, "private_ssid_5g") == 0)
-#endif
         {
             /* Update captive portal */
             retval = wifi_update_captiveportal(vap_map.vap_array[i].u.bss_info.ssid, 

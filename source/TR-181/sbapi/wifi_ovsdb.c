@@ -64,9 +64,6 @@ extern ANSC_HANDLE bus_handle;
 extern char   g_Subsystem[32];
 extern PCOSA_BACKEND_MANAGER_OBJECT g_pCosaBEManager;
 
-#ifdef WIFI_HAL_VERSION_3
-const char *MFPConfig[3] = {"Disabled", "Optional", "Required"};
-#endif
 void wifi_db_dbg_print(int level, char *format, ...)
 {
     char buff[2048] = {0};
@@ -406,22 +403,13 @@ void print_ovsdb_interworking_config ()
     struct schema_Wifi_Interworking_Config  *pcfg;
     json_t *where;
     int count;
-#ifndef WIFI_HAL_VERSION_3
     int  i;
     char *vap_name[] = {"private_ssid_2g", "private_ssid_5g", "iot_ssid_2g", "iot_ssid_5g", "hotspot_open_2g", "hotspot_open_5g", "lnf_psk_2g", "lnf_psk_5g", "hotspot_secure_2g", "hotspot_secure_5g"};
-#endif
     char output[4096];
     wifi_passpoint_dbg_print("OVSDB JSON\nname:Open_vSwitch, version:1.00.000\n");
     wifi_passpoint_dbg_print("table: Wifi_Interworking_Config \n");
-#ifdef WIFI_HAL_VERSION_3
-    for (UINT apIndex = 0; apIndex < getTotalNumberVAPs(); apIndex++) {
-        if ((isVapPrivate(apIndex) || isVapXhs(apIndex) || isVapHotspot(apIndex) || isVapLnfPsk(apIndex)) )
-        {
-            where = ovsdb_tran_cond(OCLM_STR, "vap_name", OFUNC_EQ, getVAPName(apIndex));
-#else
     for (i=0; i < 10; i++) {
         where = ovsdb_tran_cond(OCLM_STR, "vap_name", OFUNC_EQ, vap_name[i]);
-#endif
         pcfg = ovsdb_table_select_where(g_wifidb.ovsdb_sock_path, &table_Wifi_Interworking_Config, where, &count);
     
         if ((pcfg == NULL) || (!count)) {
@@ -435,21 +423,13 @@ void print_ovsdb_interworking_config ()
         if(data_base) {
             memset(output,0,sizeof(output));
             if(json_get_str(data_base,output, sizeof(output))) {
-#ifdef WIFI_HAL_VERSION_3
-                wifi_passpoint_dbg_print("key: %s\nCount: %d\n%s\n",
-                   getVAPName(apIndex),count,output);
-#else
                 wifi_passpoint_dbg_print("key: %s\nCount: %d\n%s\n",
                    vap_name[i],count,output);
-#endif
             } else {
                 wifi_db_dbg_print(1,"%s:%d: Unable to print Row\n",
                    __func__, __LINE__);
             }
         }
-#ifdef WIFI_HAL_VERSION_3
-        }
-#endif
     }
 }
 /*int update_wifi_ovsdb_vap_map(wifi_vap_info_map_t *vap_map)
@@ -796,11 +776,7 @@ int wifidb_get_wifi_vap_config(int radio_index,wifi_vap_info_map_t *config)
             {
                 wifi_db_dbg_print(1,"%s:%d: Get Wifi_Security_Config table radius server ip =%s  port =%d sec key=%s Secondary radius server ip=%s port=%d key=%s\n",__func__, __LINE__,config->vap_array[i].u.bss_info.security.u.radius.ip,config->vap_array[i].u.bss_info.security.u.radius.port,config->vap_array[i].u.bss_info.security.u.radius.key,config->vap_array[i].u.bss_info.security.u.radius.s_ip,config->vap_array[i].u.bss_info.security.u.radius.s_port,config->vap_array[i].u.bss_info.security.u.radius.s_key);
             }
-#ifdef WIFI_HAL_VERSION_3
-            wifi_db_dbg_print(1,"%s:%d: Get Wifi_Security_Config table vap_name=%s Sec_mode=%d enc_mode=%d mfp_config=%s\n",__func__, __LINE__,vap_name,config->vap_array[i].u.bss_info.security.mode,config->vap_array[i].u.bss_info.security.encr,MFPConfig[config->vap_array[i].u.bss_info.security.mfp]);
-#else
             wifi_db_dbg_print(1,"%s:%d: Get Wifi_Security_Config table vap_name=%s Sec_mode=%d enc_mode=%d mfp_config=%s\n",__func__, __LINE__,vap_name,config->vap_array[i].u.bss_info.security.mode,config->vap_array[i].u.bss_info.security.encr,config->vap_array[i].u.bss_info.security.mfpConfig);
-#endif
         }
     }
     free(pcfg);
@@ -1043,11 +1019,7 @@ int wifidb_update_wifi_vap_info(char *radio_name,wifi_vap_info_t *config)
     cfg.bss_hotspot = config->u.bss_info.bssHotspot;
     cfg.wps_push_button = config->u.bss_info.wpsPushButton;
     strncpy(cfg.beacon_rate_ctl,config->u.bss_info.beaconRateCtl,sizeof(cfg.beacon_rate_ctl)-1);
-#ifdef WIFI_HAL_VERSION_3
-    strncpy(cfg.mfp_config,MFPConfig[config->u.bss_info.security.mfp],sizeof(cfg.mfp_config)-1);
-#else
     strncpy(cfg.mfp_config,config->u.bss_info.security.mfpConfig,sizeof(cfg.mfp_config)-1);
-#endif
 
     wifi_db_dbg_print(1,"%s:%d:VAP Config update data cfg.radio_name=%s cfg.radio_name=%s cfg.ssid=%s cfg.enabled=%d cfg.advertisement=%d cfg.isolation_enabled=%d cfg.mgmt_power_control=%d cfg.bss_max_sta =%d cfg.bss_transition_activated=%d cfg.nbr_report_activated=%d cfg.rapid_connect_enabled=%d cfg.rapid_connect_threshold=%d cfg.vap_stats_enable=%d cfg.mac_filter_enabled =%d cfg.mac_filter_mode=%d cfg.wmm_enabled=%d mfp=%s\n",__func__, __LINE__,cfg.radio_name,cfg.vap_name,cfg.ssid,cfg.enabled,cfg.ssid_advertisement_enabled,cfg.isolation_enabled,cfg.mgmt_power_control,cfg.bss_max_sta,cfg.bss_transition_activated,cfg.nbr_report_activated,cfg.rapid_connect_enabled,cfg.rapid_connect_threshold,cfg.vap_stats_enable,cfg.mac_filter_enabled,cfg.mac_filter_mode,cfg.wmm_enabled,cfg.mfp_config);
 
@@ -1533,17 +1505,7 @@ int wifi_db_update_vap_config()
     vap_cfg.u.bss_info.isolation     = pWifiAp->AP.Cfg.IsolationEnable;
     vap_cfg.u.bss_info.security.mode = pWifiAp->SEC.Cfg.ModeEnabled;
     vap_cfg.u.bss_info.security.encr = pWifiAp->SEC.Cfg.EncryptionMethod;
-#if defined(WIFI_HAL_VERSION_3)
-    if (strncmp(pWifiAp->SEC.Cfg.MFPConfig, "Disabled", sizeof("Disabled")) == 0) {
-        vap_cfg.u.bss_info.security.mfp = wifi_mfp_cfg_disabled;
-    } else if (strncmp(pWifiAp->SEC.Cfg.MFPConfig, "Required", sizeof("Required")) == 0) {
-        vap_cfg.u.bss_info.security.mfp = wifi_mfp_cfg_required;
-    } else if (strncmp(pWifiAp->SEC.Cfg.MFPConfig, "Optional", sizeof("Optional")) == 0) {
-        vap_cfg.u.bss_info.security.mfp = wifi_mfp_cfg_optional;
-    }
-#else
     strncpy(vap_cfg.u.bss_info.security.mfpConfig, pWifiAp->SEC.Cfg.MFPConfig, sizeof(vap_cfg.u.bss_info.security.mfpConfig)-1);
-#endif
 
     vap_cfg.u.bss_info.bssMaxSta = pWifiAp->AP.Cfg.BssMaxNumSta;
     vap_cfg.u.bss_info.nbrReportActivated = pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated;
@@ -1748,11 +1710,7 @@ int wifi_db_init_vap_config_default()
         if (i % 2 == 0) {
             strncpy(cfg.u.bss_info.beaconRateCtl,"6Mbps",sizeof(cfg.u.bss_info.beaconRateCtl)-1);
         }
-#ifdef WIFI_HAL_VERSION_3
-        cfg.u.bss_info.security.mfp = wifi_mfp_cfg_disabled;
-#else
         strncpy(cfg.u.bss_info.security.mfpConfig,"Disabled",sizeof(cfg.u.bss_info.security.mfpConfig)-1);
-#endif
         if (convert_radio_to_name((i%2)+1, radio_name) == 0) {
             if (wifidb_update_wifi_vap_info(radio_name,&cfg) == RETURN_OK) {
                 wifi_db_dbg_print(1,"%s:%d: Updated vap %d config successfully \n",__func__, __LINE__,i);
