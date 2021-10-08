@@ -625,18 +625,6 @@ static int hostapd_tr181_config_parse_key_mgmt(int modeEnabled)
     else if (os_strcmp(conf_value, "WPA-EAP-SHA256") == 0)
          val |= WPA_KEY_MGMT_IEEE8021X_SHA256;
 #endif /* CONFIG_IEEE80211W */
-#if defined (CONFIG_SAE) && defined (WIFI_HAL_VERSION_3)
-    else if (os_strcmp(conf_value, "WPA-PSK SAE") == 0) {
-         val |= WPA_KEY_MGMT_PSK;
-         val |= WPA_KEY_MGMT_SAE;
-    }
-    else if (os_strcmp(conf_value, "WPA-EAP SAE") == 0) {
-        val |= WPA_KEY_MGMT_IEEE8021X;
-        val |= WPA_KEY_MGMT_SAE;
-    }
-    else if (os_strcmp(conf_value, "FT-SAE") == 0)
-         val |= WPA_KEY_MGMT_FT_SAE;
-#endif /* CONFIG_SAE */
 #ifdef CONFIG_SUITEB
 //Not Defined
     else if (os_strcmp(conf_value, "WPA-EAP-SUITE-B") == 0)
@@ -1584,10 +1572,6 @@ void update_config_defaults(int ap_index, struct hostapd_data *hapd, int ModeEna
     dl_list_init(&hapd->l2_queue);
     dl_list_init(&hapd->l2_oui_queue);
 #endif /* CONFIG_IEEE80211R_AP */
-#if defined (CONFIG_SAE) && defined (WIFI_HAL_VERSION_3)
-//Not Defined
-    dl_list_init(&hapd->sae_commit_queue);
-#endif /* CONFIG_SAE */
 
     hapd->iconf->bss = os_calloc(1, sizeof(struct hostapd_bss_config *));
     if (hapd->iconf->bss == NULL) {
@@ -1722,22 +1706,12 @@ int update_tr181_ipc_config(int apIndex, wifi_hal_cmd_t cmd, void *value)
             {
                 if (!hapd->started)
                 {
-#ifdef WIFI_HAL_VERSION_3
-#if defined (_XB7_PRODUCT_REQ_)
-                    wpa_printf(MSG_ERROR, "%s:%d start hostapd on apIndex:%d", __func__, __LINE__, apIndex);
-                    libhostapd_wpa_init(pMyObject, pWifiAp, pWifiSsid, &(pMyObject->pRadio+getRadioIndexFromAp(apIndex))->Radio);
-#else
-                    hapd_wpa_init(pMyObject, pWifiAp, pWifiSsid, &(pMyObject->pRadio+getRadioIndexFromAp(apIndex))->Radio);
-#endif /* _XB7_PRODUCT_REQ_ */
-
-#else /* WIFI_HAL_VERSION_3 */
 #if defined (_XB7_PRODUCT_REQ_)
                     wpa_printf(MSG_ERROR, "%s:%d start hostapd on apIndex:%d", __func__, __LINE__, apIndex);
                     libhostapd_wpa_init(pMyObject, pWifiAp, pWifiSsid, (apIndex % 2 == 0) ? &(pMyObject->pRadio+0)->Radio : &(pMyObject->pRadio+1)->Radio);
 #else
                     hapd_wpa_init(pMyObject, pWifiAp, pWifiSsid, (apIndex % 2 == 0) ? &(pMyObject->pRadio+0)->Radio : &(pMyObject->pRadio+1)->Radio);
 #endif /* _XB7_PRODUCT_REQ_ */
-#endif /* WIFI_HAL_VERSION_3 */
                 }
             }
             else
@@ -1776,23 +1750,13 @@ int update_tr181_ipc_config(int apIndex, wifi_hal_cmd_t cmd, void *value)
             {
                 if (!hapd)
                 {
-#ifdef WIFI_HAL_VERSION_3
-                    wpa_printf(MSG_ERROR, "%s:%d start hostapd on apIndex:%d", __func__, __LINE__, apIndex);
-                    libhostapd_wpa_init(pMyObject, pWifiAp, pWifiSsid, &(pMyObject->pRadio+getRadioIndexFromAp(apIndex))->Radio);
-#else
                     libhostapd_wpa_init(pMyObject, pWifiAp, pWifiSsid, (apIndex % 2 == 0) ? &(pMyObject->pRadio+0)->Radio : &(pMyObject->pRadio+1)->Radio);
-#endif /* WIFI_HAL_VERSION_3 */
                 }
                 else
                 {
                     wpa_printf(MSG_ERROR, "%s:%d stop hostapd on apIndex:%d", __func__, __LINE__, apIndex);
                     libhostapd_wpa_deinit(apIndex);
-#ifdef WIFI_HAL_VERSION_3
-                    wpa_printf(MSG_ERROR, "%s:%d start hostapd on apIndex:%d", __func__, __LINE__, apIndex);
-                    libhostapd_wpa_init(pMyObject, pWifiAp, pWifiSsid, &(pMyObject->pRadio+getRadioIndexFromAp(apIndex))->Radio);
-#else /* WIFI_HAL_VERSION_3 */
                     libhostapd_wpa_init(pMyObject, pWifiAp, pWifiSsid, (apIndex % 2 == 0) ? &(pMyObject->pRadio+0)->Radio : &(pMyObject->pRadio+1)->Radio);
-#endif /* WIFI_HAL_VERSION_3 */
                 }
                 wifi_nvramCommit();
             }
@@ -2505,21 +2469,6 @@ void hapd_wpa_deinit(int ap_index)
     hapd->started = 0;
     hapd->beacon_set_done = 0;
 
-#if defined (CONFIG_SAE) && defined (WIFI_HAL_VERSION_3)
-/* SAE is not defined now, but will be needed in feature for WPA3 support */
-    {
-        struct hostapd_sae_commit_queue *q;
-
-        while ((q = dl_list_first(&hapd->sae_commit_queue,
-                              struct hostapd_sae_commit_queue,
-                              list))) {
-            dl_list_del(&q->list);
-            os_free(q);
-        }
-    }
-    eloop_cancel_timeout(auth_sae_process_commit, hapd, NULL);
-    wpa_printf(MSG_DEBUG, "%s:%d: End eloop_cancel_timeout \n", __func__, __LINE__);
-#endif /* CONFIG_SAE */
 
 #if !defined(_XB7_PRODUCT_REQ_)
     wifi_hostApIfaceUpdateSigPselect(ap_index, FALSE);
