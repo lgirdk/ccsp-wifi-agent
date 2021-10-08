@@ -113,9 +113,6 @@ void upload_single_client_msmt_data(bssid_data_t *bssid_info, sta_data_t *sta_in
 	FILE *fp;
 	char *buff;
 	int size;
-#ifdef WIFI_HAL_VERSION_3
-    unsigned int radioCount = 0;
-#endif //WIFI_HAL_VERSION_3
 	bssid_data_t *bssid_data;
 	hash_map_t *sta_map;
 	sta_data_t	*sta_data;
@@ -130,9 +127,6 @@ void upload_single_client_msmt_data(bssid_data_t *bssid_info, sta_data_t *sta_in
   	avro_value_t  adrField = {0}; /*RDKB-7463, CID-33485, init before use */
   	avro_value_t optional  = {0}; 
 
-#ifdef WIFI_HAL_VERSION_3
-    radioCount = getNumberRadios();
-#endif //WIFI_HAL_VERSION_3
 
 	if (bssid_info == NULL) { 
 		if (sta_info != NULL) {
@@ -470,26 +464,7 @@ void upload_single_client_msmt_data(bssid_data_t *bssid_info, sta_data_t *sta_in
     avro_value_get_by_name(&optional, "channel_utilization_percent_radio3", &drField, NULL);
     avro_value_set_branch(&drField, 1, &optional);
 
-#ifdef WIFI_HAL_VERSION_3
-    if (monitor->radio_data !=NULL)
-    {
-        wifi_dbg_print(1,"avro set monitor->radio_data[2].channelUtil to int\n");
-        if (radioCount > 2)
-        {
-            avro_value_set_int(&optional, (int)monitor->radio_data[radioCount-1].channelUtil);
-        }
-        else
-        {
-            avro_value_set_int(&optional, 0);
-        }
-    }
-    else
-    {
-        avro_value_set_int(&optional, 0);
-    }
-#else
     avro_value_set_int(&optional, 0);
-#endif //WIFI_HAL_VERSION_3
 
     //channel_interference_percent_radio3
     wifi_dbg_print(1,"channel_interference_percent_radio3 field\n");
@@ -498,26 +473,7 @@ void upload_single_client_msmt_data(bssid_data_t *bssid_info, sta_data_t *sta_in
     avro_value_get_by_name(&optional, "channel_interference_percent_radio3", &drField, NULL);
     avro_value_set_branch(&drField, 1, &optional);
 
-#ifdef WIFI_HAL_VERSION_3
-    if (monitor->radio_data !=NULL)
-    {
-        wifi_dbg_print(1,"avro set monitor->radio_data[2].channelInterference to int\n");
-        if (radioCount > 2)
-        {
-            avro_value_set_int(&optional, (int)monitor->radio_data[radioCount-1].channelInterference);
-        }
-        else
-        {
-            avro_value_set_int(&optional, 0);
-        }
-    }
-    else
-    {
-        avro_value_set_int(&optional, 0);
-    }
-#else
     avro_value_set_int(&optional, 0);
-#endif //WIFI_HAL_VERSION_3
 
     //channel_noise_floor_radio3
     wifi_dbg_print(1,"channel_noise_floor_radio3 field\n");
@@ -526,26 +482,7 @@ void upload_single_client_msmt_data(bssid_data_t *bssid_info, sta_data_t *sta_in
     avro_value_get_by_name(&optional, "channel_noise_floor_radio3", &drField, NULL);
     avro_value_set_branch(&drField, 1, &optional);
 
-#ifdef WIFI_HAL_VERSION_3
-    if((monitor !=NULL) && ((monitor->inst_msmt.ap_index+1) == (unsigned int)(getPrivateApFromRadioIndex(2)+1)))
-    {
-        wifi_dbg_print(1,"avro set monitor->radio_data[2].NoiseFloor to int\n");
-        if (radioCount > 2)
-        {
-            avro_value_set_int(&optional, (int)monitor->radio_data[radioCount-1].NoiseFloor);
-        }
-        else
-        {
-            avro_value_set_int(&optional, 0);
-        }
-    }
-    else
-    {
-        avro_value_set_int(&optional, 0);
-    }
-#else
     avro_value_set_int(&optional, 0);
-#endif ////WIFI_HAL_VERSION_3
 
 	//channel_utilization_percent_5ghz
 	avro_value_get_by_name(&adrField, "interface_metrics", &drField, NULL);
@@ -1084,11 +1021,7 @@ void upload_single_client_active_msmt_data(bssid_data_t *bssid_info, sta_data_t 
     }
     avro_value_t rdr = {0};
     avro_value_t brdrField = {0};
-#ifdef WIFI_HAL_VERSION_3
-    for(RadioCount = 0; RadioCount < getNumberRadios(); RadioCount++)
-#else
     for(RadioCount = 0; RadioCount < MAX_RADIO_INDEX; RadioCount++)
-#endif
     {
         avro_value_append(&drField, &rdr, NULL);
 
@@ -1250,11 +1183,7 @@ void upload_single_client_active_msmt_data(bssid_data_t *bssid_info, sta_data_t 
     if ( CHK_AVRO_ERR ) {
          wifi_dbg_print(1, "%s:%d: Avro error: %s\n", __func__, __LINE__, avro_strerror());
     }
-#ifdef WIFI_HAL_VERSION_3
-    radio_idx = getRadioIndexFromAp(monitor->curStepData.ApIndex);
-#else
     radio_idx = (monitor->curStepData.ApIndex >= 0) ? (monitor->curStepData.ApIndex % 2) : 0;
-#endif
     // channel #
     avro_value_get_by_name(&adrField, "blast_metrics", &drField, NULL);
     if ( CHK_AVRO_ERR ) {

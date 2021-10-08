@@ -33,13 +33,8 @@
 #define ENC_METHOD_MAX_LEN         16
 #define SEC_MODE_MAX_LEN           32
 
-#ifdef WIFI_HAL_VERSION_3
-#define MAX_VAP_PER_RADIO         MAX_NUM_VAP_PER_RADIO
-#define MAX_VAP_COUNT             MAX_VAP
-#else
 #define MAX_VAP_PER_RADIO          8
 #define MAX_VAP_COUNT              16
-#endif
 
 typedef struct
 {
@@ -59,15 +54,10 @@ typedef struct
 
 typedef struct
 {
-#ifdef WIFI_HAL_VERSION_3
-    webconf_ssid_t ssid[MAX_NUM_RADIOS];
-    webconf_security_t security[MAX_NUM_RADIOS]; 
-#else
     webconf_ssid_t ssid_2g;
     webconf_security_t security_2g; 
     webconf_ssid_t ssid_5g;
     webconf_security_t security_5g;
-#endif
     char    subdoc_name[32];
     uint64_t  version;
     uint16_t   transaction_id;
@@ -92,10 +82,6 @@ typedef struct
 int wifi_WebConfigSet(const void *buf, size_t len,uint8_t ssid);
 int wifi_vapConfigSet(const char *buf, size_t len, pErr execRetVal);
 int wifi_vapBlobSet(void *buf);
-#ifdef WIFI_HAL_VERSION_3
-ANSC_STATUS  updateDMLConfigPerRadio(UINT radioIndex);
-ANSC_STATUS  notifyMeshEvents(wifi_vap_info_t *vap_cfg);
-#endif
 
 int init_web_config();
 #ifdef CISCO_XB3_PLATFORM_CHANGES

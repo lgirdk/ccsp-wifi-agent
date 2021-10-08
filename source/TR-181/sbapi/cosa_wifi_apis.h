@@ -68,13 +68,6 @@
 #include "ccsp_base_api.h"
 #include "wifi_hal.h"
 
-#ifdef WIFI_HAL_VERSION_3
-#include "wifi_hal.h"
-
-#define CCSP_WIFI_TRACE 1
-#define CCSP_WIFI_INFO  2
-
-#endif
 
 //#include "secure_wrapper.h"
 
@@ -99,12 +92,7 @@
 #define COSA_DML_WIFI_STR_LENGHT_128 128
 #endif
 
-#ifdef WIFI_HAL_VERSION_3
-#define WIFI_INDEX_MAX MAX_VAP
-#define MAX_NUM_PRIVATE_VAP MAX_NUM_RADIOS
-#else
 #define WIFI_INDEX_MAX 16
-#endif
 
 #if defined (MULTILAN_FEATURE)
 #define WIFI_INDEX_MIN 6    /* ccsp webui requires 6 default entries of SSID/AccessPoint */
@@ -117,10 +105,6 @@
 /* Active Measurement Plan ID length */
 #define PLAN_ID_LEN    33
 
-#ifdef WIFI_HAL_VERSION_3
-#define SAE_PASSPHRASE_MIN_LENGTH 8
-#define SAE_PASSPHRASE_MAX_LENGTH 64
-#endif
 
 #ifndef ULLONG
 #define ULLONG unsigned long long
@@ -194,11 +178,6 @@ _COSA_DML_WIFI_STD
 #ifdef _WIFI_AX_SUPPORT_
 ,
     COSA_DML_WIFI_STD_ax            = 32
-#endif
-#ifdef WIFI_HAL_VERSION_3
-,
-    COSA_DML_WIFI_STD_h             = 64,
-    COSA_DML_WIFI_STD_ad            = 128
 #endif
 
 }
@@ -432,9 +411,6 @@ _COSA_DML_WIFI_RADIO_CFG
     /* For X_RDKCENTRAL-COM_DCSEnable */
     BOOL                            X_RDKCENTRAL_COM_DCSEnable;
 	int 							iX_RDKCENTRAL_COM_clientInactivityTimeout;
-#ifdef WIFI_HAL_VERSION_3
-    BOOL                            isRadioConfigChanged;
-#endif //WIFI_HAL_VERSION_3
 }_struct_pack_;
 
 typedef struct _COSA_DML_WIFI_RADIO_CFG COSA_DML_WIFI_RADIO_CFG,  *PCOSA_DML_WIFI_RADIO_CFG;
@@ -521,15 +497,10 @@ typedef struct _COSA_DML_NEIGHTBOURING_WIFI_DIAG_CFG {
    BOOL bEnable;
    CHAR DiagnosticsState[64];
    ULONG ResultCount;
-#ifdef WIFI_HAL_VERSION_3
-   ULONG resultCountPerRadio[MAX_NUM_RADIOS];
-   PCOSA_DML_NEIGHTBOURING_WIFI_RESULT pResult[MAX_NUM_RADIOS];
-#else
    ULONG ResultCount_2;
    ULONG ResultCount_5;
    PCOSA_DML_NEIGHTBOURING_WIFI_RESULT pResult_2;
    PCOSA_DML_NEIGHTBOURING_WIFI_RESULT pResult_5;
-#endif
 }COSA_DML_NEIGHTBOURING_WIFI_DIAG_CFG,*PCOSA_DML_NEIGHTBOURING_WIFI_DIAG_CFG;
 
 struct
@@ -617,9 +588,6 @@ _COSA_DML_WIFI_SSID_CFG
     char                     SSID[COSA_DML_WIFI_MAX_SSID_NAME_LEN];
     BOOLEAN                  EnableOnline;
     BOOLEAN                  RouterEnabled;
-#ifdef WIFI_HAL_VERSION_3
-    BOOLEAN                 isSsidChanged;
-#endif
 }_struct_pack_;
 
 typedef struct _COSA_DML_WIFI_SSID_CFG COSA_DML_WIFI_SSID_CFG,  *PCOSA_DML_WIFI_SSID_CFG;
@@ -898,9 +866,6 @@ _COSA_DML_WIFI_AP_FULL
     ULONG                           ulMacFilterNextInsNum;
     ANSC_HANDLE                     hIrepFolderMacFilt;
     ANSC_HANDLE                     hPoamMacFlitDm;
-#ifdef WIFI_HAL_VERSION_3
-    BOOLEAN                         isApChanged;
-#endif
 }_struct_pack_;
 
 typedef  struct _COSA_DML_WIFI_AP_FULL COSA_DML_WIFI_AP_FULL, *PCOSA_DML_WIFI_AP_FULL;
@@ -929,10 +894,6 @@ _COSA_DML_WIFI_APSEC_CFG
     ULONG                           RadiusDASPort;
     char 			    RadiusDASSecret[64];
     char                            MFPConfig[32];
-#ifdef WIFI_HAL_VERSION_3
-    char                            SAEPassphrase[SAE_PASSPHRASE_MAX_LENGTH];
-    BOOL                            WPA3TransitionDisable;
-#endif
     /* USGv2 Extensions */
     int                             RadiusReAuthInterval;
     int                             DefaultKey;
@@ -978,9 +939,6 @@ _COSA_DML_WIFI_APSEC_FULL
     /* USGv2 Extensions */
     COSA_DML_WEPKEY_64BIT           WEPKey64Bit[COSA_DML_WEP_KEY_NUM];
     COSA_DML_WEPKEY_128BIT          WEPKey128Bit[COSA_DML_WEP_KEY_NUM];
-#ifdef WIFI_HAL_VERSION_3
-    BOOLEAN                         isSecChanged;
-#endif
 }_struct_pack_;
 
 typedef  struct _COSA_DML_WIFI_APSEC_FULL COSA_DML_WIFI_APSEC_FULL, *PCOSA_DML_WIFI_APSEC_FULL;
@@ -1067,11 +1025,7 @@ typedef struct _COSA_DML_WIFI_AP_ASSOC_DEVICE COSA_DML_WIFI_AP_ASSOC_DEVICE,  *P
 /*
  * Structure definitions for WiFi Device Provisioning Protocol
  */
-#ifdef WIFI_HAL_VERSION_3
-#define COSA_DML_WIFI_DPP_STA_MAX                                   MAX_VAP
-#else
 #define COSA_DML_WIFI_DPP_STA_MAX                                   16
-#endif
 #if !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
 typedef  enum
 _COSA_DML_WIFI_DPP_ENROLEE_RESP_STATUS
@@ -1448,15 +1402,7 @@ ANSC_STATUS CosaDmlWiFiGetDFS(BOOLEAN *pbValue);
 
 
 
-#ifdef WIFI_HAL_VERSION_3
-ANSC_STATUS CosaDmlWiFi_FactoryResetRadioAndAp(CHAR * radioApIndexes);
-
-ANSC_STATUS
-CosaDmlWiFi_ParseRadioAPIndexes(CHAR *radioApIndexes, UINT* radioIndexList, UINT* apIndexList, UINT maxListSize, UINT* listSize);
-void CosaWiFiDmlGetWPA3TransitionRFC (BOOL *WPA3_RFC);
-#else
 ANSC_STATUS CosaDmlWiFi_FactoryResetRadioAndAp(ULONG radioIndex, ULONG radioIndex_2, ULONG apIndex, ULONG apIndex_2);
-#endif
 
 ANSC_STATUS CosaDmlWiFiFactoryResetRadioAndAp (ULONG radioIndex, ULONG apIndex, BOOL needRestart);
 ANSC_STATUS CosaDmlWiFiGetBridge0PsmData(char *ip, char *sub);
@@ -2332,23 +2278,6 @@ ANSC_STATUS UpdateJsonParam
     );
 #endif
 
-#ifdef WIFI_HAL_VERSION_3
-UINT getRadioIndexFromAp(UINT apIndex);
-UINT getPrivateApFromRadioIndex(UINT radioIndex);
-
-CHAR* getVAPName(UINT apIndex);
-BOOL isVapPrivate(UINT apIndex);
-BOOL isVapXhs(UINT apIndex);
-BOOL isVapHotspot(UINT apIndex);
-BOOL isVapLnf(UINT apIndex);
-BOOL isVapLnfPsk(UINT apIndex);
-BOOL isVapMesh(UINT apIndex);
-BOOL isVapHotspotSecure(UINT apIndex);
-ANSC_STATUS getVAPIndexFromName(CHAR *vapName, UINT *apIndex);
-UINT convertRadioIndexToFrequencyNum(UINT radioIndex);
-BOOL isVapLnfSecure(UINT apIndex);
-
-#endif
 
 #if defined (_HUB4_PRODUCT_REQ_)
 ANSC_STATUS CosaDmlWiFi_GetParamValues( char *pComponent, char *pBus, char *pParamName, char *pReturnVal );
@@ -2451,133 +2380,5 @@ struct wifiDataTxRateHalMap
 void *wifi_libhostap_apply_settings(void *arg);
 #endif
 
-#ifdef WIFI_HAL_VERSION_3
-#define CCSP_WIFI_TRACE 1
-#define CCSP_WIFI_INFO  2
-
-struct wifiFreqBandHalMap
-{
-    wifi_freq_bands_t halWifiFreqBand;
-    COSA_DML_WIFI_FREQ_BAND cosaWifiFreqBand;
-    char wifiFreqBandStr[16];
-};
-
-struct wifiStdCosaHalMap
-{
-    wifi_ieee80211Variant_t halWifiStd;
-    COSA_DML_WIFI_STD  cosaWifiStd;
-    char wifiStdName[4];
-};
-
-struct wifiChanWidthCosaHalMap
-{
-    wifi_channelBandwidth_t halWifiChanWidth;
-    COSA_DML_WIFI_CHAN_BW  cosaWifiChanWidth;
-    char wifiChanWidthName[16];
-};
-
-struct wifiCountryEnumStrMap
-{
-    wifi_countrycode_type_t countryCode;
-    char countryStr[4];
-};
-
-struct wifiWPSCosaHalMap
-{
-    wifi_onboarding_methods_t halWPSCfgMethod;
-    COSA_DML_WIFI_WPS_METHOD  cosaWPSCfgMethod;
-    char wpsConfigMethod[32];
-};
-
-struct wifiSecCosaHalMap
-{
-    wifi_security_modes_t halSecCfgMethod;
-    COSA_DML_WIFI_SECURITY cosaSecCfgMethod;
-    char wifiSecType[32];
-};
-
-struct wifiSecEncrCosaHalMap
-{
-    wifi_encryption_method_t halSecEncrMethod;
-    COSA_DML_WIFI_AP_SEC_ENCRYPTION cosaSecEncrMethod;
-    char wifiSecEncrType[16];
-};
-
-struct wifiSecMfpCosaHalMap
-{
-    wifi_mfp_cfg_t halSecMFP;
-    char wifiSecMFP[32];
-};
-
-struct wifiGuardIntervalMap
-{
-    wifi_guard_interval_t halGuardInterval;
-    COSA_DML_WIFI_GUARD_INTVL cosaGuardInterval;
-    char wifiGuardIntervalType[8];
-};
-
-typedef struct {
-      wifi_vap_name_t         vap_name[64];
-      UINT                    vap_index;
-} rdk_wifi_vap_info_t;
-
-typedef struct {
-      //Hal variables
-      UINT                num_vaps;
-      wifi_vap_info_t     vap_array[MAX_NUM_VAP_PER_RADIO];
-      //CCspWifiAgent variables
-      wifi_radio_index_t  radio_index;
-      rdk_wifi_vap_info_t rdk_vap_array[MAX_NUM_VAP_PER_RADIO];
-} __attribute__((packed)) rdk_wifi_vap_map_t;
-
-typedef struct {
-      wifi_radio_operationParam_t oper;
-      rdk_wifi_vap_map_t          vaps;
-} rdk_wifi_radio_t;
-
-wifi_vap_info_t *getVapInfo(UINT apIndex);
-wifi_radio_capabilities_t *getRadioCapability(UINT radioIndex);
-wifi_radio_operationParam_t *getRadioOperationParam(UINT radioIndex);
-rdk_wifi_vap_info_t *getRdkVapInfo(UINT apIndex);
-ANSC_STATUS rdkWifiConfigInit();
-void ccspWifiDbgPrint(int level, char *format, ...);
-ANSC_STATUS rdkGetIndexFromName(char *pSsid, UINT *pWlanIndex);
-ANSC_STATUS txRateStrToUint(char *inputStr, UINT *pTxRate);
-ANSC_STATUS freqBandStrToEnum(char *pFreqBandStr, wifi_freq_bands_t *pFreqBandEnum);
-ANSC_STATUS wifiStdStrToEnum(char *pWifiStdStr, wifi_ieee80211Variant_t *p80211VarEnum);
-ANSC_STATUS regDomainStrToEnum(char *pRegDomain, wifi_countrycode_type_t *pCountryCode);
-ANSC_STATUS guardIntervalDmlEnumtoHalEnum(UINT ccspGiEnum, wifi_guard_interval_t *halGiEnum);
-ANSC_STATUS operChanBandwidthDmlEnumtoHalEnum(UINT ccspBw, wifi_channelBandwidth_t *halBw);
-ANSC_STATUS radioGetCfgUpdateFromHalToDml(UINT wlanIndex, PCOSA_DML_WIFI_RADIO_CFG pCfg, wifi_radio_operationParam_t *pWifiRadioOperParam);
-ANSC_STATUS getMFPTypeFromString (const char *MFPName, wifi_mfp_cfg_t *MFPType);
-ANSC_STATUS CosaDmlWiFiSetApMacFilterPsmData(int wlanIndex, PCOSA_DML_WIFI_AP_MF_CFG  pCfg);
-ANSC_STATUS wifiRadioOperParamValidation(UINT radioIndex, wifi_radio_operationParam_t *pWifiRadioOperParam);
-ANSC_STATUS wifiRadioChannelIsValid(UINT radioIndex, UINT inputChannel);
-ANSC_STATUS wifiRadioSecondaryChannelUpdate(UINT radioIndex, wifi_radio_operationParam_t *pWifiRadioOperParam,UINT extensionChannel);
-ANSC_STATUS wifiRadioVapInfoValidation(UINT vapIndex, wifi_vap_info_t *pWifiVapInfo);
-ANSC_STATUS wifiApIsSecmodeOpenForPrivateAP(UINT vapIndex);
-ANSC_STATUS radioGetCfgUpdateFromDmlToHal(UINT  radioIndex, PCOSA_DML_WIFI_RADIO_CFG    pCfg, wifi_radio_operationParam_t *pWifiRadioOperParam);
-ANSC_STATUS wifiSecModeDmlToStr(UINT dmlSecModeEnabled, char *str, UINT strSize);
-ANSC_STATUS wifiSecSupportedDmlToStr(UINT dmlSecModeSupported, char *str, UINT strSize);
-ANSC_STATUS vapGetCfgUpdateFromDmlToHal(rdk_wifi_vap_map_t *tmpWifiVapInfoMap);
-
-UINT getTotalNumberVAPs();
-UINT getNumberRadios();
-UINT getMaxNumberVAPsPerRadio(UINT radioIndex);
-UINT getNumberofVAPsPerRadio(UINT radioIndex);
-rdk_wifi_vap_map_t *getRdkWifiVap(UINT radioIndex);
-INT getSecurityTypeFromString(const char *securityName, wifi_security_modes_t *securityType, COSA_DML_WIFI_SECURITY *cosaSecurityType);
-INT getOperBandwidthFromString(const char *operBandwidth, wifi_channelBandwidth_t *halWifiChanWidth, COSA_DML_WIFI_CHAN_BW *cosaWifiChanWidth);
-INT getIpAddressFromString (const char * ipString, ip_addr_t * ip);
-INT  getBeaconRateFromString (const char *beaconName, wifi_bitrate_t *beaconType);
-
-UINT getTotalNumberVAPs();
-UINT getNumberRadios();
-UINT getMaxNumberVAPsPerRadio(UINT radioIndex);
-UINT getNumberofVAPsPerRadio(UINT radioIndex);
-ANSC_STATUS CosaDmlWiFiSetDefaultApSecCfg (ULONG wlanIndex);
-ANSC_STATUS getMFPTypeFromString (const char *MFPName, wifi_mfp_cfg_t *MFPType);
-ANSC_STATUS CosaDmlCheckToKickAssocDevices(char* pSsid, PCOSA_DML_WIFI_AP_CFG pCfg);
-#endif //WIFI_HAL_VERSION_3
 
 #endif
