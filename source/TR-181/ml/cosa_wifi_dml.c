@@ -6824,6 +6824,9 @@ EnhancedACS_Rollback
     return ANSC_STATUS_SUCCESS;
 }
 
+static const int channels24G[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13};
+static const int channels5G[] = {36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140};
+
 ULONG
 Channel_GetEntryCount
     (
@@ -6839,14 +6842,12 @@ Channel_GetEntryCount
         return 0;
     }
     if (wlanIndex == 0) {
-        entryCount = 3;
+        entryCount = sizeof(channels24G)/sizeof(channels24G[0]);
     } else {
-        entryCount = 19;
+        entryCount = sizeof(channels5G)/sizeof(channels5G[0]);
     }
     return entryCount;
 }
-static const int channels24G[] = {1, 6, 11};
-static const int channels5G[] = {36, 40, 44, 48, 52, 56, 60, 64, 100, 104, 108, 112, 116, 120, 124, 128, 132, 136, 140};
 
 ANSC_HANDLE
 Channel_GetEntry
@@ -6872,29 +6873,6 @@ Channel_GetEntry
         *pInsNumber = channels5G[nIndex];
     }
     return (ANSC_HANDLE)&pWifiRadioEnhancedACS->ChannelWeights[nIndex];
-}
-
-static BOOL isDFSChannel(ULONG channel) {
-    switch (channel) {
-        case 52:
-        case 56:
-        case 60:
-        case 64:
-        case 100:
-        case 104:
-        case 108:
-        case 112:
-        case 116:
-        case 120:
-        case 124:
-        case 128:
-        case 132:
-        case 136:
-        case 140:
-            return TRUE;
-        default:
-            return FALSE;
-    }
 }
 
 static BOOL isWeatherChannel(ULONG channel) {
@@ -6952,20 +6930,10 @@ Channel_GetParamUlongValue
     )
 {
     ULONG*      pWeight  = (ULONG*)hInsContext;
-    ULONG channel = 0;
-    BOOL excludeDFS = FALSE;
-    COSA_DML_WIFI_CHAN_BW bandwidth;
 
     if (strcmp(ParamName, "ChannelWeight") == 0)
     {
-        GetInsNumsByWifiChannelWeight(pWeight, &channel, &excludeDFS, &bandwidth);
-        if ((excludeDFS && isDFSChannel(channel)) || isWeatherChannel(channel)
-            || (bandwidth == COSA_DML_WIFI_CHAN_BW_80M && (channel == 132 || channel == 136 || channel == 140))
-            || (bandwidth == COSA_DML_WIFI_CHAN_BW_40M && channel == 140)) {
-            *puLong = 0;
-        } else {
-            *puLong = *pWeight;
-        }
+        *puLong = *pWeight;
         return TRUE;
     }
     return FALSE;
@@ -6980,10 +6948,16 @@ Channel_SetParamUlongValue
     )
 {
     ULONG*      pWeight  = (ULONG*)hInsContext;
+    ULONG channel = 0;
+    BOOL excludeDFS = FALSE;
+    COSA_DML_WIFI_CHAN_BW bandwidth;
 
     if (strcmp(ParamName, "ChannelWeight") == 0)
     {
-        *pWeight = uValue;
+        GetInsNumsByWifiChannelWeight(pWeight, &channel, &excludeDFS, &bandwidth);
+        if ((channel >= 36 && channel <= 140 && !isWeatherChannel(channel)) || channel == 1 || channel == 6 || channel == 11) {
+            *pWeight = uValue;
+        }
         return TRUE;
     }
     return FALSE;
