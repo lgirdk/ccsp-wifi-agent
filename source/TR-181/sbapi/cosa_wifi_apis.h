@@ -390,7 +390,7 @@ _COSA_DML_WIFI_RADIO_ENHANCEDACS
 {
 	BOOL                            DFSMoveBack;
 	BOOL                            ExcludeDFS;
-	ULONG                           ChannelWeights[20];
+	ULONG                           ChannelWeights[28];
 }_struct_pack_;
 
 typedef  struct _COSA_DML_WIFI_RADIO_ENHANCEDACS COSA_DML_WIFI_RADIO_ENHANCEDACS, *PCOSA_DML_WIFI_RADIO_ENHANCEDACS;
