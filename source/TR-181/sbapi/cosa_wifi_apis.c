@@ -13738,6 +13738,28 @@ void reInitLibHostapd()
 }
 #endif
 
+void fromChannelWeightsToHalWeights(UINT radioIndex, const ULONG *channelWeights, ULONG *halWeights, INT size) {
+    if (radioIndex == 0) {
+        memset(halWeights, 0, size);
+        halWeights[0] = channelWeights[0];
+        halWeights[1] = channelWeights[5];
+        halWeights[2] = channelWeights[10];
+    } else if (radioIndex == 1) {
+        memcpy(halWeights, channelWeights, size);
+    }
+}
+
+void fromHalWeightsToChannelWeights(UINT radioIndex, const ULONG *halWeights, ULONG *channelWeights, INT size) {
+    if (radioIndex == 0) {
+        memset(channelWeights, 0, size);
+        channelWeights[0] = halWeights[0];
+        channelWeights[5] = halWeights[1];
+        channelWeights[10] = halWeights[2];
+    } else if (radioIndex == 1) {
+        memcpy(channelWeights, halWeights, size);
+    }
+}
+
 ANSC_STATUS
 CosaDmlWiFiRadioSetCfg
 (
@@ -13938,7 +13960,9 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
     }
     if (memcmp(pStoredCfg->EnhancedACS.ChannelWeights, pCfg->EnhancedACS.ChannelWeights, sizeof(pCfg->EnhancedACS.ChannelWeights)))
     {
-        wifi_setRadioChannelWeights(wlanIndex, pCfg->EnhancedACS.ChannelWeights);
+        ULONG halWeights[sizeof(pCfg->EnhancedACS.ChannelWeights)] = {0};
+        fromChannelWeightsToHalWeights(wlanIndex, pCfg->EnhancedACS.ChannelWeights, halWeights, sizeof(pCfg->EnhancedACS.ChannelWeights));
+        wifi_setRadioChannelWeights(wlanIndex, halWeights);
         wlanRestart = TRUE;
     }
 #endif
@@ -15046,8 +15070,12 @@ CosaDmlWiFiRadioGetCfg
 #if defined(_LG_MV1_CELENO_) || defined(_LG_MV2_PLUS_)
     wifi_getRadioDfsMoveBackEnable(wlanIndex, &pCfg->EnhancedACS.DFSMoveBack);
     wifi_getRadioExcludeDfs(wlanIndex, &pCfg->EnhancedACS.ExcludeDFS);
-    memset(pCfg->EnhancedACS.ChannelWeights, 0, sizeof(pCfg->EnhancedACS.ChannelWeights));
-    wifi_getRadioChannelWeights(wlanIndex, pCfg->EnhancedACS.ChannelWeights);
+    {
+        ULONG halWeights[sizeof(pCfg->EnhancedACS.ChannelWeights)] = {0};
+        memset(pCfg->EnhancedACS.ChannelWeights, 0, sizeof(pCfg->EnhancedACS.ChannelWeights));
+        wifi_getRadioChannelWeights(wlanIndex, halWeights);
+        fromHalWeightsToChannelWeights(wlanIndex, halWeights, pCfg->EnhancedACS.ChannelWeights, sizeof(pCfg->EnhancedACS.ChannelWeights));
+    }
 #endif
 
     wifi_getRadioDfsSupport(wlanIndex,&pCfg->X_COMCAST_COM_DFSSupport);
