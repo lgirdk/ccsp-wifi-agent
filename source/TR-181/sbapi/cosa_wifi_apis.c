@@ -2836,10 +2836,13 @@ void configWifi(BOOLEAN redirect)
 #ifdef WIFI_HAL_VERSION_3
 char SSID_DEF[MAX_NUM_RADIOS][COSA_DML_WIFI_MAX_SSID_NAME_LEN];
 char PASSPHRASE_DEF[MAX_NUM_RADIOS][MAX_PASSPHRASE_SIZE];
+char PASSPHRASE_GUEST_DEF[MAX_NUM_RADIOS][MAX_PASSPHRASE_SIZE];
 #else
 char SSID1_DEF[COSA_DML_WIFI_MAX_SSID_NAME_LEN],SSID2_DEF[COSA_DML_WIFI_MAX_SSID_NAME_LEN];
 char PASSPHRASE1_DEF[MAX_PASSPHRASE_SIZE],PASSPHRASE2_DEF[MAX_PASSPHRASE_SIZE];
+char PASSPHRASE_GUEST_DEF[MAX_PASSPHRASE_SIZE];
 #endif
+
 // Function gets the initial values of NeighbouringDiagnostic
 ANSC_STATUS
 CosaDmlWiFiNeighbouringGetEntry
@@ -2972,6 +2975,81 @@ void getDefaultSSID(int wlanIndex, char *DefaultSSID)
 #endif
 }
 
+#if (_LG_MV1_CELENO_) || (_LG_MV2_PLUS_)
+#define RANDOM_COUNT 14
+/*
+        Generate Random Default Guest wifi password
+        Very Strong password complies with one of the following 2 rule sets:
+        Set 1 (following good/strong password rules):
+        ¡E      Length: minimal 14 characters
+        ¡E      Allowed characters for a very strong password for set 1 are defined in SSID.19
+        ¡E      Password must have at least 3 small letters AND
+                        must have at least 3 capital letters AND
+                        must have at least 3 numbers AND
+                        must have at least 1 special character
+        Set 2 (to allow sentences):
+        ¡E      Length: minimal 30 characters
+        ¡E      Allowed characters for a very strong password for set 2 are defined in SSID.19
+        ¡E      Password must have at least 3 capital letters AND must have at least 3 small letters
+*/
+
+static INT generate_random_guest_password(char* default_password)
+{
+        int i,j;
+        char* xml_Buffer;
+        char s[128];
+
+        //follow original design and filter char: 0, 1 ,O , I, l
+        int rp[RANDOM_COUNT]={0};
+        static const char uppercase[] = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+        static const char lowercase[] = "abcdefghijkmnopqrstuvwxyz";
+        static const char digit[] = "23456789";
+        static const char special[] = "!#$%&'()*+,-./:;<=>?@[]^_`{}~";
+        static const char alphanum[] =
+        "23456789"
+        "ABCDEFGHJKLMNPQRSTUVWXYZ"
+        "abcdefghijkmnopqrstuvwxyz";
+
+        srand(time(NULL));
+        memset(s, 0, sizeof(s));
+
+        //use random shuffle
+        for(i=0;i<=(RANDOM_COUNT-1);i++){
+                rp[i]=i;
+        }
+
+        srand((unsigned)time(NULL));
+
+        for(j = 0; j <= 1000; j++){
+                int n1 = rand()%RANDOM_COUNT;
+                int n2 = rand()%RANDOM_COUNT;
+                int temp = rp[n1];
+                rp[n1] = rp[n2];
+                rp[n2] = temp;
+        }
+        int len=RANDOM_COUNT;
+        for(i = 0; i < len; ++i) {
+                if(i == rp[0] || i == rp[1] || i == rp[2]){ //0~2 for uppercase
+                        s[i] = uppercase[rand() % (sizeof(uppercase) - 1)];
+                }else if(i == rp[3] || i == rp[4] || i == rp[5]){ //3~5 for lowercase
+                        s[i] = lowercase[rand() % (sizeof(lowercase) - 1)];
+                }else if(i == rp[6] || i == rp[7] || i == rp[8]){ //6~8 for digit
+                        s[i] = digit[rand() % (sizeof(digit) - 1)];
+                }else if(i == rp[9]){ //9 for special
+                        s[i] = special[rand() % (sizeof(special) - 1)];
+                }else{
+                        s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+                }
+        }
+
+        s[len] = 0;
+
+        strcpy(default_password,s);
+
+        return RETURN_OK;
+}
+#endif
+
 void getDefaultPassphase(int wlanIndex, char *DefaultPassphrase)
 {
     char recName[256];
@@ -3005,9 +3083,27 @@ void getDefaultPassphase(int wlanIndex, char *DefaultPassphrase)
     }
 #else
 #if _LG_MV1_CELENO_ || (_LG_MV2_PLUS_)
-        if(wifi_getDefaultPassword(wlanIndex, DefaultPassphrase))
+	if(wlanIndex == 6 || wlanIndex == 7)
 	{
-		printf("Error in getting wifi default password in:%s\n",__FUNCTION__);
+		if(strlen(PASSPHRASE_GUEST_DEF) != 0)
+		{
+			strcpy(DefaultPassphrase, PASSPHRASE_GUEST_DEF);
+		}
+		else
+		{
+			if(generate_random_guest_password(DefaultPassphrase))
+			{
+				printf("Generate random default guest wifi password failed :%s\n",__FUNCTION__);
+			}
+			strncpy(PASSPHRASE_GUEST_DEF, DefaultPassphrase, sizeof(PASSPHRASE_GUEST_DEF));
+		}
+	}
+	else
+	{
+		if(wifi_getDefaultPassword(wlanIndex, DefaultPassphrase))
+		{
+			printf("Error in getting wifi default password in:%s\n",__FUNCTION__);
+		}
 	}
 #else
         /*CID: 64691 Unchecked return value*/
@@ -18257,23 +18353,24 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     wifi_getApSecurityRadiusServer(wlanIndex, (char*)pCfg->RadiusServerIPAddr, (UINT *)pCfgRadiusServerPort, pCfg->RadiusSecret);
     pCfgSecondaryRadiusServerPort = &pCfg->SecondaryRadiusServerPort;
     wifi_getApSecuritySecondaryRadiusServer(wlanIndex, (char*)pCfg->SecondaryRadiusServerIPAddr, (UINT *)pCfgSecondaryRadiusServerPort, pCfg->SecondaryRadiusSecret);
-    if (wlanIndex < 6)   //For VAPs 1-6
+    if (wlanIndex < 8)   //For VAPs 1-8
     {
         getDefaultPassphase(wlanIndex, (char*)pCfg->DefaultKeyPassphrase);
     }
 #endif //WIFI_HAL_VERSION_3
 
-#ifdef _LG_MV1_CELENO_
     if(wlanIndex == 6 || wlanIndex == 7) /*For Guest wifi SSIDs*/
     {
         /*If KeyPassphrase is empty, set the KeyPassphrase same as DefaultKeyPassphrase for Guest wifi*/
         if(strlen(pCfg->KeyPassphrase) == 0 && strlen(pCfg->DefaultKeyPassphrase) != 0)
         {
             wifi_setApSecurityKeyPassphrase(wlanIndex, pCfg->DefaultKeyPassphrase);
+#ifdef _LG_MV2_PLUS_
+            wifi_apply();
+#endif
             wifi_getApSecurityKeyPassphrase(wlanIndex, (char*)pCfg->KeyPassphrase);
         }
     }
-#endif
 
  //wifi_getApSecurityRadiusServerIPAddr(wlanIndex,&pCfg->RadiusServerIPAddr); //bug
     //wifi_getApSecurityRadiusServerPort(wlanIndex, &pCfg->RadiusServerPort);
