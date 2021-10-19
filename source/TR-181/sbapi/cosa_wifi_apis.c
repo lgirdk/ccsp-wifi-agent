@@ -2143,7 +2143,9 @@ void configWifi(BOOLEAN redirect)
 
 char SSID1_DEF[COSA_DML_WIFI_MAX_SSID_NAME_LEN],SSID2_DEF[COSA_DML_WIFI_MAX_SSID_NAME_LEN];
 char PASSPHRASE1_DEF[65],PASSPHRASE2_DEF[65];
+#if defined(_LG_OFW_)
 char PASSPHRASE_GUEST_DEF[65];
+#endif
 
 // Function gets the initial values of NeighbouringDiagnostic
 ANSC_STATUS
@@ -2221,7 +2223,7 @@ void getDefaultSSID(int wlanIndex, char *DefaultSSID)
 		}
 	}
 #else
-#if (_LG_MV1_CELENO_) || (_LG_MV2_PLUS_)
+#if defined(_LG_OFW_)
 	if(wifi_getDefaultSsid(wlanIndex, DefaultSSID))
 	{
 		printf("Error in getting wifi default SSID name in:%s\n",__FUNCTION__);
@@ -2237,7 +2239,7 @@ void getDefaultSSID(int wlanIndex, char *DefaultSSID)
 #endif
 }
 
-#if (_LG_MV1_CELENO_) || (_LG_MV2_PLUS_)
+#if defined(_LG_OFW_)
 #define RANDOM_COUNT 14
 /*
         Generate Random Default Guest wifi password
@@ -2339,7 +2341,7 @@ void getDefaultPassphase(int wlanIndex, char *DefaultPassphrase)
 	   	}
 	}
 #else
-#if _LG_MV1_CELENO_ || (_LG_MV2_PLUS_)
+#if defined(_LG_OFW_)
 	if(wlanIndex == 6 || wlanIndex == 7)
 	{
 		if(strlen(PASSPHRASE_GUEST_DEF) != 0)
@@ -8875,7 +8877,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
  #endif
     }
 
-#if defined(_LG_MV1_CELENO_) || defined(_LG_MV2_PLUS_)
+#if defined(_LG_OFW_)
     if (pStoredCfg->EnhancedACS.DFSMoveBack != pCfg->EnhancedACS.DFSMoveBack)
     {
         wifi_setRadioDfsMoveBackEnable(wlanIndex, pCfg->EnhancedACS.DFSMoveBack);
@@ -9659,7 +9661,7 @@ CosaDmlWiFiRadioGetCfg
 	wifi_getRadioChannel(wlanIndex, &pCfg->Channel);
 #endif
 
-#if defined(_LG_MV1_CELENO_) || defined(_LG_MV2_PLUS_)
+#if defined(_LG_OFW_)
     wifi_getRadioDfsMoveBackEnable(wlanIndex, &pCfg->EnhancedACS.DFSMoveBack);
     wifi_getRadioExcludeDfs(wlanIndex, &pCfg->EnhancedACS.ExcludeDFS);
     {
@@ -12252,6 +12254,7 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     }
 
     getDefaultPassphase(wlanIndex, (char*)pCfg->DefaultKeyPassphrase);
+#if defined(_LG_OFW_)
     if(wlanIndex == 6 || wlanIndex == 7) /*For Guest wifi SSIDs*/
     {
         /*If KeyPassphrase is empty, set the KeyPassphrase same as DefaultKeyPassphrase for Guest wifi*/
@@ -12264,6 +12267,7 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
             wifi_getApSecurityKeyPassphrase(wlanIndex, (char*)pCfg->KeyPassphrase);
         }
     }
+#endif
     //wifi_getApSecurityRadiusServerIPAddr(wlanIndex,&pCfg->RadiusServerIPAddr); //bug
     //wifi_getApSecurityRadiusServerPort(wlanIndex, &pCfg->RadiusServerPort);
 #if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_)
