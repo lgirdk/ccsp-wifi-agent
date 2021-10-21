@@ -4840,11 +4840,6 @@ Radio_SetParamUlongValue
         wifiRadioSecondaryChannelUpdate(wlanIndex, wifiRadioOperParam, pWifiRadioFull->Cfg.ExtensionChannel);
         ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s Channel : %d\n", __FUNCTION__, wifiRadioOperParam->channel);
 #else //WIFI_HAL_VERSION_3
-        if ( pWifiRadioFull->Cfg.Channel == uValue && !pWifiRadioFull->Cfg.AutoChannelEnable )
-        {
-            return  TRUE;
-        }
-
         /* save update to backup */
         pWifiRadioFull->Cfg.Channel = uValue;
         pWifiRadioFull->Cfg.AutoChannelEnable = FALSE; /* User has manually set a channel */
