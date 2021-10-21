@@ -3511,11 +3511,6 @@ Radio_SetParamUlongValue
     /* check the parameter name and set the corresponding value */
     if (strcmp(ParamName, "Channel") == 0)
     {
-        if ( pWifiRadioFull->Cfg.Channel == uValue && !pWifiRadioFull->Cfg.AutoChannelEnable )
-        {
-            return  TRUE;
-        }
-        
         /* save update to backup */
         pWifiRadioFull->Cfg.Channel = uValue;
         pWifiRadioFull->Cfg.AutoChannelEnable = FALSE; /* User has manually set a channel */

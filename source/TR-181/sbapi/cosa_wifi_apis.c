@@ -8777,6 +8777,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
     BOOL wlanRestart = FALSE;
     BOOLEAN bForceDisableFlag = FALSE;
     BOOL reset_both_radios = FALSE;
+    ULONG runningChannel = 0;
 
     UNREFERENCED_PARAMETER(hContext);
     wifiDbgPrintf("%s Config changes  \n",__FUNCTION__);
@@ -8919,6 +8920,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
         wlanRestart = TRUE;
     }
 
+    wifi_getRadioChannel(wlanIndex, &runningChannel);
     if (pCfg->AutoChannelEnable != pStoredCfg->AutoChannelEnable)
     {
         // If ACS is turned off or on the radio must be restarted to pick up the new channel
@@ -8955,10 +8957,10 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
             wifi_setRadioChannel(wlanIndex, pCfg->Channel);
         }
 
-    } else if (  (pCfg->AutoChannelEnable == FALSE) && (pCfg->Channel != pStoredCfg->Channel) )
+    } else if (  (pCfg->AutoChannelEnable == FALSE) && (pCfg->Channel != pStoredCfg->Channel || pStoredCfg->Channel != runningChannel) ) /* handle case of plume changing the channel */
     {
-        printf("%s: In Manual mode Setting Channel= %lu\n",__FUNCTION__,pCfg->Channel);
-		CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : %s In Manual mode Setting Channel= %lu \n",__FUNCTION__,pCfg->Channel));
+        printf("%s: In Manual mode Setting Channel= %lu, stored channel = %lu, running channel = %lu\n",__FUNCTION__,pCfg->Channel, pStoredCfg->Channel, runningChannel);
+        CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : %s In Manual mode Setting Channel= %lu, stored channel = %lu, running channel = %lu\n",__FUNCTION__,pCfg->Channel, pStoredCfg->Channel, runningChannel));
         wifi_setRadioChannel(wlanIndex, pCfg->Channel);
         wlanRestart=TRUE; // FIX ME !!!
     }
