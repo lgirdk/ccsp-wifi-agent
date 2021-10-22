@@ -13287,17 +13287,23 @@ Security_SetParamStringValue
 
 #endif //_XB6_PRODUCT_REQ_
 
-#ifdef _LG_MV1_CELENO_
-        /* Allow only WPA2-Enterprise for hotspot/community wifi */
+        /* Allow only WPA2-Enterprise or WPA3-Enterprise for hotspot/community wifi */
         if (pWifiAp->AP.Cfg.InstanceNumber == 5 || pWifiAp->AP.Cfg.InstanceNumber == 6)
         {
+#if defined (_LG_MV1_CELENO_)
             if (!(COSA_DML_WIFI_SECURITY_WPA2_Enterprise & TmpMode))
             {
                 CcspWifiTrace(("RDK_LOG_ERROR, Security mode should be WPA2_Enterprise for hotspot, current input is %d\n", pWifiApSec->Cfg.ModeEnabled));
                 return FALSE;
             }
-        }
+#else
+            if (!(COSA_DML_WIFI_SECURITY_WPA2_Enterprise & TmpMode) && !(COSA_DML_WIFI_SECURITY_WPA3_Enterprise & TmpMode))
+            {
+                CcspWifiTrace(("RDK_LOG_ERROR, Security mode should be WPA2_Enterprise or WPA3_Enterprise for hotspot, current input is %d\n", pWifiApSec->Cfg.ModeEnabled));
+                return FALSE;
+            }
 #endif
+        }
 
 #ifdef WIFI_HAL_VERSION_3
         if ( (radioOperation->band == WIFI_FREQUENCY_6_BAND) &&
