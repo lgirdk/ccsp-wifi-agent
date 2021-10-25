@@ -961,6 +961,7 @@ INSTMSMT_PH2 -->
                             <type>string(64)</type>
                             <syntax>string</syntax>
                             <writable>true</writable>
+                            <notify>off</notify>
                         </parameter>
                         <parameter>
                             <name>Name</name>
