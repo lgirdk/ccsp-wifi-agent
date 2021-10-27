@@ -10342,7 +10342,15 @@ AccessPoint_SetParamBoolValue
         {
             return  TRUE;
         }
-        
+
+#if defined(_LG_OFW_)
+        if ( pWifiAp->AP.Cfg.InstanceNumber == 5 || pWifiAp->AP.Cfg.InstanceNumber == 6 )
+        {
+            CcspWifiTrace(("RDK_LOG_ERROR, Isolation is not allowed to Disable for community WiFi AccessPoints\n"));
+            return FALSE;
+        }
+#endif
+	
         /* save update to backup */
         pWifiAp->AP.Cfg.IsolationEnable = bValue;
         pWifiAp->bApChanged = TRUE;
