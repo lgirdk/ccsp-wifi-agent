@@ -425,14 +425,13 @@ Accounting_SetParamUlongValue
     /* check the parameter name and set the corresponding value */
     if (strcmp(ParamName, "InterimInterval") == 0)
     {
-        if ( pWifiApAcct->Cfg.InterimInterval != uValue )
+        if ( (pWifiApAcct->Cfg.InterimInterval != uValue) && (uValue >= 0) && (uValue <= 60) )
         {
             /* save update to backup */
             pWifiApAcct->Cfg.InterimInterval = uValue;
             pWifiAp->bSecChanged             = TRUE;
+            return TRUE;
         }
-
-        return TRUE;
     }
 
     if (strcmp(ParamName, "ServerPort") == 0)
@@ -587,19 +586,6 @@ Accounting_Validate
         ULONG*                      puLength
     )
 {
-    PCOSA_CONTEXT_LINK_OBJECT       pLinkObj       = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_WIFI_AP               pWifiAp        = (PCOSA_DML_WIFI_AP        )pLinkObj->hContext;
-    PCOSA_DML_WIFI_APACCT_FULL      pWifiApAcct    = (PCOSA_DML_WIFI_APACCT_FULL)&pWifiAp->ACCT;
-    PCOSA_DML_WIFI_APACCT_CFG       pWifiApAcctCfg = (PCOSA_DML_WIFI_APACCT_CFG )&pWifiApAcct->Cfg;
-
-    // InterimInterval (0,60:)
-    if( (pWifiApAcctCfg->InterimInterval >= 1) && (pWifiApAcctCfg->InterimInterval <= 60) )
-    {
-        AnscCopyString(pReturnParamName, "InterimInterval");
-        *puLength = AnscSizeOfString("InterimInterval");
-        return FALSE;
-    }
-
     return TRUE;
 }
 
