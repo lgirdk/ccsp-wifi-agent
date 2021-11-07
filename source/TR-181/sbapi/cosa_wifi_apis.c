@@ -114,7 +114,6 @@
 #include <netdb.h> 
 #include <sys/un.h>
 #endif
-#include "safec_lib_common.h"
 #define WLAN_MAX_LINE_SIZE 1024
 #define RADIO_BROADCAST_FILE "/tmp/.advertise_ssids"
 #if defined(_COSA_BCM_MIPS)
