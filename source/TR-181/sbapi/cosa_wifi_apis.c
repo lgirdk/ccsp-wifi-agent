@@ -21385,6 +21385,15 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
               CcspTraceWarning(("Mac Filter max limit is reached ,returning failure\n"));
               return ANSC_STATUS_FAILURE;
         }
+        else if ((apIns == 1) || (apIns == 2))
+        {
+           if ((g_macFiltCnt[0] + g_macFiltCnt[1]) >= 32)
+           {
+              CcspTraceWarning(("Mac Filter max limit is reached ,returning failure\n"));
+              return ANSC_STATUS_FAILURE;
+           }
+        }
+
 	pthread_mutex_lock(&MacFilt_CountMutex);
 	wifi_getApEnable(apIns-1, &enabled);
 	if (enabled) { 		 			
