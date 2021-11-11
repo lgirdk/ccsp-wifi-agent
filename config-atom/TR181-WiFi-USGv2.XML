@@ -2183,7 +2183,6 @@ INSTMSMT_PH2 -->
                             <name>Enable</name>
                             <type>boolean</type>
                             <syntax>bool</syntax>
-                            <writable>true</writable>
                         </parameter>
                         <parameter>
                             <name>Status</name>
