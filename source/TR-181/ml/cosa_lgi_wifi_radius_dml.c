@@ -67,8 +67,11 @@ PCOSA_DATAMODEL_WIFI            pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManag
 PCOSA_DML_LG_WIFI_RADIUS        pRADIUS   = pMyObject->pRADIUS;
     if (strcmp(ParamName, "TransportInterface") == 0)
     {
-		pRADIUS->TransportInterface = uValuepUlong;
-		setRadiusTransportInterfaceintoPSM(uValuepUlong);
+		if ( pRADIUS->TransportInterface != uValuepUlong )
+                {
+			pRADIUS->TransportInterface = uValuepUlong;
+			setRadiusTransportInterface(uValuepUlong);
+		}
 		return TRUE;
     }
 
