@@ -69,8 +69,8 @@ ANSC_STATUS CosaLgiWifiInitialize( ANSC_HANDLE hThisObject )
     pRADIUS = (PCOSA_DML_LG_WIFI_RADIUS)AnscAllocateMemory(sizeof(COSA_DML_LG_WIFI_RADIUS));
     if ( NULL != pRADIUS )
     {
-        int radiusInterface;
-        getRadiusTransportInterface(&radiusInterface);
+        unsigned int  radiusInterface;
+        wifi_getApRadiusTransportInterface(&radiusInterface);
         pRADIUS->TransportInterface = radiusInterface;
         pMyObject->pRADIUS        = pRADIUS;
     }
