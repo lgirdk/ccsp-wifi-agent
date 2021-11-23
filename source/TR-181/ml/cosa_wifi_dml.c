@@ -1101,7 +1101,7 @@ WiFi_SetParamBoolValue
     }
     if (strcmp(ParamName, "X_RDK-CENTRAL_COM_ForceDisable") == 0)
     {
-        if (ANSC_STATUS_SUCCESS == CosaDmlWiFiSetForceDisableWiFiRadio( bValue ))
+        if ((pMyObject->bForceDisableWiFiRadio != bValue) && (ANSC_STATUS_SUCCESS == CosaDmlWiFiSetForceDisableWiFiRadio( bValue )))
         {
             pMyObject->bForceDisableWiFiRadio = bValue;
             return TRUE;
