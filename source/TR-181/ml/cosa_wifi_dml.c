@@ -7248,7 +7248,11 @@ SSID_SetParamBoolValue
             }
 #endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER
 #else
-            if ( pWifiSsid->SSID.Cfg.bEnabled == bValue )
+            BOOL apEnabled;
+
+            wifi_getApEnable(pLinkObj->InstanceNumber - 1, &apEnabled);
+
+            if ((pWifiSsid->SSID.Cfg.bEnabled == bValue) && (pWifiSsid->SSID.Cfg.bEnabled == apEnabled))
             {
                 return  TRUE;
             }
