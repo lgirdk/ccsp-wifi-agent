@@ -8774,28 +8774,26 @@ void channel_change_event(UINT radioIndex, wifi_chan_eventType_t event, UCHAR ch
 #endif
 
 #if defined(_LG_MV1_CELENO_)
-static void wait_for_ethernet1_up (void)
+static void wait_for_pam_up (void)
 {
-    char buf[128];
-    parameterValStruct_t varStruct =
-    {
-        .parameterName = "Device.Ethernet.Link.1.Status",
-        .parameterValue = buf,
-    };
-    int timeout;
-    int len;
+	int timeout;
 
-    for (timeout = 240; timeout > 0; timeout -= 5)
-    {
-        len = sizeof(buf);
-        if ((COSAGetParamValueByPathName (g_MessageBusHandle, &varStruct, &len) == 0) && (strcasecmp (buf, "Up") == 0))
-        {
-            printf ("%s is up. Proceeding with wifi initialisation...\n", "Device.Ethernet.Link.1.Status");
-            break;
-        }
-
-        sleep (5);
-    }
+	if( access( "/tmp/ssid_re_enabled" , F_OK ) != 0 )
+	{
+		for (timeout = 480; timeout > 0; timeout -= 5)
+		{
+			if( access( "/tmp/pam_initialized" , F_OK ) != 0 )
+			{
+				sleep(5);
+			}
+			else
+			{
+				v_secure_system("/etc/ath/disable_ssid_advertisement enable");
+				v_secure_system("touch /tmp/ssid_re_enabled");
+				break;
+			}
+		}
+	}
 }
 #endif
 
@@ -8898,7 +8896,19 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
 		//Scott: Broadcom hal needs wifi_init to be called when we are started up
 		//wifi_setLFSecurityKeyPassphrase();
 #if defined(_LG_MV1_CELENO_)
-        wait_for_ethernet1_up();
+        pthread_t tid5;
+
+        pthread_attr_t attr5;
+        pthread_attr_t *attr5p = NULL;
+
+        attr5p = &attr5;
+        pthread_attr_init(&attr5);
+        pthread_attr_setdetachstate( &attr5, PTHREAD_CREATE_DETACHED );
+
+        pthread_create(&tid5,attr5p,wait_for_pam_up,NULL);
+        if(attr5p != NULL)
+            pthread_attr_destroy( attr5p );
+
         if(wifi_apply_customer_index())
         {
             printf("Error in Applying customer index related changes\n");
