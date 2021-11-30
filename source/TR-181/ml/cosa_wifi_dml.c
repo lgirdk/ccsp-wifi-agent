@@ -6035,7 +6035,11 @@ SSID_SetParamBoolValue
         /* SSID Enable object can be modified only when ForceDisableRadio feature is disabled */
         if(!bForceDisableFlag)
         {
-            if ( pWifiSsid->SSID.Cfg.bEnabled == bValue )
+            BOOL apEnabled;
+
+            wifi_getApEnable(pLinkObj->InstanceNumber - 1, &apEnabled);
+
+            if ( pWifiSsid->SSID.Cfg.bEnabled == bValue && pWifiSsid->SSID.Cfg.bEnabled == apEnabled)
             {
                 return  TRUE;
             }
