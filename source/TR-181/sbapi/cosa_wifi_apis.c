@@ -11033,6 +11033,10 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
         wlanRestart = TRUE;
     }
 
+    if (pStoredCfg->RetryLimit != pCfg->RetryLimit)
+    {
+        wifi_setRadioRetryLimit(wlanIndex, pCfg->RetryLimit);
+    }
     wifi_getRadioChannel(wlanIndex, &runningChannel);
     if (pCfg->AutoChannelEnable != pStoredCfg->AutoChannelEnable)
     {
@@ -11854,6 +11858,7 @@ CosaDmlWiFiRadioGetCfg
 	CosaDmlWiFiGetRadioStandards(wlanIndex, pCfg->OperatingFrequencyBand, &pCfg->OperatingStandards);
 //<<
 
+	wifi_getRadioRetryLimit(wlanIndex, &pCfg->RetryLimit);
 #if defined(_LG_MV1_CELENO_)
 	wifi_getRadioConfiguredChannel(wlanIndex, &pCfg->Channel);
 #else
