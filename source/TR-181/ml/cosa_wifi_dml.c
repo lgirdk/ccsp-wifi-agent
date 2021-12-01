@@ -2481,6 +2481,14 @@ Radio_GetParamUlongValue
         return TRUE;
     }
 
+    if (strcmp(ParamName, "RetryLimit") == 0)
+    {
+        /* collect value */
+        *puLong = pWifiRadioFull->Cfg.RetryLimit;
+
+        return TRUE;
+    }
+
     if (strcmp(ParamName, "X_CISCO_COM_RTSThreshold") == 0)
     {
         /* collect value */
@@ -3682,6 +3690,20 @@ Radio_SetParamUlongValue
 
         /* save update to backup */
         pWifiRadioFull->Cfg.GuardInterval = uValue;
+        pWifiRadio->bRadioChanged = TRUE;
+
+        return TRUE;
+    }
+
+    if (strcmp(ParamName, "RetryLimit") == 0)
+    {
+        if ( pWifiRadioFull->Cfg.RetryLimit == uValue )
+        {
+            return  TRUE;
+        }
+        
+        /* save update to backup */
+        pWifiRadioFull->Cfg.RetryLimit = uValue;
         pWifiRadio->bRadioChanged = TRUE;
 
         return TRUE;
