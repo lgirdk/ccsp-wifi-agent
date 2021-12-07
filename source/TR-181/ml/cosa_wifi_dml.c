@@ -9825,18 +9825,24 @@ AccessPoint_GetParamBoolValue
     if (strcmp(ParamName, "X_RDKCENTRAL-COM_NeighborReportActivated") == 0)
     {
         /* collect value */
-#if defined(_COSA_BCM_MIPS_) || defined(_CBR_PRODUCT_REQ_) || defined(HUB4_WLDM_SUPPORT)
-        INT wlanIndex = -1;
-        wlanIndex = pWifiAp->AP.Cfg.InstanceNumber -1 ;
-        wifi_getNeighborReportActivation(wlanIndex , &pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated);
-#endif
+        INT wlanIndex = pWifiAp->AP.Cfg.InstanceNumber - 1;
+        BOOL rrmEnabled;
+
+        if (wifi_getNeighborReportActivation(wlanIndex , &rrmEnabled) != RETURN_OK)
+        {
 #if WIFI_HAL_VERSION_3
-        /* For HAL VERSION 3, the updated nbrReportActivated value will be available only on the vapInfo structure.
-           collect the value from vapinfo structure */
-        *pBool = vapInfo->u.bss_info.nbrReportActivated;
+            /* For HAL VERSION 3, the updated nbrReportActivated value will be available only on the vapInfo structure.
+               collect the value from vapinfo structure */
+            *pBool = vapInfo->u.bss_info.nbrReportActivated;
 #else
-        *pBool = pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated;
+            *pBool = pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated;
 #endif
+        }
+        else
+        {
+            *pBool = rrmEnabled;
+        }
+
         return TRUE;
     }
 
@@ -10783,8 +10789,12 @@ AccessPoint_SetParamBoolValue
             return TRUE;
         }
 #else
-        /* collect value */
-        if ( pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated == bValue )
+        BOOL rrmEnabled;
+
+        wifi_getNeighborReportActivation(pWifiAp->AP.Cfg.InstanceNumber - 1, &rrmEnabled);
+
+        if (pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated == bValue &&
+            pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated == rrmEnabled)
         {
             pWifiAp->bApChanged = FALSE;
             return  TRUE;
@@ -10799,7 +10809,7 @@ AccessPoint_SetParamBoolValue
             pWifiAp->AP.isApChanged = FALSE;
 #else
 			pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated = bValue;
-	        pWifiAp->bApChanged = FALSE;
+			pWifiAp->bApChanged = TRUE;
 #endif
 			return TRUE;
 		}		

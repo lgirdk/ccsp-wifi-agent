@@ -862,6 +862,7 @@ CosaWifiInitialize
         //NeighborReport value
         /*ARRISXB3-10566 - Duplicate psm call*/
 	//CosaDmlWiFiApGetNeighborReportActivated(uIndex , &(pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated), TRUE);
+        wifi_getNeighborReportActivation(pWifiAp->AP.Cfg.InstanceNumber - 1, &(pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated));
 
         if (TRUE)
         {
