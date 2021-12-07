@@ -17953,23 +17953,6 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
 		CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : pEntry is NULL \n",__FUNCTION__));
         return ANSC_STATUS_FAILURE;
     }
-    int wRet = wifi_getIndexFromName(pSsid, &wlanIndex);
-    if ( (wRet != RETURN_OK) || (wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX) )
-    {
-		CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : pSsid = %s Couldn't find wlanIndex \n",__FUNCTION__, pSsid));
-		t2_event_d("WIFI_ERROR_NoWlanIndex",1);
-		// Error could not find index
-		return ANSC_STATUS_FAILURE;
-    }
-
-    // Enterprise modes are only available for community wifi
-    if (wlanIndex != 4 && wlanIndex != 5)
-    {
-        pEntry->Info.ModesSupported &= ~(COSA_DML_WIFI_SECURITY_WPA_Enterprise |
-                COSA_DML_WIFI_SECURITY_WPA2_Enterprise |
-                COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise |
-                COSA_DML_WIFI_SECURITY_WPA3_Enterprise);
-    }
 
 #if defined(_XB6_PRODUCT_REQ_)
     pEntry->Info.ModesSupported = COSA_DML_WIFI_SECURITY_None | 
@@ -18011,6 +17994,24 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
                                     COSA_DML_WIFI_SECURITY_WPA3_Personal);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
     CosaDmlWiFiApSecGetCfg((ANSC_HANDLE)hContext, pSsid, &pEntry->Cfg);
+
+	int wRet = wifi_getIndexFromName(pSsid, &wlanIndex);
+    if ( (wRet != RETURN_OK) || (wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX) )
+    {
+		CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : pSsid = %s Couldn't find wlanIndex \n",__FUNCTION__, pSsid));
+		t2_event_d("WIFI_ERROR_NoWlanIndex",1);
+		// Error could not find index
+		return ANSC_STATUS_FAILURE;
+    }
+
+    // Enterprise modes are only available for community wifi
+    if (wlanIndex != 4 && wlanIndex != 5)
+    {
+        pEntry->Info.ModesSupported &= ~(COSA_DML_WIFI_SECURITY_WPA_Enterprise |
+                COSA_DML_WIFI_SECURITY_WPA2_Enterprise |
+                COSA_DML_WIFI_SECURITY_WPA_WPA2_Enterprise |
+                COSA_DML_WIFI_SECURITY_WPA3_Enterprise);
+    }
 
 #ifdef CISCO_XB3_PLATFORM_CHANGES
     if (pEntry->Cfg.ModeEnabled == COSA_DML_WIFI_SECURITY_WEP_64)
