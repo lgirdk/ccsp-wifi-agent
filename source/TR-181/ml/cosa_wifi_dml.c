@@ -8443,12 +8443,18 @@ AccessPoint_GetParamBoolValue
     if (strcmp(ParamName, "X_RDKCENTRAL-COM_NeighborReportActivated") == 0)
     {
         /* collect value */
-#if defined(_COSA_BCM_MIPS_) || defined(_CBR_PRODUCT_REQ_) || defined(HUB4_WLDM_SUPPORT)
-        INT wlanIndex = -1;
-        wlanIndex = pWifiAp->AP.Cfg.InstanceNumber -1 ;
-        wifi_getNeighborReportActivation(wlanIndex , &pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated);
-#endif
-        *pBool = pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated;
+        INT wlanIndex = pWifiAp->AP.Cfg.InstanceNumber - 1;
+        BOOL rrmEnabled;
+
+        if (wifi_getNeighborReportActivation(wlanIndex , &rrmEnabled) != RETURN_OK)
+        {
+            *pBool = pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated;
+        }
+        else
+        {
+            *pBool = rrmEnabled;
+        }
+
         return TRUE;
     }
 
@@ -9309,8 +9315,13 @@ AccessPoint_SetParamBoolValue
 
     if (strcmp(ParamName, "X_RDKCENTRAL-COM_NeighborReportActivated") == 0)
     {
-        /* collect value */
-        if ( pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated == bValue )
+        BOOL rrmEnabled;
+
+
+        wifi_getNeighborReportActivation(pWifiAp->AP.Cfg.InstanceNumber - 1, &rrmEnabled);
+
+        if (pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated == bValue &&
+            pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated == rrmEnabled)
         {
             pWifiAp->bApChanged = FALSE;
             return  TRUE;
@@ -9325,7 +9336,7 @@ AccessPoint_SetParamBoolValue
             pWifiAp->AP.isApChanged = FALSE;
 #else
 			pWifiAp->AP.Cfg.X_RDKCENTRAL_COM_NeighborReportActivated = bValue;
-	        pWifiAp->bApChanged = FALSE;
+			pWifiAp->bApChanged = TRUE;
 #endif
 			return TRUE;
 		}		
