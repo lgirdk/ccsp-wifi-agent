@@ -5779,7 +5779,7 @@ CosaDmlWiFiGetAccessPointPsmData
 */
 //<<
 #if !defined(_HUB4_PRODUCT_REQ_) || defined(HUB4_WLDM_SUPPORT)
-#if defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)
+#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_)
 #ifdef WIFI_HAL_VERSION_3
     if (isVapPrivate(wlanIndex) || isVapMesh(wlanIndex)) {
 #else
@@ -6958,7 +6958,7 @@ CosaDmlWiFiApGetNeighborReportActivated(ULONG vAPIndex, BOOLEAN *pbNeighborRepor
         }
         sWiFiDmlApStoredCfg[vAPIndex].Cfg.X_RDKCENTRAL_COM_NeighborReportActivated = *pbNeighborReportActivated;
 #if !defined(_HUB4_PRODUCT_REQ_) || defined(HUB4_WLDM_SUPPORT)
-#if defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)
+#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_)
         //set to HAL
         CcspWifiTrace(("RDK_LOG_WARN,%s : setting value to HAL\n",__FUNCTION__ ));
         wifi_setNeighborReportActivation(vAPIndex, *pbNeighborReportActivated);
@@ -16945,6 +16945,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     int wlanRadioIndex = 0;
     int ret=0;
     unsigned int uiRetryLimit = 0;
+    BOOL rrmEnabled;
 
     int wRet = wifi_getIndexFromName(pSsid, &wlanIndex);
     if ( (wRet != RETURN_OK) || (wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX) )
@@ -17077,6 +17078,12 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         if ( CosaDmlWifi_setBSSTransitionActivated(pCfg, wlanIndex) != ANSC_STATUS_SUCCESS) {
              pCfg->BSSTransitionActivated = false;
         } 
+    }
+
+    wifi_getNeighborReportActivation(wlanIndex, &rrmEnabled);
+    if (pCfg->X_RDKCENTRAL_COM_NeighborReportActivated != rrmEnabled) {
+        wifi_setNeighborReportActivation(wlanIndex, pCfg->X_RDKCENTRAL_COM_NeighborReportActivated);
+        enable_reset_radio_flag(wlanIndex);
     }
 
     memcpy(&sWiFiDmlApStoredCfg[pCfg->InstanceNumber-1].Cfg, pCfg, sizeof(COSA_DML_WIFI_AP_CFG));
