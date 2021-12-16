@@ -1643,6 +1643,15 @@ RadiusSettings_GetParamIntValue
         char*                       ParamName,
         int*                        pInt
     );
+
+BOOL
+RadiusSettings_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    );
+
 BOOL
 RadiusSettings_SetParamBoolValue
     (
@@ -1658,6 +1667,15 @@ RadiusSettings_SetParamIntValue
         char*                       ParamName,
         int                         value
     );
+
+BOOL
+RadiusSettings_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    );
+
 BOOL
 RadiusSettings_Validate
     (
