@@ -19500,6 +19500,53 @@ RadiusSettings_GetParamBoolValue
 }
 
 BOOL
+RadiusSettings_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    PCOSA_DATAMODEL_WIFI            pMyObject    = (PCOSA_DATAMODEL_WIFI     )g_pCosaBEManager->hWifi;
+    PCOSA_CONTEXT_LINK_OBJECT       pLinkObj     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    PCOSA_DML_WIFI_AP               pWifiAp      = (PCOSA_DML_WIFI_AP        )pLinkObj->hContext;
+    PSINGLE_LINK_ENTRY              pSLinkEntry  = (PSINGLE_LINK_ENTRY       )NULL;
+    PCOSA_CONTEXT_LINK_OBJECT       pSSIDLinkObj = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+    CHAR                            PathName[64];
+
+    pSLinkEntry = AnscQueueGetFirstEntry(&pMyObject->SsidQueue);
+
+    while ( pSLinkEntry )
+    {
+        pSSIDLinkObj = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
+
+        sprintf(PathName, "Device.WiFi.SSID.%lu.", pSSIDLinkObj->InstanceNumber);
+        if ( AnscEqualString(pWifiAp->AP.Cfg.SSID, PathName, TRUE) )
+        {
+            break;
+        }
+
+        pSLinkEntry             = AnscQueueGetNextEntry(pSLinkEntry);
+    }
+
+    if (strcmp(ParamName, "PMKCacheInterval") == 0)
+    {
+        /* collect value */
+        *puLong = pWifiAp->AP.RadiusSetting.iPMKCacheInterval;
+        return TRUE;
+    }
+
+    if (strcmp(ParamName, "ReAuthInterval") == 0)
+    {
+        /* collect value */
+        *puLong = pWifiAp->AP.RadiusSetting.iReAuthInterval;
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+BOOL
 RadiusSettings_GetParamIntValue
     (
         ANSC_HANDLE                 hInsContext,
@@ -19555,20 +19602,6 @@ RadiusSettings_GetParamIntValue
     {
         /* collect value */
         *pInt = pWifiAp->AP.RadiusSetting.iPMKLifetime;
-        return TRUE;
-    }
-
-    if (strcmp(ParamName, "PMKCacheInterval") == 0)
-    {
-        /* collect value */
-        *pInt = pWifiAp->AP.RadiusSetting.iPMKCacheInterval;
-        return TRUE;
-    }
-
-    if (strcmp(ParamName, "ReAuthInterval") == 0)
-    {
-        /* collect value */
-        *pInt = pWifiAp->AP.RadiusSetting.iReAuthInterval;
         return TRUE;
     }
 
@@ -19637,6 +19670,45 @@ return FALSE;
 }
 
 BOOL
+RadiusSettings_SetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG                       uValue
+    )
+{
+    PCOSA_CONTEXT_LINK_OBJECT       pLinkObj     = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
+    PCOSA_DML_WIFI_AP               pWifiAp      = (PCOSA_DML_WIFI_AP        )pLinkObj->hContext;
+
+    AnscTraceWarning(("ParamName: %s uValue: %u\n", ParamName, uValue));
+	
+    if (strcmp(ParamName, "PMKCacheInterval") == 0)
+    {
+        if(pWifiAp->AP.RadiusSetting.bPMKCaching == FALSE)
+        {
+            CcspTraceWarning(("'%s' cannot be set as PMKCaching is set to False\n", ParamName));
+            return FALSE;
+        }
+
+        /* save update to backup */
+        pWifiAp->AP.RadiusSetting.iPMKCacheInterval = uValue;
+        return TRUE;
+    }
+
+    if (strcmp(ParamName, "ReAuthInterval") == 0)
+    {
+        /* save update to backup */
+        if(uValue != pWifiAp->AP.RadiusSetting.iReAuthInterval)
+        {
+              pWifiAp->AP.RadiusSetting.iReAuthInterval = uValue;
+        }
+        return TRUE;
+    }
+	
+    return FALSE;
+}
+
+BOOL
 RadiusSettings_SetParamIntValue
     (
         ANSC_HANDLE                 hInsContext,
@@ -19689,26 +19761,6 @@ RadiusSettings_SetParamIntValue
     {
         /* save update to backup */
         pWifiAp->AP.RadiusSetting.iPMKLifetime = iValue;
-        return TRUE;
-    }
-
-    if (strcmp(ParamName, "PMKCacheInterval") == 0)
-    {
-        if(pWifiAp->AP.RadiusSetting.bPMKCaching == FALSE)
-        {
-            CcspTraceWarning(("'%s' cannot be set as PMKCaching is set to False\n", ParamName));
-            return FALSE;
-        }
-
-        /* save update to backup */
-        pWifiAp->AP.RadiusSetting.iPMKCacheInterval = iValue;
-        return TRUE;
-    }
-
-    if (strcmp(ParamName, "ReAuthInterval") == 0)
-    {
-        /* save update to backup */
-        pWifiAp->AP.RadiusSetting.iReAuthInterval = iValue;
         return TRUE;
     }
 
