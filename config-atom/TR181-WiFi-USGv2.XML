@@ -2800,8 +2800,9 @@ INSTMSMT_PH2 -->
                                     <functions>
     					    <func_GetParamBoolValue>RadiusSettings_GetParamBoolValue</func_GetParamBoolValue>
 				 	   <func_GetParamIntValue>RadiusSettings_GetParamIntValue</func_GetParamIntValue>
+					   <func_GetParamUlongValue>RadiusSettings_GetParamUlongValue</func_GetParamUlongValue>
   					   <func_SetParamBoolValue>RadiusSettings_SetParamBoolValue</func_SetParamBoolValue>
-
+					   <func_SetParamUlongValue>RadiusSettings_SetParamUlongValue</func_SetParamUlongValue>
 					   <func_SetParamIntValue>RadiusSettings_SetParamIntValue</func_SetParamIntValue>
      					   <func_Validate>RadiusSettings_Validate</func_Validate>
 
@@ -2822,8 +2823,8 @@ INSTMSMT_PH2 -->
                                         </parameter>
                                         <parameter>
                                             <name>PMKLifetime</name>
-             				    <type>int</type>
-				            <syntax>int</syntax>
+             				    <type>unsignedInt</type>
+				            <syntax>uint32</syntax>
 				            <writable>true</writable>
                                         </parameter>
                                         <parameter>
@@ -2834,14 +2835,14 @@ INSTMSMT_PH2 -->
                                         </parameter>
                                         <parameter>
                                             <name>PMKCacheInterval</name>
-             				    <type>int</type>
-				            <syntax>int</syntax>
+             				    <type>unsignedInt</type>
+				            <syntax>uint32</syntax>
 				            <writable>true</writable>
                                         </parameter>
                                         <parameter>
                                             <name>ReAuthInterval</name>
-                                            <type>int</type>
-                                            <syntax>int</syntax>
+                                            <type>unsignedInt</type>
+                                            <syntax>uint32</syntax>
                                             <writable>true</writable>
                                         </parameter>
                                         <parameter>
