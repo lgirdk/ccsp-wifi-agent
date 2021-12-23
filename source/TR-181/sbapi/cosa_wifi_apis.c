@@ -277,7 +277,7 @@ CosaDmlWiFiRadiogetSupportedStandards
     /*CID: 142982 Out-of-bounds access*/
     if(( wifi_getRadioSupportedStandards(wlanIndex, supportedStandards)) == RETURN_OK)
     {
-        CcspWifiTrace(("RDK_LOG_WARN, %s:supportedstandards = %s\n",__FUNCTION__,supportedStandards));
+        CcspWifiTrace(("RDK_LOG_DEBUG, %s:supportedstandards = %s\n",__FUNCTION__,supportedStandards));
         char *p = NULL, *save_str = NULL;
         p = strtok_r( supportedStandards, ",", &save_str);
         char tmpStringBuffer[16] = { 0 };
@@ -5485,7 +5485,7 @@ char *TransmitRates
 	{
 		if(wifi_getRadioSupportedDataTransmitRates(radioIndex,TransmitRates) == 0)
 		{
-			CcspWifiTrace(("RDK_LOG_WARN,WIFI radioIndex %d , TransmitRates %s \n",radioIndex,TransmitRates));
+			CcspWifiTrace(("RDK_LOG_DEBUG,WIFI radioIndex %d , TransmitRates %s \n",radioIndex,TransmitRates));
 		}
 		else
                 {
@@ -15305,7 +15305,7 @@ CosaDmlWiFiRadioGetChannelsInUse
     {
         pInfo->ChannelsInUse[0] = 0;
         wifi_getRadioChannelsInUse(ulInstanceNumber-1, pInfo->ChannelsInUse);
-        CcspWifiTrace(("RDK_LOG_WARN,%s : ChannelsInUse = %s \n",__FUNCTION__,pInfo->ChannelsInUse));
+        CcspWifiTrace(("RDK_LOG_DEBUG,%s : ChannelsInUse = %s \n",__FUNCTION__,pInfo->ChannelsInUse));
         return ANSC_STATUS_SUCCESS;
     }
 }
@@ -15464,7 +15464,7 @@ CosaDmlWiFiRadioGetStats
         return ANSC_STATUS_FAILURE;
     }
 
-	CcspWifiTrace(("RDK_LOG_INFO,%s Getting Radio Stats last poll was %lu seconds ago \n",__FUNCTION__, currentTime - pStats->StatisticsStartTime ));
+	CcspWifiTrace(("RDK_LOG_DEBUG,%s Getting Radio Stats last poll was %lu seconds ago \n",__FUNCTION__, currentTime - pStats->StatisticsStartTime ));
 	pStats->StatisticsStartTime = currentTime;
 
 	wifi_getRadioTrafficStats2(ulInstanceNumber-1, &radioTrafficStats);
@@ -16328,7 +16328,7 @@ CosaDmlWiFiSsidGetSinfo
     )
 {
     UNREFERENCED_PARAMETER(hContext);
-    CcspWifiTrace(("RDK_LOG_INFO,%s: ulInstanceNumber = %lu\n",__FUNCTION__, ulInstanceNumber));
+    CcspWifiTrace(("RDK_LOG_DEBUG,%s: ulInstanceNumber = %lu\n",__FUNCTION__, ulInstanceNumber));
 
     if (!pInfo)
     {
@@ -16390,7 +16390,7 @@ CosaDmlWiFiSsidGetSinfo
       
       return ANSC_STATUS_FAILURE;
 	}
-        CcspTraceInfo(("%s : wlanIndex[%lu] BSSID [%s] \n",__FUNCTION__, wlanIndex, bssid));
+        CcspTraceDebug(("%s : wlanIndex[%lu] BSSID [%s] \n",__FUNCTION__, wlanIndex, bssid));
 
 	sMac_to_cMac(bssid, pInfo->BSSID);
 	sMac_to_cMac(bssid, pInfo->MacAddress);  
@@ -16422,7 +16422,7 @@ CosaDmlWiFiSsidGetStats
     if ( (currentTime - sWiFiDmlSsidLastStatPoll[ulInstanceNumber-1]) < 10)  {
         return ANSC_STATUS_SUCCESS;
     } 
-    CcspWifiTrace(("RDK_LOG_INFO,%s Getting Stats last poll was %lu seconds ago \n",__FUNCTION__, currentTime-sWiFiDmlSsidLastStatPoll[ulInstanceNumber-1] ));
+    CcspWifiTrace(("RDK_LOG_DEBUG,%s Getting Stats last poll was %lu seconds ago \n",__FUNCTION__, currentTime-sWiFiDmlSsidLastStatPoll[ulInstanceNumber-1] ));
     sWiFiDmlSsidLastStatPoll[ulInstanceNumber-1] = currentTime;
 
     if (!pStats)
@@ -17346,7 +17346,7 @@ CosaDmlWiFiApGetInfo
         return ANSC_STATUS_FAILURE;
     }
 
-    CcspWifiTrace(("RDK_LOG_INFO,%s pSsid = %s\n",__FUNCTION__, pSsid));
+    CcspWifiTrace(("RDK_LOG_DEBUG,%s pSsid = %s\n",__FUNCTION__, pSsid));
 
     if (!pInfo)
     {
@@ -17419,7 +17419,7 @@ CosaDmlWiFiApAssociatedDevicesHighWatermarkGetVal
         return ANSC_STATUS_FAILURE;
     }
     
-    CcspWifiTrace(("RDK_LOG_INFO,%s pSsid = %s\n",__FUNCTION__, pSsid));
+    CcspWifiTrace(("RDK_LOG_DEBUG,%s pSsid = %s\n",__FUNCTION__, pSsid));
 
 
     if (!pCfg)
@@ -28854,7 +28854,7 @@ GetActiveMsmtStepInsNum(PCOSA_DML_WIFI_ACTIVE_MSMT_STEP_CFG pStepCfg, ULONG *Ste
         if ((ANSC_HANDLE)pStepCfg == ((ANSC_HANDLE)&pStepFull->StepCfg[nIndex]))
         {
             *StepIns = nIndex;
-            CcspWifiTrace(("RDK_LOG_WARN, %s-%d Instance number is : %d \n",__FUNCTION__,__LINE__,nIndex));
+            CcspWifiTrace(("RDK_LOG_DEBUG, %s-%d Instance number is : %d \n",__FUNCTION__,__LINE__,nIndex));
             return ANSC_STATUS_SUCCESS;
         }
     }
