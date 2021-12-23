@@ -497,7 +497,7 @@ CosaUtilGetLowerLayers
         AnscTcFree((ANSC_HANDLE)pTableListTokenChain);
     }
 
-    CcspTraceWarning
+    CcspTraceDebug
         ((
             "CosaUtilGetLowerLayers: %s matched LowerLayer(%s) with keyword %s in the table %s\n",
             pMatchedLowerLayer ? "Found a":"Not find any",
