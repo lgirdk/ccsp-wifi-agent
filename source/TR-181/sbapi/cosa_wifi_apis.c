@@ -8782,7 +8782,7 @@ static void wait_for_pam_up (void)
 	{
 		for (timeout = 480; timeout > 0; timeout -= 5)
 		{
-			if( access( "/tmp/pam_initialized" , F_OK ) != 0 )
+			if( access( "/tmp/.advertise_ssids" , F_OK ) != 0 )
 			{
 				sleep(5);
 			}
