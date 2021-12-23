@@ -651,7 +651,7 @@ WiFi_GetParamUlongValue
         {
             *puLong = 1;
         }
-        CcspTraceWarning(("Radio 1 is %d Radio 0 is %d \n", radio_1_Enabled, radio_0_Enabled));
+        CcspTraceDebug(("Radio 1 is %d Radio 0 is %d \n", radio_1_Enabled, radio_0_Enabled));
         return TRUE;
     }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -2978,7 +2978,7 @@ Radio_GetParamStringValue
 	    if(CosaDmlWiFiGetRadioBasicDataTransmitRates(radioIndex,buf) == 0)
 	    {
             	AnscCopyString(pValue,buf);
-	    	CcspTraceInfo(("%s Radio %d has BasicDataTransmitRates - %s  \n", __FUNCTION__,radioIndex,pValue));
+               CcspTraceDebug(("%s Radio %d has BasicDataTransmitRates - %s  \n", __FUNCTION__,radioIndex,pValue));
 	    }
 	    else
             {
@@ -3006,7 +3006,7 @@ Radio_GetParamStringValue
 	    if(CosaDmlWiFiGetRadioSupportedDataTransmitRates(radioIndex,buf) == 0)
 	    {
             	AnscCopyString(pValue,buf);
-	    	CcspTraceInfo(("%s  Radio %d has SupportedDataTransmitRates - %s  \n", __FUNCTION__,radioIndex,pValue));
+               CcspTraceDebug(("%s  Radio %d has SupportedDataTransmitRates - %s  \n", __FUNCTION__,radioIndex,pValue));
             }
 	    else
             {
@@ -3038,7 +3038,7 @@ Radio_GetParamStringValue
 	    if(CosaDmlWiFiGetRadioOperationalDataTransmitRates(radioIndex,buf) == 0)
 	    {	
             	AnscCopyString(pValue,buf);
-	    	CcspTraceInfo(("%s Radio %d has OperationalDataTransmitRates - %s  \n", __FUNCTION__,radioIndex,pValue));
+               CcspTraceDebug(("%s Radio %d has OperationalDataTransmitRates - %s  \n", __FUNCTION__,radioIndex,pValue));
 	    }
 	    else
 	    {
@@ -4085,13 +4085,13 @@ Radio_SetParamStringValue
 
 		isBeaconRateUpdate[0] = isBeaconRateUpdate[2] = isBeaconRateUpdate[4] =  isBeaconRateUpdate[6] = isBeaconRateUpdate[8] = isBeaconRateUpdate[10] = TRUE;	
 		CosaWifiAdjustBeaconRate(1, "6Mbps");
-		CcspTraceWarning(("WIFI OperatingStandards = g/n  Beacon Rate 6Mbps  Function %s \n",__FUNCTION__));
+		CcspTraceDebug(("WIFI OperatingStandards = g/n  Beacon Rate 6Mbps  Function %s \n",__FUNCTION__));
 	}
 	else if (pWifiRadioFull->Cfg.OperatingStandards == (COSA_DML_WIFI_STD_b |COSA_DML_WIFI_STD_g | COSA_DML_WIFI_STD_n) ) {
 
 		isBeaconRateUpdate[0] = isBeaconRateUpdate[2] = isBeaconRateUpdate[4] =  isBeaconRateUpdate[6] = isBeaconRateUpdate[8] = isBeaconRateUpdate[10] = TRUE;	
 		CosaWifiAdjustBeaconRate(1, "1Mbps");
-		CcspTraceWarning(("WIFI OperatingStandards = b/g/n  Beacon Rate 1Mbps %s \n",__FUNCTION__));
+		CcspTraceDebug(("WIFI OperatingStandards = b/g/n  Beacon Rate 1Mbps %s \n",__FUNCTION__));
 	}
 
         pWifiRadio->bRadioChanged = TRUE;
@@ -8164,7 +8164,7 @@ AccessPoint_GetParamStringValue
 			CosaDmlWiFiGetApBeaconRate(wlanIndex, pWifiAp->AP.Cfg.BeaconRate );
 			AnscCopyString(pValue, pWifiAp->AP.Cfg.BeaconRate);
 //			isBeaconRateUpdate[wlanIndex] = FALSE;
-			CcspTraceWarning(("WIFI   wlanIndex  %d  getBeaconRate %s  Function %s \n",wlanIndex,pWifiAp->AP.Cfg.BeaconRate,__FUNCTION__)); 
+			CcspTraceDebug(("WIFI   wlanIndex  %d  getBeaconRate %s  Function %s \n",wlanIndex,pWifiAp->AP.Cfg.BeaconRate,__FUNCTION__)); 
 			return 0;
     }
 
@@ -18332,7 +18332,7 @@ Authenticator_Validate
     UNREFERENCED_PARAMETER(hInsContext);
     UNREFERENCED_PARAMETER(pReturnParamName);
     UNREFERENCED_PARAMETER(puLength);
-    CcspTraceWarning(("Authenticator_validate"));
+    CcspTraceDebug(("Authenticator_validate"));
     return TRUE;
 }
 
@@ -18484,7 +18484,7 @@ Radius_Validate
         ULONG*                      puLength
     )
 {
-    CcspTraceWarning(("Radius_validate"));
+    CcspTraceDebug(("Radius_validate"));
     return TRUE;
 }
 
@@ -18612,7 +18612,7 @@ MacFiltTab_AddEntry
 
     _ansc_sprintf(pMacFilt->Alias, "MacFilterTable%lu", pWiFiAP->ulMacFilterNextInsNum);
     pMacFilt->InstanceNumber = pWiFiAP->ulMacFilterNextInsNum;
-    CcspTraceWarning(("pMacFilt->InstanceNumber is %lu\n", pMacFilt->InstanceNumber));
+    CcspTraceDebug(("pMacFilt->InstanceNumber is %lu\n", pMacFilt->InstanceNumber));
     /* Update the middle layer data */
     pSubCosaContext = (PCOSA_CONTEXT_LINK_OBJECT)AnscAllocateMemory(sizeof(COSA_CONTEXT_LINK_OBJECT));
     if ( !pSubCosaContext )
@@ -18623,7 +18623,7 @@ MacFiltTab_AddEntry
     
     pSubCosaContext->InstanceNumber = pWiFiAP->ulMacFilterNextInsNum;
     pWiFiAP->ulMacFilterNextInsNum++;
-    CcspTraceWarning(("Next InstanceNumber is %lu\n", pWiFiAP->ulMacFilterNextInsNum));
+    CcspTraceDebug(("Next InstanceNumber is %lu\n", pWiFiAP->ulMacFilterNextInsNum));
     if ( 0 == pWiFiAP->ulMacFilterNextInsNum )
     {
         pWiFiAP->ulMacFilterNextInsNum = 1;
@@ -20167,7 +20167,7 @@ APGroup_GetEntryCount
 	ANSC_HANDLE                 hInsContext
 )
 {
-	CcspTraceInfo(("APGroup_GetEntryCount \n"));
+	CcspTraceDebug(("APGroup_GetEntryCount \n"));
 	UNREFERENCED_PARAMETER(hInsContext);
 	PCOSA_DATAMODEL_WIFI            pWiFi     = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
 	PCOSA_DML_WIFI_ATM				pATM = pWiFi->pATM;
@@ -20187,7 +20187,7 @@ APGroup_GetEntry
 )
 {
 	UNREFERENCED_PARAMETER(hInsContext);
-	CcspTraceInfo(("APGroup_GetEntry '%lu'\n", nIndex));
+	CcspTraceDebug(("APGroup_GetEntry '%lu'\n", nIndex));
 	PCOSA_DATAMODEL_WIFI            pWiFi     = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
 	PCOSA_DML_WIFI_ATM				pATM = pWiFi->pATM;
 	//PCOSA_DML_WIFI_ATM_APGROUP		pATMApGroup=&pATM->APGroup;
@@ -20249,7 +20249,7 @@ APGroup_GetParamStringValue
     )
 {
 	UNREFERENCED_PARAMETER(pUlSize);
-	CcspTraceInfo(("APGroup_GetParamStringValue parameter '%s'\n", ParamName));
+	CcspTraceDebug(("APGroup_GetParamStringValue parameter '%s'\n", ParamName));
 	PCOSA_DML_WIFI_ATM_APGROUP      pWifiApGrp    = (PCOSA_DML_WIFI_ATM_APGROUP)hInsContext;
 	
 	if (strcmp(ParamName, "APList") == 0) {
@@ -20299,7 +20299,7 @@ APGroup_GetParamUlongValue
         ULONG*                      puLong
     )
 {
-    CcspTraceInfo(("APGroup_GetParamUlongValue parameter '%s'\n", ParamName));
+    CcspTraceDebug(("APGroup_GetParamUlongValue parameter '%s'\n", ParamName));
 	PCOSA_DML_WIFI_ATM_APGROUP      pWifiApGrp    = (PCOSA_DML_WIFI_ATM_APGROUP)hInsContext;
 	
 	if (strcmp(ParamName, "AirTimePercent") == 0) {
@@ -20317,8 +20317,8 @@ APGroup_SetParamUlongValue (
 	ULONG                       uValue
 )
 {
-    CcspTraceInfo(("APGroup_SetParamUlongValue parameter '%s'\n", ParamName));
-CcspTraceInfo(("---- %s %s \n", __func__, 	ParamName));
+    CcspTraceDebug(("APGroup_SetParamUlongValue parameter '%s'\n", ParamName));
+CcspTraceDebug(("---- %s %s \n", __func__, 	ParamName));
 	PCOSA_DML_WIFI_ATM_APGROUP      pWifiApGrp    = (PCOSA_DML_WIFI_ATM_APGROUP)hInsContext;
 	
 	if (strcmp(ParamName, "AirTimePercent") == 0)   {
@@ -20375,7 +20375,7 @@ APGroup_Validate
 {
 	UNREFERENCED_PARAMETER(hInsContext);
 	UNREFERENCED_PARAMETER(puLength);
-	CcspTraceInfo(("APGroup_Validate parameter '%s'\n", pReturnParamName));
+	CcspTraceDebug(("APGroup_Validate parameter '%s'\n", pReturnParamName));
     return TRUE;
 }
 
@@ -20408,7 +20408,7 @@ APGroup_Commit
     )
 {
 	UNREFERENCED_PARAMETER(hInsContext);
-	CcspTraceInfo(("APGroup_Commit parameter \n"));
+	CcspTraceDebug(("APGroup_Commit parameter \n"));
     return 0;
 }
 
@@ -21351,7 +21351,7 @@ Passpoint_SetParamBoolValue
 
     if (strcmp(ParamName, "Enable") == 0) {
         if(bValue == pWifiAp->AP.Cfg.IEEE80211uCfg.PasspointCfg.Status){
-            CcspTraceWarning(("Passpoint value Already configured. Return Success\n"));
+            CcspTraceDebug(("Passpoint value Already configured. Return Success\n"));
             return TRUE;
         }
 
