@@ -3826,14 +3826,14 @@ INSTMSMT_PH2 -->
 									<writable>true</writable>
 								</parameter>
 								<parameter>
-									<name>DeltaThreshold5GHz</name>
+									<name>DeltaThreshold</name>
 									<!--<description>This delta (in dBm) will be used when comparing the RSSI of the probe request on 5 GHz of an associated client. It can lower the threshold by this value.</description> -->
 									<type>unsignedInt[0:100]</type>
 									<syntax>uint32</syntax>
 									<writable>true</writable>
 								</parameter>
 								<parameter>
-									<name>TempTimeout24GHz</name>
+									<name>BlacklistTimeout</name>
 									<!--<description>Value in milliseconds that defines the time before an entry in the 2.4GHzTempBlackListTable expires.</description> -->
 									<type>unsignedInt[0:100000]</type>
 									<syntax>uint32</syntax>
