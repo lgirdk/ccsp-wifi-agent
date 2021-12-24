@@ -349,14 +349,14 @@ LGI_BandSteeringSSID_GetParamUlongValue
     PCOSA_DML_BANDSTEERING_SSID pBandSteeringSSID = hInsContext;
 
      /* check the parameter name and return the corresponding value */
-    if (strcmp(ParamName, "DeltaThreshold5GHz") == 0)
+    if (strcmp(ParamName, "DeltaThreshold") == 0)
     {
         ULONG DeltaThreshold= 5;
         wifi_getBandSteeringDeltaThreshold_perSSID(pBandSteeringSSID->ifIndex, (uint*)&DeltaThreshold);
         *pULong = DeltaThreshold;
         return TRUE;
     }
-    if (strcmp(ParamName, "TempTimeout24GHz") == 0)
+    if (strcmp(ParamName, "BlacklistTimeout") == 0)
     {
         ULONG BlacklistTimeout= 15000;
         wifi_getBandSteeringBlacklistTimeout_perSSID(pBandSteeringSSID->ifIndex, (uint*)&BlacklistTimeout);
@@ -377,13 +377,13 @@ LGI_BandSteeringSSID_SetParamUlongValue
 {
     PCOSA_DML_BANDSTEERING_SSID pBandSteeringSSID = hInsContext;
 
-    if (strcmp(ParamName, "DeltaThreshold5GHz") == 0)
+    if (strcmp(ParamName, "DeltaThreshold") == 0)
     {
         wifi_setBandSteeringDeltaThreshold_perSSID(pBandSteeringSSID->ifIndex, value);
         enable_reset_both_radio_flag();
         return TRUE;
     }
-    if (strcmp(ParamName, "TempTimeout24GHz") == 0)
+    if (strcmp(ParamName, "BlacklistTimeout") == 0)
     {
         wifi_setBandSteeringBlacklistTimeout_perSSID(pBandSteeringSSID->ifIndex, value);
         enable_reset_both_radio_flag();
