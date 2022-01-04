@@ -19543,6 +19543,13 @@ RadiusSettings_GetParamUlongValue
         return TRUE;
     }
 
+    if (strcmp(ParamName, "PMKLifetime") == 0)
+    {
+        /* collect value */
+        *puLong = pWifiAp->AP.RadiusSetting.iPMKLifetime;
+        return TRUE;
+    }
+
     return FALSE;
 }
 
@@ -19595,13 +19602,6 @@ RadiusSettings_GetParamIntValue
     {
         /* collect value */
         *pInt = pWifiAp->AP.RadiusSetting.iRadiusServerRequestTimeout;
-        return TRUE;
-    }
-
-    if (strcmp(ParamName, "PMKLifetime") == 0)	
-    {
-        /* collect value */
-        *pInt = pWifiAp->AP.RadiusSetting.iPMKLifetime;
         return TRUE;
     }
 
@@ -19704,6 +19704,13 @@ RadiusSettings_SetParamUlongValue
         }
         return TRUE;
     }
+
+    if (strcmp(ParamName, "PMKLifetime") == 0)
+    {
+        /* save update to backup */
+        pWifiAp->AP.RadiusSetting.iPMKLifetime = uValue;
+        return TRUE;
+    }
 	
     return FALSE;
 }
@@ -19754,13 +19761,6 @@ RadiusSettings_SetParamIntValue
     {
         /* save update to backup */
         pWifiAp->AP.RadiusSetting.iRadiusServerRequestTimeout = iValue;
-        return TRUE;
-    }
-
-    if (strcmp(ParamName, "PMKLifetime") == 0)
-    {
-        /* save update to backup */
-        pWifiAp->AP.RadiusSetting.iPMKLifetime = iValue;
         return TRUE;
     }
 
