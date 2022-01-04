@@ -895,7 +895,7 @@ _COSA_DML_WIFI_RadiusSetting
     BOOL                            bPMKCaching;
     int                             iRadiusServerRetries;
     int                             iRadiusServerRequestTimeout;
-    int                             iPMKLifetime;
+    unsigned int                    iPMKLifetime;
     unsigned int                    iPMKCacheInterval;
     unsigned int                    iReAuthInterval;
     int                             iMaxAuthenticationAttempts;
