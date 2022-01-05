@@ -114,7 +114,6 @@
 #if defined(_COSA_BCM_MIPS_) || defined(_XB6_PRODUCT_REQ_) || defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_)
 #ifdef USE_PARTNER_ID
 #include "cJSON.h"
-#include <ctype.h>
 #endif
 #endif
 
