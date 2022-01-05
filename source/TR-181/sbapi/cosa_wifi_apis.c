@@ -68,6 +68,11 @@
         01/11/2011    initial revision.
 
 **************************************************************************/
+/*
+   Define USE_PARTNER_ID to use partner ID to access some parameters
+*/
+//#define USE_PARTNER_ID
+
 #define _XOPEN_SOURCE 700
 #include <telemetry_busmessage_sender.h>
 #include <strings.h>
@@ -91,6 +96,7 @@
 #include "ansc_platform.h"
 #include "pack_file.h"
 #include "ccsp_WifiLog_wrapper.h"
+#include <syscfg/syscfg.h>
 #include <sys/sysinfo.h>
 #include "print_uptime.h"
 #include "cosa_wifi_passpoint.h"
@@ -106,7 +112,9 @@
 #include "ovsdb_table.h"
 
 #if defined(_COSA_BCM_MIPS_) || defined(_XB6_PRODUCT_REQ_) || defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_)
+#ifdef USE_PARTNER_ID
 #include <cjson/cJSON.h>
+#endif
 #endif
 
 #ifdef USE_NOTIFY_COMPONENT
@@ -123,8 +131,10 @@
 #endif
 
 #if defined(_COSA_BCM_MIPS_) || defined(_XB6_PRODUCT_REQ_) || defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_)
+#ifdef USE_PARTNER_ID
 #define PARTNERS_INFO_FILE              "/nvram/partners_defaults.json"
 #define BOOTSTRAP_INFO_FILE             "/nvram/bootstrap.json"
+#endif
 #endif
 
 #ifdef FEATURE_SUPPORT_ONBOARD_LOGGING
@@ -28770,6 +28780,9 @@ void CosaDmlWiFiWebConfigFrameworkInit()
 #endif
 
 #if defined(_COSA_BCM_MIPS_) || defined(_XB6_PRODUCT_REQ_) || defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_)
+
+#ifdef USE_PARTNER_ID
+
 #define PARTNER_ID_LEN 64
 void FillParamUpdateSource(cJSON *partnerObj, char *key, char *paramUpdateSource)
 {
@@ -29177,6 +29190,38 @@ ANSC_STATUS UpdateJsonParam
 
          return ANSC_STATUS_SUCCESS;
 }
+
+#else  
+
+ANSC_STATUS CosaWiFiInitializeParmUpdateSource (PCOSA_DATAMODEL_RDKB_WIFIREGION pwifiregion)
+{
+	syscfg_get (NULL, "WiFiRegionCode", pwifiregion->Code.UpdateSource, sizeof(pwifiregion->Code.UpdateSource));
+
+	if (pwifiregion->Code.UpdateSource[0] == 0)
+	{
+		strcpy (pwifiregion->Code.UpdateSource, "USI");
+	}
+
+	CcspTraceWarning(("%s: %s = %s\n", __FUNCTION__, "WiFiRegionCode", pwifiregion->Code.UpdateSource));
+
+	return ANSC_STATUS_SUCCESS;
+}
+
+// Use syscfg file instead of json file
+ANSC_STATUS UpdateJsonParam (char *pKey, char *PartnerId, char *pValue, char *pSource, char *pCurrentTime)
+{
+	if (strcmp (pKey, "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code") == 0)
+	{
+		syscfg_set_commit(NULL, "WiFiRegionCode", pValue);
+
+		return ANSC_STATUS_SUCCESS;
+	}
+
+	return ANSC_STATUS_FAILURE;
+}
+
+#endif // #ifdef USE_PARTNER_ID
+
 #endif //#if defined(_COSA_BCM_MIPS_) || defined(_XB6_PRODUCT_REQ_) || defined(_COSA_BCM_ARM_)
 
 BOOL CosaDmlWiFi_ValidateEasyConnectSingleChannelString(UINT apIndex, const char *pString)
