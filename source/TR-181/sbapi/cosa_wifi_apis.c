@@ -8785,30 +8785,6 @@ void channel_change_event(UINT radioIndex, wifi_chan_eventType_t event, UCHAR ch
 }
 #endif
 
-#if defined(_LG_MV1_CELENO_)
-static void wait_for_pam_up (void)
-{
-	int timeout;
-
-	if( access( "/tmp/ssid_re_enabled" , F_OK ) != 0 )
-	{
-		for (timeout = 480; timeout > 0; timeout -= 5)
-		{
-			if( access( "/tmp/.advertise_ssids" , F_OK ) != 0 )
-			{
-				sleep(5);
-			}
-			else
-			{
-				v_secure_system("/etc/ath/disable_ssid_advertisement enable");
-				v_secure_system("touch /tmp/ssid_re_enabled");
-				break;
-			}
-		}
-	}
-}
-#endif
-
 ANSC_STATUS
 CosaDmlWiFiInit
     (
@@ -8904,19 +8880,6 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
 		//Scott: Broadcom hal needs wifi_init to be called when we are started up
 		//wifi_setLFSecurityKeyPassphrase();
 #if defined(_LG_MV1_CELENO_)
-        pthread_t tid5;
-
-        pthread_attr_t attr5;
-        pthread_attr_t *attr5p = NULL;
-
-        attr5p = &attr5;
-        pthread_attr_init(&attr5);
-        pthread_attr_setdetachstate( &attr5, PTHREAD_CREATE_DETACHED );
-
-        pthread_create(&tid5,attr5p,wait_for_pam_up,NULL);
-        if(attr5p != NULL)
-            pthread_attr_destroy( attr5p );
-
         if(wifi_apply_customer_index())
         {
             printf("Error in Applying customer index related changes\n");
