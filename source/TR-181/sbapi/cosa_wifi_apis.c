@@ -7680,7 +7680,7 @@ CosaDmlWiFiFactoryReset
     }
     if (i == (int)getNumberRadios())
 #else
-    if ( (resetSSID[0] == COSA_DML_WIFI_FEATURE_ResetSsid1) && (resetSSID[1] == COSA_DML_WIFI_FEATURE_ResetSsid2) )
+    if ( access("/nvram/wifi_factory_reset_ongoing", F_OK) == 0 || ((resetSSID[0] == COSA_DML_WIFI_FEATURE_ResetSsid1) && (resetSSID[1] == COSA_DML_WIFI_FEATURE_ResetSsid2)) )
 #endif
     {
         // delete current configuration
@@ -7892,6 +7892,9 @@ CosaDmlWiFiFactoryReset
             CcspTraceError(("%s: WIFI DB Failed to get global config\n", __FUNCTION__ ));
             return ANSC_STATUS_FAILURE;
         }
+    }
+    if(access("/nvram/wifi_factory_reset_ongoing", F_OK) == 0){
+        unlink("/nvram/wifi_factory_reset_ongoing");
     }
     return ANSC_STATUS_SUCCESS;
 }
@@ -9219,10 +9222,16 @@ CosaDmlWiFi_FactoryReset()
     int resetSSID[2] = {0,0};
     int i = 0;
 #endif
+    FILE* fd;
 printf("%s g_Subsytem = %s\n",__FUNCTION__,g_Subsystem);
 
     // This function is only called when the WiFi DML FactoryReset is set
     // From this interface only reset the UserControlled SSIDs
+
+    //Create a file to indicate factory reset from CcspWifiAgent was in progress before reboot
+    if ((fd = fopen ("/nvram/wifi_factory_reset_ongoing", "w+")) != NULL) {
+      fclose(fd);
+    }
 
 #ifdef WIFI_HAL_VERSION_3
     for (i = 1; i <= getNumberRadios(); i++)
