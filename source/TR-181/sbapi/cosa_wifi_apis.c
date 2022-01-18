@@ -7894,6 +7894,7 @@ CosaDmlWiFiFactoryReset
     char recName[256];
     char *strValue = NULL;
     int retPsmGet = CCSP_SUCCESS;
+    int resetradios = 0;
 #ifdef WIFI_HAL_VERSION_3
     int resetSSID[MAX_NUM_RADIOS] = {0};
     BOOL wpa3_rfc = FALSE;
@@ -7917,8 +7918,6 @@ CosaDmlWiFiFactoryReset
             resetSSID[i-1] = atoi(strValue);
             ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
         }
-        // Reset to 0
-        PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, "0");
 
         wifiDbgPrintf("%s: Radio %d has resetSSID = %d \n", __FUNCTION__, i, resetSSID[i-1]);
 		CcspWifiTrace(("RDK_LOG_WARN,WIFI %s : Radio %d has resetSSID = %d\n",__FUNCTION__, i, resetSSID[i-1]));
@@ -7932,9 +7931,32 @@ CosaDmlWiFiFactoryReset
             break;
     }
     if (i == (int)getNumberRadios())
+    {
+        resetradios = 1;
+    }
 #else
-    if ( (resetSSID[0] == COSA_DML_WIFI_FEATURE_ResetSsid1) && (resetSSID[1] == COSA_DML_WIFI_FEATURE_ResetSsid2) )
+    if ((resetSSID[0] == COSA_DML_WIFI_FEATURE_ResetSsid1) &&
+        (resetSSID[1] == COSA_DML_WIFI_FEATURE_ResetSsid2))
+    {
+        resetradios = 1;
+    }
+
+    if (resetradios == 0)
+    {
+        char buffer[8];
+#if defined(_PUMA6_ATOM_)
+        _get_shell_output("/usr/bin/rpcclient2 'syscfg get wifi_factory_reset_ssid' | grep -v RPC", buffer, sizeof(buffer));
+#else
+        syscfg_get(NULL, "wifi_factory_reset_ssid", buffer, sizeof(buffer));
 #endif
+        if (strcmp(buffer, "1") == 0)
+        {
+            resetradios = 1;
+        }
+    }
+#endif
+
+    if (resetradios)
     {
         // delete current configuration
 
@@ -8063,6 +8085,24 @@ CosaDmlWiFiFactoryReset
 #ifdef WIFI_HAL_VERSION_3
      v_secure_system("rm -rf /nvram/wifi");
      wifi_db_dbg_print(1,"%s:%d: /nvram/wifi deleted\n", __func__, __LINE__);
+#endif
+
+//Set FactoryResetSSID to 0 after completing SSID reset
+#ifdef WIFI_HAL_VERSION_3
+    for (i = 1; i <= (int)getNumberRadios(); i++)
+#else
+    for (i = 1; i <= gRadioCount; i++)
+#endif
+    {
+        snprintf(recName, sizeof(recName), FactoryResetSSID, i);
+        // Reset to 0
+        PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, "0");
+    }
+
+#if defined(_PUMA6_ATOM_)
+    system("rpcclient2 'syscfg set wifi_factory_reset_ssid 0'");
+#else
+    syscfg_set(NULL, "wifi_factory_reset_ssid", "0");
 #endif
 
     // Clear OpenSync persistant storage folders
@@ -9566,6 +9606,13 @@ printf("%s g_Subsytem = %s\n",__FUNCTION__,g_Subsystem);
 
     // This function is only called when the WiFi DML FactoryReset is set
     // From this interface only reset the UserControlled SSIDs
+
+    // Set "wifi_factory_reset_ssid" to 1 to indicate SSID's are yet to reset
+#if defined(_PUMA6_ATOM_)
+    system("rpcclient2 'syscfg set wifi_factory_reset_ssid 1'");
+#else
+    syscfg_set(NULL, "wifi_factory_reset_ssid", "1");
+#endif
 
 #ifdef WIFI_HAL_VERSION_3
     for (i = 1; i <= getNumberRadios(); i++)
