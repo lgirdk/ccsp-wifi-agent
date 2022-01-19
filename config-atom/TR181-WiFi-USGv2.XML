@@ -3816,7 +3816,7 @@ INSTMSMT_PH2 -->
 									<writable>true</writable>
 								</parameter>
 								<parameter>
-									<name>RSSIThreshold5GHz</name>
+									<name>RSSIThreshold</name>
 									<!--<description>
 									  In case of a 5 GHz capable device that sends out a direct probe request on 5 GHz or a broadcast probe request on 5 GHz when associated already, this threshold will define if the device will be added or removed from the 2.4GHzTempBlackListTable (i.e. when the RSSI is lower / worse than this threshold or when the RSSI is higher than the threshold).
 									  - Units: dBm
