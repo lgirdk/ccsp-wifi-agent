@@ -306,7 +306,7 @@ LGI_BandSteeringSSID_GetParamIntValue
     PCOSA_DML_BANDSTEERING_SSID pBandSteeringSSID = hInsContext;
 
      /* check the parameter name and return the corresponding value */
-    if (strcmp(ParamName, "RSSIThreshold5GHz") == 0)
+    if (strcmp(ParamName, "RSSIThreshold") == 0)
     {
         INT RSSIThr = -70;
         wifi_getBandSteeringRSSIThreshold_perSSID(pBandSteeringSSID->ifIndex, &RSSIThr);
@@ -327,7 +327,7 @@ LGI_BandSteeringSSID_SetParamIntValue
 {
     PCOSA_DML_BANDSTEERING_SSID pBandSteeringSSID = hInsContext;
 
-    if (strcmp(ParamName, "RSSIThreshold5GHz") == 0)
+    if (strcmp(ParamName, "RSSIThreshold") == 0)
     {
         wifi_setBandSteeringRSSIThreshold_perSSID(pBandSteeringSSID->ifIndex, value);
         enable_reset_both_radio_flag();
