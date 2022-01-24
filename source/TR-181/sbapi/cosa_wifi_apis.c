@@ -205,6 +205,9 @@ static ANSC_STATUS CosaDmlWiFi_SetRegionCode(char *code);
 void *updateBootLogTime();
 static BOOL updateBootTimeRunning = FALSE;
 
+#if defined(_LG_MV1_CELENO_)
+int wifi_sync_legacy_fw_cfg_default (void);
+#endif
 
 extern ovsdb_table_t table_Wifi_Global_Config;
 extern ovsdb_table_t table_Wifi_Radio_Config;
@@ -9629,6 +9632,14 @@ printf("%s g_Subsytem = %s\n",__FUNCTION__,g_Subsystem);
     system("rpcclient2 'syscfg set wifi_factory_reset_ssid 1'");
 #else
     syscfg_set(NULL, "wifi_factory_reset_ssid", "1");
+#endif
+
+#if defined(_LG_MV1_CELENO_)
+    /* Sync the legacy nvram file with default SSID and password */
+    if (wifi_sync_legacy_fw_cfg_default())
+    {
+        printf("Legacy sync of default SSID/Password failed \n");
+    }
 #endif
 
 #ifdef WIFI_HAL_VERSION_3
