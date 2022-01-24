@@ -6793,6 +6793,7 @@ SSID_GetParamBoolValue
             return FALSE;
         }
         /* collect value */
+        wifi_getApEnable(pLinkObj->InstanceNumber - 1, &pWifiSsid->SSID.Cfg.bEnabled);
         *pBool = (bForceDisableFlag == TRUE) ? FALSE : pWifiSsid->SSID.Cfg.bEnabled;
 
         return TRUE;
@@ -7303,15 +7304,14 @@ SSID_SetParamBoolValue
 #else
             BOOL apEnabled;
 
+            /* save update to backup */
+            pWifiSsid->SSID.Cfg.bEnabled = bValue;
             wifi_getApEnable(pLinkObj->InstanceNumber - 1, &apEnabled);
-
-            if ((pWifiSsid->SSID.Cfg.bEnabled == bValue) && (pWifiSsid->SSID.Cfg.bEnabled == apEnabled))
+            if (pWifiSsid->SSID.Cfg.bEnabled == apEnabled)
             {
                 return  TRUE;
             }
 
-            /* save update to backup */
-            pWifiSsid->SSID.Cfg.bEnabled = bValue;
             pWifiSsid->bSsidChanged = TRUE;
 #endif
         } else {
