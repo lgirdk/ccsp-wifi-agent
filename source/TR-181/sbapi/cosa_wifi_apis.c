@@ -15567,7 +15567,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 
         wifi_getApEnable(wlanIndex, &apEnabled);
 
-        if (pCfg->bEnabled != pStoredCfg->bEnabled || pCfg->bEnabled != apEnabled) {
+        if (pCfg->bEnabled != apEnabled) {
 		CcspWifiTrace(("RDK_LOG_WARN,RDKB_WIFI_CONFIG_CHANGED : %s Calling wifi_setEnable to enable/disable SSID on interface:  %d enable: %d \n",__FUNCTION__,wlanIndex,pCfg->bEnabled));
                 if (pCfg->bEnabled == 0) {
                       t2_event_d("WIFI_INFO_XHSSID_disabled", 1);
