@@ -276,10 +276,14 @@ LGI_BandSteeringSSID_SetParamBoolValue
 
     if (strcmp(ParamName, "Enable") == 0)
     {
-        pBandSteeringSSID->Enable = bValue;
-        retValue = TRUE;
+        wifi_getBandSteeringEnable_perSSID(pBandSteeringSSID->ifIndex,&pBandSteeringSSID->Enable);
 
-        enable_reset_both_radio_flag();
+        if(pBandSteeringSSID->Enable != bValue){
+          pBandSteeringSSID->Enable = bValue;
+          enable_reset_both_radio_flag();
+        }
+
+        retValue = TRUE;
     }
     if (strcmp(ParamName, "ClearCapable5G") == 0)
     {
@@ -329,8 +333,14 @@ LGI_BandSteeringSSID_SetParamIntValue
 
     if (strcmp(ParamName, "RSSIThreshold") == 0)
     {
-        wifi_setBandSteeringRSSIThreshold_perSSID(pBandSteeringSSID->ifIndex, value);
-        enable_reset_both_radio_flag();
+        INT RSSIThr;
+        wifi_getBandSteeringRSSIThreshold_perSSID(pBandSteeringSSID->ifIndex, &RSSIThr);
+
+        if(RSSIThr != value)
+        {
+          wifi_setBandSteeringRSSIThreshold_perSSID(pBandSteeringSSID->ifIndex, value);
+          enable_reset_both_radio_flag();
+        }
         return TRUE;
     }
 
@@ -379,14 +389,26 @@ LGI_BandSteeringSSID_SetParamUlongValue
 
     if (strcmp(ParamName, "DeltaThreshold") == 0)
     {
-        wifi_setBandSteeringDeltaThreshold_perSSID(pBandSteeringSSID->ifIndex, value);
-        enable_reset_both_radio_flag();
+        ULONG DeltaThreshold;
+        wifi_getBandSteeringDeltaThreshold_perSSID(pBandSteeringSSID->ifIndex, &DeltaThreshold);
+
+        if(DeltaThreshold != value)
+        {
+          wifi_setBandSteeringDeltaThreshold_perSSID(pBandSteeringSSID->ifIndex, value);
+          enable_reset_both_radio_flag();
+        }
         return TRUE;
     }
     if (strcmp(ParamName, "BlacklistTimeout") == 0)
     {
-        wifi_setBandSteeringBlacklistTimeout_perSSID(pBandSteeringSSID->ifIndex, value);
-        enable_reset_both_radio_flag();
+        ULONG BlacklistTimeout;
+        wifi_getBandSteeringBlacklistTimeout_perSSID(pBandSteeringSSID->ifIndex, &BlacklistTimeout);
+
+        if(BlacklistTimeout != value)
+        {
+          wifi_setBandSteeringBlacklistTimeout_perSSID(pBandSteeringSSID->ifIndex, value);
+          enable_reset_both_radio_flag();
+        }
         return TRUE;
     }
 
