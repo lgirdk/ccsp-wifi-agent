@@ -178,10 +178,6 @@ ANSC_STATUS CosaDmlWiFi_GetBandSteeringLog_3();
 ULONG BandsteerLoggingInterval = 3600;
 #endif
 
-#ifndef __user
-#define __user
-#endif
-
 extern BOOL client_fast_reconnect(unsigned int apIndex, char *mac);
 extern BOOL client_fast_redeauth(unsigned int apIndex, char *mac);
 extern pthread_mutex_t g_apRegister_lock;
