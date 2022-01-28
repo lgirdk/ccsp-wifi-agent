@@ -183,7 +183,6 @@ void* getSyscfgLogLevel( void *arg )
         CcspTraceInfo(("WIFI_DBG:-------Log Info values from arm RDKLogEnable:%d,RDKLogLevel:%u,WiFi_RDKLogLevel:%u,WiFi_RDKLogEnable:%d\n",RDKLogEnable,RDKLogLevel,WiFi_RDKLogLevel, WiFi_RDKLogEnable ));
     }
 #else
-    syscfg_init();
     CcspTraceInfo(("WIFI_DBG:-------Read Log Info\n"));
     char buffer[5];
     if( 0 == syscfg_get( NULL, "X_RDKCENTRAL-COM_LoggerEnable" , buffer, sizeof( buffer ) ) &&  ( buffer[0] != '\0' ) )
@@ -625,7 +624,6 @@ int main(int argc, char* argv[])
     /* For XB3, there are  4 rpc calls to arm to get loglevel values from syscfg
      * this takes around 7 to 10 seconds, so we are moving this to a thread */
 
-    syscfg_init();
 #ifdef _COSA_SIM_
     subSys = "";        /* PC simu use empty string as subsystem */
 #else
