@@ -2801,9 +2801,11 @@ INSTMSMT_PH2 -->
     					    <func_GetParamBoolValue>RadiusSettings_GetParamBoolValue</func_GetParamBoolValue>
 				 	   <func_GetParamIntValue>RadiusSettings_GetParamIntValue</func_GetParamIntValue>
 					   <func_GetParamUlongValue>RadiusSettings_GetParamUlongValue</func_GetParamUlongValue>
+					   <func_GetParamStringValue>RadiusSettings_GetParamStringValue</func_GetParamStringValue>
   					   <func_SetParamBoolValue>RadiusSettings_SetParamBoolValue</func_SetParamBoolValue>
 					   <func_SetParamUlongValue>RadiusSettings_SetParamUlongValue</func_SetParamUlongValue>
 					   <func_SetParamIntValue>RadiusSettings_SetParamIntValue</func_SetParamIntValue>
+					   <func_SetParamStringValue>RadiusSettings_SetParamStringValue</func_SetParamStringValue>
      					   <func_Validate>RadiusSettings_Validate</func_Validate>
 
    					   <func_Commit>RadiusSettings_Commit</func_Commit>
@@ -2869,6 +2871,18 @@ INSTMSMT_PH2 -->
 				            <syntax>int</syntax>
 				            <writable>true</writable>
                                         </parameter>
+                                        <parameter>
+                                            <name>OperatorName</name>
+                                            <type>string(32)</type>
+                                            <syntax>string</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
+                                        <parameter>
+                                            <name>LocationData</name>
+                                            <type>string(253)</type>
+                                            <syntax>string</syntax>
+                                            <writable>true</writable>
+                                        </parameter>
                                     </parameters>
 				</object>
                                 <object>
@@ -2915,31 +2929,6 @@ INSTMSMT_PH2 -->
                                             <name>EAPRequestRetries</name>
                                             <type>unsignedInt</type>
                                             <syntax>uint32</syntax>
-                                            <writable>true</writable>
-                                        </parameter>
-                                    </parameters>
-                                </object>
-                                <object>
-                                    <name>X_LGI-COM_Radius</name>
-                                    <objectType>object</objectType>
-                                    <functions>
-                                        <func_GetParamStringValue>Radius_GetParamStringValue</func_GetParamStringValue>
-                                        <func_SetParamStringValue>Radius_SetParamStringValue</func_SetParamStringValue>
-                                        <func_Validate>Radius_Validate</func_Validate>
-                                        <func_Commit>Radius_Commit</func_Commit>
-                                        <func_Rollback>Radius_Rollback</func_Rollback>
-                                    </functions>
-                                    <parameters>
-                                        <parameter>
-                                            <name>OperatorName</name>
-                                            <type>string(32)</type>
-                                            <syntax>string</syntax>
-                                            <writable>true</writable>
-                                        </parameter>
-                                        <parameter>
-                                            <name>LocationData</name>
-                                            <type>string(253)</type>
-                                            <syntax>string</syntax>
                                             <writable>true</writable>
                                         </parameter>
                                     </parameters>
