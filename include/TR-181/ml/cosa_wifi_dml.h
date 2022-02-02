@@ -1622,7 +1622,7 @@ Authenticator_Commit
     );
 
 ULONG
-Radius_GetParamStringValue
+RadiusSettings_GetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -1631,31 +1631,11 @@ Radius_GetParamStringValue
     );
 
 BOOL
-Radius_SetParamStringValue
+RadiusSettings_SetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
         char*                       pString
-    );
-
-BOOL
-Radius_Validate
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       pReturnParamName,
-        ULONG*                      puLength
-    );
-
-ULONG
-Radius_Commit
-    (
-        ANSC_HANDLE                 hInsContext
-    );
-
-ULONG
-Radius_Rollback
-    (
-        ANSC_HANDLE                 hInsContext
     );
 
 ULONG
