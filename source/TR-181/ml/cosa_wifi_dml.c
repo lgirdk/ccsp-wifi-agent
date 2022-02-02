@@ -21125,7 +21125,7 @@ Authenticator_Commit
 }
  
 ULONG
-Radius_GetParamStringValue
+RadiusSettings_GetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -21155,7 +21155,7 @@ Radius_GetParamStringValue
 }
 
 BOOL
-Radius_SetParamStringValue
+RadiusSettings_SetParamStringValue
     (
         ANSC_HANDLE                 hInsContext,
         char*                       ParamName,
@@ -21206,83 +21206,6 @@ Radius_SetParamStringValue
         return TRUE;
     }
     return FALSE;
-}
-
-BOOL
-Radius_Validate
-    (
-        ANSC_HANDLE                 hInsContext,
-        char*                       pReturnParamName,
-        ULONG*                      puLength
-    )
-{
-    CcspTraceWarning(("Radius_validate"));
-    return TRUE;
-}
-
-ULONG
-Radius_Commit
-    (
-        ANSC_HANDLE                 hInsContext
-    )
-{
-    PCOSA_DATAMODEL_WIFI            pMyObject     = (PCOSA_DATAMODEL_WIFI     )g_pCosaBEManager->hWifi;
-    PCOSA_CONTEXT_LINK_OBJECT       pLinkObj      = (PCOSA_CONTEXT_LINK_OBJECT)hInsContext;
-    PCOSA_DML_WIFI_AP               pWifiAp       = (PCOSA_DML_WIFI_AP        )pLinkObj->hContext;
-    PCOSA_DML_WIFI_APSEC_FULL       pWifiApSec    = (PCOSA_DML_WIFI_APSEC_FULL)&pWifiAp->SEC;
-    PCOSA_DML_WIFI_APSEC_CFG        pWifiApSecCfg = (PCOSA_DML_WIFI_APSEC_CFG )&pWifiApSec->Cfg;
-    PSINGLE_LINK_ENTRY              pSLinkEntry   = (PSINGLE_LINK_ENTRY       )NULL;
-    PCOSA_CONTEXT_LINK_OBJECT       pSSIDLinkObj  = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
-    PCOSA_DML_WIFI_SSID             pWifiSsid     = (PCOSA_DML_WIFI_SSID      )NULL;
-    UCHAR                           PathName[64]  = {0};
-
-    if ( !pWifiAp->bSecChanged )
-    {
-        return  ANSC_STATUS_SUCCESS;
-    }
-    else
-    {
-        pWifiAp->bSecChanged = FALSE;
-        CcspTraceInfo(("WiFi AP Radius commit -- apply the changes...\n"));
-    }
-
-    pSLinkEntry = AnscQueueGetFirstEntry(&pMyObject->SsidQueue);
-
-    while ( pSLinkEntry )
-    {
-        pSSIDLinkObj = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
-
-        sprintf(PathName, "Device.WiFi.SSID.%d.", pSSIDLinkObj->InstanceNumber);
-
-        if ( AnscEqualString(pWifiAp->AP.Cfg.SSID, PathName, TRUE) )
-        {
-            break;
-        }
-
-        pSLinkEntry  = AnscQueueGetNextEntry(pSLinkEntry);
-    }
-
-    if ( pSLinkEntry )
-    {
-        pWifiSsid = pSSIDLinkObj->hContext;
-
-#if !defined(_COSA_INTEL_USG_ATOM_) && !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_)
-        return CosaDmlWiFiApRadiusCfg((ANSC_HANDLE)pMyObject->hPoamWiFiDm, pWifiSsid->SSID.Cfg.SSID, pWifiApSecCfg);
-#else
-        return CosaDmlWiFiApRadiusCfg((ANSC_HANDLE)pMyObject->hPoamWiFiDm, pWifiSsid->SSID.StaticInfo.Name, pWifiApSecCfg);
-#endif
-    }
-
-    return ANSC_STATUS_FAILURE;
-}
-
-ULONG
-Radius_Rollback
-    (
-        ANSC_HANDLE                 hInsContext
-    )
-{
-    return ANSC_STATUS_SUCCESS;
 }
 
 ULONG
