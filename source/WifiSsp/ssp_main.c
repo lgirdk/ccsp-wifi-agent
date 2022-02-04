@@ -588,8 +588,10 @@ int main(int argc, char* argv[])
         fclose(fd);
     }
 
-#if defined(_LG_MV1_CELENO_)
-    //Passing wifi initialized status 
+#if defined(_LG_MV1_CELENO_) 
+    if (access("/tmp/cbn_mv1_to_mng", F_OK) == 0)
+        unlink("/tmp/cbn_mv1_to_mng");
+    //Passing wifi initialized status
     system("rpcclient2 'touch /tmp/wifi_initialized'");
 
     //Trigerring radius relay start after wifi_initialized
