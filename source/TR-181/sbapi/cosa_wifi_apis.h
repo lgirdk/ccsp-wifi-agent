@@ -1306,7 +1306,7 @@ _COSA_DML_WIFI_ATM {
 }
 COSA_DML_WIFI_ATM, *PCOSA_DML_WIFI_ATM;
 
-#define MAC_LENGTH      13 
+#define MAC_LENGTH      17 
 
 typedef struct
 _COSA_DML_WIFI_HARVESTER
@@ -2310,6 +2310,15 @@ CosaDmlMacFilt_GetEntryByIndex
         ULONG index, 
         PCOSA_DML_WIFI_AP_MAC_FILTER pMacFilt
     );
+
+#if defined(_LG_MV1_CELENO_)
+ANSC_STATUS
+cbnCosaDmlMacFilt_PSMSync
+    (
+        ULONG apIns, 
+        ULONG count
+    );
+#endif
 
 ANSC_STATUS
 CosaDmlMacFilt_SetValues
