@@ -21915,8 +21915,7 @@ ANSC_STATUS UpdateJsonParam (char *pKey, char *PartnerId, char *pValue, char *pS
 {
 	if (strcmp (pKey, "Device.WiFi.X_RDKCENTRAL-COM_Syndication.WiFiRegion.Code") == 0)
 	{
-		syscfg_set (NULL, "WiFiRegionCode", pValue);
-		syscfg_commit();
+		syscfg_set_commit(NULL, "WiFiRegionCode", pValue);
 
 		return ANSC_STATUS_SUCCESS;
 	}
