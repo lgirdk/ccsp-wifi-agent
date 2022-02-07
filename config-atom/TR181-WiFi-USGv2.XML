@@ -2661,8 +2661,8 @@ INSTMSMT_PH2 -->
 
                                 <parameter>
                                     <name>PreSharedKey</name>
-                                    <type>hexBinary(32)</type>
-                                    <syntax>string</syntax>
+                                    <type>string</type>
+                                    <syntax>string/hex_string</syntax>
                                     <writable>true</writable>
                                 </parameter>
                                 <parameter>
