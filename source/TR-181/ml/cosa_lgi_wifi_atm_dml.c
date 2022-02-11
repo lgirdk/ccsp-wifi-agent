@@ -178,6 +178,14 @@ CosaDmlWiFiAtmBand_GetAtmBand(int radioIndex, PCOSA_DML_LG_WIFI_ATM_BAND_SETTING
 			}
 		}
 
+		/*
+		   Workaround for buggy HALs which return success but don't
+		   initialise the staWeight buffer. The HAL should be fixed (it
+		   should initialise the buffer in all cases) but for now init
+		   the buffer here before passing it to the HAL.
+		*/
+		memset(staWeight, 0, sizeof(staWeight));
+
 		if (0 == wifi_getAtmBandStaWeight(radioIndex, staWeight))
 		{
 			int staIndex = 0;
