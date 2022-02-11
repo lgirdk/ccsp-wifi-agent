@@ -259,24 +259,28 @@ Accounting_GetParamStringValue
     {
         /* Acct Secret should always return empty string when read */
         AnscCopyString(pValue, "");
+        return 0;
     }
 
     if (strcmp(ParamName, "SecondarySecret") == 0)
     {
         /* Acct Secret should always return empty string when read */
         AnscCopyString(pValue, "");
+        return 0;
     }
 
     if (strcmp(ParamName, "ServerIPAddr") == 0)
     {
         /* Acct Secret should always return empty string when read */
         AnscCopyString(pValue, pWifiApAcct->Cfg.AcctServerIPAddr);
+        return 0;
     }
 
     if (strcmp(ParamName, "SecondaryServerIPAddr") == 0)
     {
         /* Acct Secret should always return empty string when read */
         AnscCopyString(pValue, pWifiApAcct->Cfg.SecondaryAcctServerIPAddr);
+        return 0;
     }
 
     return -1;
