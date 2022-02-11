@@ -121,7 +121,8 @@ SoftBlock_GetParamStringValue
         ULONG*                      pulSize
     )
 {
-    return FALSE;
+    strcpy(pValue, "");
+    return 0;
 }
 
 BOOL
