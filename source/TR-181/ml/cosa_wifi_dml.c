@@ -823,6 +823,7 @@ WiFi_GetParamStringValue
         snprintf(pValue, *pUlSize, "%s", base64Conf);
         AnscFreeMemory(base64Conf);
         AnscFreeMemory(binConf);
+        return 0;
     }
 
     if (strcmp(ParamName, "X_RDKCENTRAL-COM_GASConfiguration") == 0)
@@ -830,6 +831,10 @@ WiFi_GetParamStringValue
         if(pMyObject->GASConfiguration) {
             rc = strcpy_s(pValue, *pUlSize, pMyObject->GASConfiguration);
             ERR_CHK(rc);
+        }
+        else
+        {
+            strcpy(pValue, "");
         }
         return 0;
     }
@@ -846,7 +851,7 @@ WiFi_GetParamStringValue
         return 0;
     }
 
-    return 0;
+    return -1;
 }
 
 static void *WiFi_HostSyncThread(void *arg)
@@ -2990,8 +2995,7 @@ Radio_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiRadioFull->Cfg.Alias)+1;
             return 1;
         }
-        return 0;
-    }
+   }
 
     if (strcmp(ParamName, "Name") == 0)
     {
@@ -3007,7 +3011,6 @@ Radio_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiRadioFull->StaticInfo.Name)+1;
             return 1;
         }
-        return 0;
     }
 
     if (strcmp(ParamName, "LowerLayers") == 0)
@@ -3051,7 +3054,6 @@ Radio_GetParamStringValue
             
             return 1;
         }
-        return 0;
     }
 
     if (strcmp(ParamName, "OperatingStandards") == 0)
@@ -3156,7 +3158,6 @@ Radio_GetParamStringValue
             
             return 1;
         }
-        return 0;
     }
 
     if (strcmp(ParamName, "PossibleChannels") == 0)
@@ -3175,7 +3176,6 @@ Radio_GetParamStringValue
                 *pUlSize = AnscSizeOfString(pWifiRadioFull->StaticInfo.PossibleChannels)+1;
                  return 1;
             }
-            return 0;
         }
     }
 
@@ -3194,7 +3194,6 @@ Radio_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiRadioFull->DynamicInfo.ChannelsInUse)+1;
             return 1;
         }
-        return 0;
     }
 
     if (strcmp(ParamName, "X_CISCO_COM_ApChannelScan") == 0)
@@ -3212,7 +3211,6 @@ Radio_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiRadioFull->DynamicInfo.ApChannelScan)+1;
             return 1;
         }
-        return 0;
     }
 
     if (strcmp(ParamName, "TransmitPowerSupported") == 0)
@@ -3229,7 +3227,6 @@ Radio_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiRadioFull->StaticInfo.TransmitPowerSupported)+1;
             return 1;
         }
-        return 0;
     }
 
     if (strcmp(ParamName, "RegulatoryDomain") == 0)
@@ -3246,7 +3243,6 @@ Radio_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiRadioFull->Cfg.RegulatoryDomain)+1;
             return 1;
         }
-        return 0;
     }
 
     if (strcmp(ParamName, "SupportedStandards") == 0)
@@ -3349,7 +3345,6 @@ Radio_GetParamStringValue
             
             return 1;
         }
-        return 0;
     }
 
 	if (strcmp(ParamName, "BasicDataTransmitRates") == 0)
@@ -3367,6 +3362,7 @@ Radio_GetParamStringValue
 	    }
 	    else
             {
+                strcpy(pValue, "");
             	CcspTraceError(("%s:%d CosaDmlWiFiGetRadioBasicDataTransmitRates returning Error \n",__func__, __LINE__));
             }      
 #else
@@ -3380,7 +3376,6 @@ Radio_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiRadioFull->Cfg.BasicDataTransmitRates)+1;
             return 1;
         }
-        return 0;        
     }
     	if (strcmp(ParamName, "SupportedDataTransmitRates") == 0)
     {
@@ -3397,6 +3392,7 @@ Radio_GetParamStringValue
             }
 	    else
             {
+                strcpy(pValue, "");
             	CcspTraceError(("%s:%d CosaDmlWiFiGetRadioSupportedDataTransmitRates returning Error \n",__func__, __LINE__));
             }
 #else
@@ -3410,7 +3406,6 @@ Radio_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiRadioFull->Cfg.SupportedDataTransmitRates)+1;
             return 1;
         }
-        return 0;
     }
     	if (strcmp(ParamName, "OperationalDataTransmitRates") == 0)
     {
@@ -3431,6 +3426,7 @@ Radio_GetParamStringValue
 	    }
 	    else
 	    {
+                strcpy(pValue, "");
             	CcspTraceError(("%s:%d CosaDmlWiFiGetRadioOperationalDataTransmitRates returning Error \n",__func__, __LINE__));
 	    }
 #else
@@ -3444,7 +3440,6 @@ Radio_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiRadioFull->Cfg.OperationalDataTransmitRates)+1;
             return 1;
         }
-        return 0;
     }
     if (strcmp(ParamName, "X_RDK_DCS_Channels_Exclude") == 0)
     {
@@ -3857,11 +3852,11 @@ IsValidDFSChannel(int apIndex, int channel)
         for (i=0; i<15; i++)
         {
             if(channel == channelList_5G_dfs[i]) {
-                return 0;
+                return FALSE;
             }
         }
     }
-    return 1;
+    return TRUE;
 }
 #endif
 
@@ -7197,7 +7192,11 @@ SSID_GetParamStringValue
             ERR_CHK(rc);
             
             AnscFreeMemory(pLowerLayer);
-        }     
+        } 
+        else
+        {
+            strcpy(pValue, "");
+        }
         return 0;
     }
 
@@ -7223,14 +7222,11 @@ SSID_GetParamStringValue
         	    {
         	        ERR_CHK(rc);
         	    }
-           	    *pUlSize = AnscSizeOfString(pValue);
-
 	            return 0;
 		}
 		else{
 			memset(pWifiSsid->SSID.StaticInfo.BSSID,0,sizeof(pWifiSsid->SSID.StaticInfo.BSSID));
 		  	memcpy(pValue, pWifiSsid->SSID.StaticInfo.BSSID, strlen((char*)pWifiSsid->SSID.StaticInfo.BSSID)+1);
-			*pUlSize = AnscSizeOfString(pValue);
 			return 0;
 		}
         }
@@ -7239,7 +7235,6 @@ SSID_GetParamStringValue
             *pUlSize = AnscSizeOfString((char*)pWifiSsid->SSID.StaticInfo.BSSID)+1;
             return 1;
         }
-        return 0;
     }
 
     if (strcmp(ParamName, "MACAddress") == 0)
@@ -7265,15 +7260,12 @@ SSID_GetParamStringValue
 	    {
 	       ERR_CHK(rc);
 	    }
-
-            *pUlSize = AnscSizeOfString(pValue);
             return 0;
 	    }
 	    else
 	    {
 	     memset(pWifiSsid->SSID.StaticInfo.MacAddress,0,sizeof(pWifiSsid->SSID.StaticInfo.MacAddress));
              *pValue = 0;
-	     *pUlSize = AnscSizeOfString(pValue);
              return 0;
 	    }
         }
@@ -7282,7 +7274,6 @@ SSID_GetParamStringValue
             *pUlSize = AnscSizeOfString((char*)pWifiSsid->SSID.StaticInfo.MacAddress)+1;
             return 1;
         }
-        return 0;
     }
 
     if (strcmp(ParamName, "SSID") == 0)
@@ -7329,7 +7320,6 @@ SSID_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiSsid->SSID.Cfg.SSID)+1;
             return 1;
         }
-        return 0;
     }
 
     if (strcmp(ParamName, "X_COMCAST-COM_DefaultSSID") == 0)
@@ -9658,8 +9648,7 @@ AccessPoint_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiAp->AP.Cfg.Alias)+1;
             return 1;
         }
-        return 0;
-    }
+   }
 
     if (strcmp(ParamName, "SSIDReference") == 0)
     {
@@ -9675,7 +9664,6 @@ AccessPoint_GetParamStringValue
             *pUlSize = AnscSizeOfString(pWifiAp->AP.Cfg.SSID)+1;
             return 1;
         }
-        return 0;
     }
 
 	//zqiu
@@ -9784,15 +9772,15 @@ AccessPoint_GetParamStringValue
             if (AnscSizeOfString(strValue) < *pUlSize)
             {
                 AnscCopyString(pValue, strValue);
-                return TRUE;
+                ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+                return 0;
             }
             else
             {
                 *pUlSize = AnscSizeOfString(strValue)+1;
-                return FALSE;
+                ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+                return 1;
             }
-            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
-            return TRUE;
         }
     }
 
@@ -10121,10 +10109,10 @@ AccessPoint_SetParamBoolValue
 	    }
 	} else {
 	    CcspWifiTrace(("RDK_LOG_ERROR, (%s) Interworking Capability is not Available !!!\n", __func__));
+        if (strValue)
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
 	    return FALSE;
 	}
-	if (strValue)
-            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     }
 
 #endif
@@ -15360,7 +15348,6 @@ InterworkingElement_GetParamStringValue
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pWifiAp->AP.Cfg.IEEE80211uCfg.IntwrkCfg.iHESSID);
         ERR_CHK(rc);
-       *pUlSize = AnscSizeOfString(pWifiAp->AP.Cfg.IEEE80211uCfg.IntwrkCfg.iHESSID);
         return 0;
     }
     
@@ -16287,7 +16274,6 @@ InterworkingElement_GetParamStringValue
     {
         rc = strcpy_s(pValue, *pUlSize, "no support for non xb3");
         ERR_CHK(rc);
-        *pUlSize = AnscSizeOfString(pValue);
         return 0;
     }
 
@@ -20167,8 +20153,6 @@ AssociatedDevice1_GetParamStringValue
             {
                 ERR_CHK(rc);
             }
-
-            *pUlSize = AnscSizeOfString(pValue);
             return 0;
         }
         else
@@ -20176,7 +20160,6 @@ AssociatedDevice1_GetParamStringValue
             *pUlSize = AnscSizeOfString((char*)pWifiApDev->MacAddress)+1;
             return 1;
         }
-        return 0;
     }
 
     if (strcmp(ParamName, "X_COMCAST-COM_OperatingStandard") == 0)
@@ -22474,8 +22457,6 @@ NeighboringScanResult_GetParamStringValue
  
 			 return 1;
 		 }
-
-		 return 0;
 	 }
 
 	 if (strcmp(ParamName, "History") == 0)
@@ -22497,8 +22478,6 @@ NeighboringScanResult_GetParamStringValue
 			 
 			 return 1;
 		 }
-		 
-		 return 0;
 	 }
 
 	 /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
@@ -23815,11 +23794,10 @@ Sta_GetParamStringValue
         /* collect value */
 		rc = strcpy_s(pValue, *pUlSize, pATMApSta->MACAddress);
 		ERR_CHK(rc);
-		*pUlSize = AnscSizeOfString(pValue);
         return 0;
     }
 	
-    return FALSE;
+    return -1;
 }
 
 
@@ -24166,6 +24144,10 @@ InterworkingService_GetParamStringValue
                 return 1;
             }
         }
+        else
+        {
+            strcpy(pValue, "");
+        }
         return 0;
     }
 
@@ -24397,6 +24379,10 @@ Passpoint_GetParamStringValue
                 *pUlSize = AnscSizeOfString(pWifiAp->AP.Cfg.IEEE80211uCfg.PasspointCfg.HS2Parameters)+1;
                 return 1;
             }
+        }
+        else
+        {
+            strcpy(pValue, "");
         }
         return 0;
     }
