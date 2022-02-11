@@ -3400,11 +3400,11 @@ IsValidDFSChannel(int apIndex, int channel)
         for (i=0; i<15; i++)
         {
             if(channel == channelList_5G_dfs[i]) {
-                return 0;
+                return FALSE;
             }
         }
     }
-    return 1;
+    return TRUE;
 }
 #endif
 
@@ -5941,14 +5941,11 @@ SSID_GetParamStringValue
 	               	pWifiSsid->SSID.StaticInfo.BSSID[4],
 	                pWifiSsid->SSID.StaticInfo.BSSID[5]
         	    );
-           	    *pUlSize = AnscSizeOfString(pValue);
-
 	            return 0;
 		}
 		else{
 			memset(pWifiSsid->SSID.StaticInfo.BSSID,0,sizeof(pWifiSsid->SSID.StaticInfo.BSSID));
 		  	memcpy(pValue, pWifiSsid->SSID.StaticInfo.BSSID, strlen((char*)pWifiSsid->SSID.StaticInfo.BSSID)+1);
-			*pUlSize = AnscSizeOfString(pValue);
 			return 0;
 		}
         }
@@ -5978,15 +5975,12 @@ SSID_GetParamStringValue
                 pWifiSsid->SSID.StaticInfo.MacAddress[4],
                 pWifiSsid->SSID.StaticInfo.MacAddress[5]
             );
-
-            *pUlSize = AnscSizeOfString(pValue);
             return 0;
 	    }
 	    else
 	    {
 	     memset(pWifiSsid->SSID.StaticInfo.MacAddress,0,sizeof(pWifiSsid->SSID.StaticInfo.MacAddress));
              *pValue = 0;
-	     *pUlSize = AnscSizeOfString(pValue);
              return 0;
 	    }
         }
@@ -8222,15 +8216,15 @@ AccessPoint_GetParamStringValue
             if (AnscSizeOfString(strValue) < *pUlSize)
             {
                 AnscCopyString(pValue, strValue);
-                return TRUE;
+                ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+                return 0;
             }
             else
             {
                 *pUlSize = AnscSizeOfString(strValue)+1;
-                return FALSE;
+                ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
+                return 1;
             }
-            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
-            return TRUE;
         }
     }
 
@@ -8473,10 +8467,10 @@ AccessPoint_SetParamBoolValue
 	    }
 	} else {
 	    CcspWifiTrace(("RDK_LOG_ERROR, (%s) Interworking Capability is not Available !!!\n", __func__));
+        if (strValue)
+            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
 	    return FALSE;
 	}
-	if (strValue)
-            ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     }
 
 #endif
@@ -12730,7 +12724,6 @@ InterworkingElement_GetParamStringValue
     {
         /* collect value */
         AnscCopyString(pValue, pWifiAp->AP.Cfg.IEEE80211uCfg.IntwrkCfg.iHESSID);
-       *pUlSize = AnscSizeOfString(pWifiAp->AP.Cfg.IEEE80211uCfg.IntwrkCfg.iHESSID);
         return 0;
     }
     
@@ -13542,7 +13535,6 @@ InterworkingElement_GetParamStringValue
     if (strcmp(ParamName, "HESSID") == 0)
     {
         AnscCopyString(pValue, "no support for non xb3");
-        *pUlSize = AnscSizeOfString(pValue);
         return 0;
     }
 
@@ -17315,8 +17307,6 @@ AssociatedDevice1_GetParamStringValue
                 pWifiApDev->MacAddress[4],
                 pWifiApDev->MacAddress[5]
             );
-
-            *pUlSize = AnscSizeOfString(pValue);
             return 0;
         }
         else
@@ -20619,7 +20609,6 @@ Sta_GetParamStringValue
 	if (strcmp(ParamName, "MACAddress") == 0) {
         /* collect value */
 		AnscCopyString(pValue, pATMApSta->MACAddress);
-		*pUlSize = AnscSizeOfString(pValue);
         return 0;
     }
 	
