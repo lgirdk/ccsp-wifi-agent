@@ -224,7 +224,7 @@ int initparodusTask()
 
 		    if (ret == 0)
 		    {
-			CcspTraceInfo(("Init for parodus Success..!!\n"));
+			//CcspTraceInfo(("Init for parodus Success..!!\n"));
 		        break;
 		    }
 		    else
