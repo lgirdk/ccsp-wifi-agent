@@ -20747,13 +20747,13 @@ void *updateBootLogTime() {
             wifi_getApStatus( 10 , output_AP10 );
             wifi_getApStatus( 11 , output_AP11 );
 
-            CcspTraceWarning(("%s-%d LnF SSID 6:%s 7:%s 10:%s 11:%s\n",
+           /* CcspTraceWarning(("%s-%d LnF SSID 6:%s 7:%s 10:%s 11:%s\n",
                         __FUNCTION__,
                         __LINE__,
                         output_AP6,
                         output_AP7,
                         output_AP10,
-                        output_AP11 ));
+                        output_AP11 ));*/
 
             if(( 0 == strcmp( output_AP6 ,"Up" ) ) || \
                     ( 0 == strcmp( output_AP7 ,"Up" ) ) || \
@@ -20792,13 +20792,13 @@ void *updateBootLogTime() {
             wifi_getApStatus( 8 , output_AP8 );
             wifi_getApStatus( 9 , output_AP9 );
 
-            CcspTraceWarning(("%s-%d Xfinity SSID 4:%s 5:%s 8:%s 9:%s\n",
+           /* CcspTraceWarning(("%s-%d Xfinity SSID 4:%s 5:%s 8:%s 9:%s\n",
                                     __FUNCTION__,
                                     __LINE__,
                                     output_AP4,
                                     output_AP5,
                                     output_AP8,
-                                    output_AP9 ));
+                                    output_AP9 ));*/
 
             if(( 0 == strcmp( output_AP4 ,"Up" ) ) || \
                 ( 0 == strcmp( output_AP5 ,"Up" ) ) || \
