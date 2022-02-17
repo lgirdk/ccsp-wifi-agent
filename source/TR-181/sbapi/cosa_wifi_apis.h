@@ -118,6 +118,9 @@
 
 #define  MAC_ADDRESS_LENGTH  13
 
+ /* Number of DFS channels according to EU country code */
+#define DFSCHANCOUNT 15
+
  /* Active Measurement Step count */
 #define ACTIVE_MSMT_STEP_COUNT        32
 /* Active Measurement Plan ID length */
@@ -390,6 +393,38 @@ _COSA_DML_WIFI_CALC_OPT
 }
 COSA_DML_WIFI_CALC_OPT, *PCOSA_DML_WIFI_CALC_OPT;
 
+typedef enum 
+_COSA_DML_WIFI_ZWDFS_CHAN_STATUS_ENUM
+{
+    DFS_CHANNEL_CAC_PERIOD = 1, 
+    DFS_CHANNEL_CLEARED,
+    DFS_CHANNEL_NO_CLEARED
+}
+COSA_DML_WIFI_ZWDFS_CHAN_STATUS_ENUM, *PCOSA_DML_WIFI_ZWDFS_CHAN_STATUS_ENUM;
+
+/*
+ *  Structure definitions for ZeroWaitDFS
+ */
+
+struct
+_COSA_DML_WIFI_RADIO_ZEROWAITDFS_CHANLIST
+{
+        ULONG                                          Channel;
+        COSA_DML_WIFI_ZWDFS_CHAN_STATUS_ENUM           Status;
+}_struct_pack_;
+
+typedef  struct _COSA_DML_WIFI_RADIO_ZEROWAITDFS_CHANLIST COSA_DML_WIFI_RADIO_ZEROWAITDFS_CHANLIST, *PCOSA_DML_WIFI_RADIO_ZEROWAITDFS_CHANLIST;
+
+
+struct
+_COSA_DML_WIFI_RADIO_ZEROWAITDFS
+{
+        BOOL                                                              Enable;
+        COSA_DML_WIFI_RADIO_ZEROWAITDFS_CHANLIST                          DFSChannels[DFSCHANCOUNT];
+}_struct_pack_;
+
+typedef  struct _COSA_DML_WIFI_RADIO_ZEROWAITDFS COSA_DML_WIFI_RADIO_ZEROWAITDFS, *PCOSA_DML_WIFI_RADIO_ZEROWAITDFS;
+
 struct
 _COSA_DML_WIFI_RADIO_ENHANCEDACS
 {
@@ -485,6 +520,10 @@ _COSA_DML_WIFI_RADIO_CFG
 
     /* For X_LGI-COM_EnhancedACS */
     COSA_DML_WIFI_RADIO_ENHANCEDACS EnhancedACS;
+
+    /*For adding X_LGI-COM_ZeroWaitDFS*/
+    COSA_DML_WIFI_RADIO_ZEROWAITDFS ZeroWaitDFS;
+
 }_struct_pack_;
 
 typedef struct _COSA_DML_WIFI_RADIO_CFG COSA_DML_WIFI_RADIO_CFG,  *PCOSA_DML_WIFI_RADIO_CFG;
