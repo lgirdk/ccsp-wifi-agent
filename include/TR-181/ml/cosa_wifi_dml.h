@@ -502,6 +502,100 @@ EnhancedACS_Rollback
 
  APIs for Object:
 
+    WiFi.Radio.{i}.X_LGI-COM_ZeroWaitDFS.
+
+    *  ZeroWaitDFS_GetParamBoolValue
+    *  ZeroWaitDFS_SetParamBoolValue
+    *  ZeroWaitDFS_Validate
+    *  ZeroWaitDFS_Commit
+    *  ZeroWaitDFS_Rollback
+
+***********************************************************************/
+BOOL
+ZeroWaitDFS_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    );
+
+BOOL
+ZeroWaitDFS_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    );
+
+BOOL
+ZeroWaitDFS_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    );
+
+ULONG
+ZeroWaitDFS_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ULONG
+ZeroWaitDFS_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+
+/***********************************************************************
+
+ APIs for Object:
+
+    DfsChannels_GetEntryCount
+    DfsChannels_GetEntry
+    DfsChannels_GetParamUlongValue
+
+
+***********************************************************************/
+ULONG
+DfsChannels_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+ANSC_HANDLE
+DfsChannels_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    );
+
+BOOL
+DfsChannels_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    );
+
+ULONG
+DfsChannels_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+BOOL
+DfsChannels_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    );
+
+/***********************************************************************
+
+ APIs for Object:
+
 	WiFi.X_RDKCENTRAL-COM_BandSteering.BandSetting.{i}.
 
 	*  BandSetting_GetEntryCount
