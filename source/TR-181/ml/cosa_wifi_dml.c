@@ -97,6 +97,11 @@ extern ULONG g_currentBsUpdate;
 
 #define PATH_X_LGI_COM_ACTIVETIMEOUT "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%lu.X_LGI-COM_ActiveTimeout"
 
+# define DFSCHANCOUNT 15
+#define REFRESH_INTERVAL 120
+#define TIME_NO_NEGATIVE(x) ((long)(x) < 0 ? 0 : (x))
+static ULONG last_tick;
+
 # define WEPKEY_TYPE_SET 3
 # define KEYPASSPHRASE_SET 2
 # define MFPCONFIG_OPTIONS_SET 3
@@ -6070,6 +6075,269 @@ Stats3_Commit
 	//CosaDmlWiFi_setRadioStatsRadioStatisticsMeasuringInterval(pWifiRadio->Radio.Cfg.InstanceNumber, pWifiStats->RadioStatisticsMeasuringInterval);
 	//CosaDmlWiFi_resetRadioStats(pWifiStats);
     return ANSC_STATUS_SUCCESS; 
+}
+
+/***********************************************************************
+
+ APIs for Object:
+
+    WiFi.Radio.{i}.X_LGI-COM_ZeroWaitDFS.
+
+    *  ZeroWaitDFS_GetParamBoolValue
+    *  ZeroWaitDFS_SetParamBoolValue
+    *  ZeroWaitDFS_Validate
+    *  ZeroWaitDFS_Commit
+    *  ZeroWaitDFS_Rollback
+
+***********************************************************************/
+
+BOOL
+ZeroWaitDFS_GetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL*                       pBool
+    )
+{
+    PCOSA_DML_WIFI_RADIO            pWifiRadio      = hInsContext;
+    PCOSA_DML_WIFI_RADIO_FULL       pWifiRadioFull = &pWifiRadio->Radio;
+    PCOSA_DML_WIFI_RADIO_CFG        pWifiRadioCfg  = &pWifiRadioFull->Cfg;
+    PCOSA_DML_WIFI_RADIO_ZEROWAITDFS     pWifiRadioZeroWaitDFS = &pWifiRadioCfg->ZeroWaitDFS;
+    int wlanIndex = (ULONG) pWifiRadioCfg->InstanceNumber-1;
+
+    if ((wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX)) {
+        return FALSE;
+    }
+    /* check the parameter name and return the corresponding value */
+    if (strcmp(ParamName, "Enable") == 0) {
+#ifdef _LG_MV2_PLUS_
+         *pBool = pWifiRadioZeroWaitDFS->Enable;
+#endif //_LG_MV2_PLUS_
+         return TRUE;
+    }
+    return FALSE;
+}
+
+BOOL
+ZeroWaitDFS_SetParamBoolValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        BOOL                        bValue
+    )
+{
+#ifdef _LG_MV2_PLUS_
+    PCOSA_DATAMODEL_WIFI                  pMyObject       = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
+    PCOSA_DML_WIFI_RADIO                  pWifiRadio      = hInsContext;
+    PCOSA_DML_WIFI_RADIO_FULL             pWifiRadioFull = &pWifiRadio->Radio;
+    PCOSA_DML_WIFI_RADIO_CFG              pWifiRadioCfg  = &pWifiRadioFull->Cfg;
+    PCOSA_DML_WIFI_RADIO_ZEROWAITDFS      pWifiRadioZeroWaitDFS = &pWifiRadioCfg->ZeroWaitDFS;
+
+    int wlanIndex = (ULONG) pWifiRadioCfg->InstanceNumber-1;
+
+    if ((wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX)) 
+    {
+        return ANSC_STATUS_FAILURE;
+    }
+    if ( (strcmp(ParamName, "Enable") == 0))
+    {
+        if (wlanIndex==0)
+        {
+              CcspTraceError(("No ZWDFS for 2G4 \n"));
+              return FALSE;
+        }	
+        // TODO Activate the bellow code once HAL API are implemented 
+
+	// wifi_setZeroDFSState(wlanIndex,bValue,true);
+        pWifiRadioZeroWaitDFS->Enable = bValue;
+    }
+
+    return TRUE;
+#else
+    return FALSE;
+#endif //_LG_MV2_PLUS_
+}
+
+BOOL
+ZeroWaitDFS_Validate
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       pReturnParamName,
+        ULONG*                      puLength
+    )
+{
+    return TRUE;
+}
+
+ULONG
+ZeroWaitDFS_Commit
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    return ANSC_STATUS_SUCCESS;
+}
+
+ULONG
+ZeroWaitDFS_Rollback
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    return ANSC_STATUS_SUCCESS;
+}
+
+
+/***********************************************************************
+
+ APIs for Object:
+
+    WiFi.Radio.{i}.X_LGI-COM_ZeroWaitDFS.DfsChannels.
+
+    *  DfsChannels_GetEntryCount
+    *  DfsChannels_GetEntry
+    *  DfsChannels_GetParamUlongValue
+    *  DfsChannels_IsUpdated
+    *  DfsChannels_Synchronize
+
+***********************************************************************/
+
+ULONG
+DfsChannels_GetEntryCount
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    PCOSA_DML_WIFI_RADIO            pWifiRadio      = hInsContext;
+    PCOSA_DML_WIFI_RADIO_FULL       pWifiRadioFull = &pWifiRadio->Radio;
+    PCOSA_DML_WIFI_RADIO_CFG        pWifiRadioCfg  = &pWifiRadioFull->Cfg;
+
+    int wlanIndex = (ULONG) pWifiRadioCfg->InstanceNumber-1;
+
+    ULONG entryCount = 0;
+    if ((wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX)) {
+        return 0; //Error getting radio index
+    }
+    if (wlanIndex == 1)
+         entryCount = DFSCHANCOUNT; // Number of European zone DFS channels 
+#ifdef _LG_MV2_PLUS_
+    return entryCount;
+#else
+    return 0;
+#endif
+}
+
+ANSC_HANDLE
+DfsChannels_GetEntry
+    (
+        ANSC_HANDLE                 hInsContext,
+        ULONG                       nIndex,
+        ULONG*                      pInsNumber
+    )
+{
+    PCOSA_DML_WIFI_RADIO                  pWifiRadio      = hInsContext;
+    PCOSA_DML_WIFI_RADIO_FULL             pWifiRadioFull = &pWifiRadio->Radio;
+    PCOSA_DML_WIFI_RADIO_CFG              pWifiRadioCfg  = &pWifiRadioFull->Cfg;
+    PCOSA_DML_WIFI_RADIO_ZEROWAITDFS      pWifiRadioZeroWaitDFS = &pWifiRadioCfg->ZeroWaitDFS;
+
+    int wlanIndex = (ULONG) pWifiRadioCfg->InstanceNumber-1;
+
+    if ((wlanIndex < 0) || (wlanIndex >= WIFI_INDEX_MAX)) {
+        return (ANSC_HANDLE)NULL;
+    }
+
+    if (wlanIndex == 0) {
+        *pInsNumber = 0; // Empty list for 2G4
+    } else {
+        *pInsNumber = nIndex;
+    }
+    return (ANSC_HANDLE)&pWifiRadioZeroWaitDFS->DFSChannels[nIndex];
+
+}
+
+BOOL
+DfsChannels_GetParamUlongValue
+    (
+        ANSC_HANDLE                 hInsContext,
+        char*                       ParamName,
+        ULONG*                      puLong
+    )
+{
+    PCOSA_DML_WIFI_RADIO_ZEROWAITDFS_CHANLIST  DFSChannel = (PCOSA_DML_WIFI_RADIO_ZEROWAITDFS_CHANLIST) hInsContext;
+    if (DFSChannel == NULL)
+        return FALSE;
+
+    if (strcmp(ParamName, "Channel") == 0)
+    {
+        *puLong= DFSChannel->Channel;
+    }
+
+    if (strcmp(ParamName, "Status") == 0)
+    {
+        *puLong= DFSChannel->Status;
+    }
+
+    return TRUE;
+}
+
+BOOL
+DfsChannels_IsUpdated
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+    UNREFERENCED_PARAMETER(hInsContext);
+    if (!last_tick)
+    {
+        last_tick = AnscGetTickInSeconds();
+        return TRUE;
+    }
+
+    if (last_tick >= TIME_NO_NEGATIVE(AnscGetTickInSeconds() - REFRESH_INTERVAL))
+    {
+        return FALSE;
+    }
+    else
+    {
+        last_tick = AnscGetTickInSeconds();
+        return TRUE;
+    }
+
+}
+
+ULONG
+DfsChannels_Synchronize
+    (
+        ANSC_HANDLE                 hInsContext
+    )
+{
+#ifdef _LG_MV2_PLUS_
+    PCOSA_DML_WIFI_RADIO            pWifiRadio      = hInsContext;
+    PCOSA_DML_WIFI_RADIO_FULL       pWifiRadioFull = &pWifiRadio->Radio;
+    PCOSA_DML_WIFI_RADIO_CFG        pWifiRadioCfg  = &pWifiRadioFull->Cfg;
+    PCOSA_DML_WIFI_RADIO_ZEROWAITDFS      pWifiRadioZeroWaitDFS = &pWifiRadioCfg->ZeroWaitDFS;
+
+    // Activate the bellow code once the HAL API are implimented 
+    // int idx;
+    // bool Status; //HAL API wifi_getZeroDFSState need this param but is is not used in OFW requiremet. Trash param
+    // wifi_getZeroDFSState( pWifiRadioCfg->InstanceNumber-1,&pWifiRadioZeroWaitDFS->Enable,&Status );
+    // if (pWifiRadioCfg->InstanceNumber == 2)
+    // {
+    //     wifi_zwdf_list_t* intermidiat_status_list = NULL;
+    //     wifi_getZeroWaitDFSChannels(pWifiRadioCfg.InstanceNumber-1 , &intermidiat_status_list);
+    //     //copy to cfg
+    //     if (intermediate_status_list == NULL)
+    //         return 0;
+    //     while (intermediate_status_list[idx]->Channel != 0 && idx < DFSCHANCOUNT )) //could be replaced by sizeof(intermediate_status_list)/sizeof(intermediate_status_list[0]) 
+    //     {
+    //         pWifiRadioZeroWaitDFS->DFSChannels[idx].channel = intermediate_status_list[idx]->Channel ;
+    //         pWifiRadioZeroWaitDFS->DFSChannels[idx].Status  = intermediate_status_list[idx]->Status ;
+    //         idx++:
+    //     }
+    //     free(intermediate_status_list);
+    // }
+#endif
+    return 0;
 }
 
 /***********************************************************************

@@ -1832,6 +1832,53 @@ INSTMSMT_PH2 -->
                                 </object>
                             </objects>
                         </object>
+                        <object>
+                            <name>X_LGI-COM_ZeroWaitDFS</name>
+                            <objectType>object</objectType>
+                            <functions>
+                                <func_GetParamBoolValue>ZeroWaitDFS_GetParamBoolValue</func_GetParamBoolValue>
+                                <func_SetParamBoolValue>ZeroWaitDFS_SetParamBoolValue</func_SetParamBoolValue>
+                                <func_Validate>ZeroWaitDFS_Validate</func_Validate>
+                                <func_Commit>ZeroWaitDFS_Commit</func_Commit>
+                                <func_Rollback>ZeroWaitDFS_Rollback</func_Rollback>
+                            </functions>
+                            <parameters>
+                                <parameter>
+                                    <name>Enable</name>
+                                    <type>boolean</type>
+                                    <syntax>bool</syntax>
+                                    <writable>true</writable>
+                                </parameter>
+                            </parameters>
+                            <objects>
+                                <object>
+                                    <name>DfsChannels</name>
+                                    <objectType>staticTable</objectType>
+                                    <maxInstance>20</maxInstance>
+                                    <functions>
+                                        <func_GetEntryCount>DfsChannels_GetEntryCount</func_GetEntryCount>
+                                        <func_GetEntry>DfsChannels_GetEntry</func_GetEntry>
+                                        <func_GetParamUlongValue>DfsChannels_GetParamUlongValue</func_GetParamUlongValue>
+                                        <func_IsUpdated>DfsChannels_IsUpdated</func_IsUpdated>
+                                        <func_Synchronize>DfsChannels_Synchronize</func_Synchronize>
+                                    </functions>
+                                    <parameters>
+                                       <parameter>
+                                           <name>Channel</name>
+                                           <type>unsignedInt</type>
+                                           <syntax>uint32</syntax>
+                                           <writable>false</writable>
+                                       </parameter>
+                                       <parameter>
+                                           <name>Status</name>
+                                           <type>string: Cleared(1),Not_cleared(2),CAC_period(3)</type>
+                                           <syntax>uint32/mapped</syntax>
+                                           <writable>false</writable>
+                                       </parameter>
+                                    </parameters>
+                                </object>
+                            </objects>
+                        </object>
                     </objects>
                 </object>
 				<object>
