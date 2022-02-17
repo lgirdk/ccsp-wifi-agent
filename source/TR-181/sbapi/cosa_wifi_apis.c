@@ -14047,6 +14047,16 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
         wifi_setRadioChannelWeights(wlanIndex, halWeights);
         wlanRestart = TRUE;
     }
+#ifdef _LG_MV2_PLUS_
+    //incomment when HAL API are implimented
+    //if (pStoredCfg->ZeroWaitDFS.Enable != pCfg->ZeroWaitDFS.Enable)
+    //{
+    //    TODO Activate this when HAL API are implimented
+    //    wifi_setZeroDFSState (wlanIndex, pCfg->ZeroWaitDFS.Enable,true);
+    //    wlanRestart = TRUE; 
+    //}
+#endif //_LG_MV2_PLUS_
+
 #endif
 
 	if (pStoredCfg->X_COMCAST_COM_DCSEnable != pCfg->X_COMCAST_COM_DCSEnable )
@@ -15167,6 +15177,11 @@ CosaDmlWiFiRadioGetCfg
         wifi_getRadioChannelWeights(wlanIndex, halWeights);
         fromHalWeightsToChannelWeights(wlanIndex, halWeights, pCfg->EnhancedACS.ChannelWeights, sizeof(pCfg->EnhancedACS.ChannelWeights));
     }
+#ifdef _LG_MV2_PLUS_
+    // bool precac; //Nedded param for HAL API but not needed for OFW requirement
+    // wifi_getZeroDFSState(wlanIndex, &pCfg->ZeroWaitDFS.Enable,&precac);
+#endif //_LG_MV2_PLUS_
+
 #endif
 
     wifi_getRadioDfsSupport(wlanIndex,&pCfg->X_COMCAST_COM_DFSSupport);
