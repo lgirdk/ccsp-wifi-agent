@@ -288,7 +288,6 @@ CosaDmlGetWiFiLog
         unlink(LGI_WIFI_LOG_FILE_TEMP);
         return ANSC_STATUS_FAILURE;
     }
-    AnscZeroMemory(pWIFILog, log_max_num * sizeof(COSA_DML_WIFILOG_FULL));
     fp = fopen(LGI_WIFI_LOG_FILE_TEMP, "r");
     if(!fp)
     {
@@ -906,7 +905,6 @@ CosaDmlGetWiFiChannelChangeLog(char *filename)
             returnStatus = ANSC_STATUS_RESOURCES;
             break;
         }
-        AnscZeroMemory(pWifiLogEntry, sizeof(COSA_DML_WIFI_CH_CHANGE_LOG_FULL));
 
         pWifiLogEntry->Channel = channel;
         strncpy(pWifiLogEntry->Reason, reason, LGI_WIFI_EVENT_LOG_INFO_LEN);
@@ -933,7 +931,6 @@ CosaDmlGetWiFiChannelChangeLog(char *filename)
             returnStatus = ANSC_STATUS_RESOURCES;
             break;
         }
-        AnscZeroMemory(pCxtLink, sizeof(COSA_CONTEXT_LINK_OBJECT));
 
         /* Assign the content to the node with WiFi log entry. */
         if (pWifiObject->uWiFiChChangeLogNextInsNum == 0)

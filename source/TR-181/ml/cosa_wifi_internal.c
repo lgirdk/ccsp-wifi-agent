@@ -519,9 +519,6 @@ CosaWifiInitialize
 
 	if ( NULL != pWiFiRegion )
 	{
-		/* Memset Allocated Address */
-		memset( pWiFiRegion, 0, sizeof( COSA_DATAMODEL_RDKB_WIFIREGION ) );
-
 		CosaDmlWiFiRegionInit(pWiFiRegion);
 
 		pMyObject->pWiFiRegion 	   = pWiFiRegion;
@@ -1024,9 +1021,6 @@ CosaWifiInitialize
 		PCOSA_DML_WIFI_BANDSTEERING_SETTINGS pBSSettings = NULL;
 		int	iLoopCount = 0;
 		
-		/* Memset Allocated Address */
-		memset( pWifiBandSteering, 0, sizeof( COSA_DML_WIFI_BANDSTEERING ) );
-
 		pWifiBandSteering->RadioCount = pMyObject->RadioCount;
 
 		/* Load Previous Values for Band Steering Options */
@@ -1047,9 +1041,6 @@ CosaWifiInitialize
 		/* Load Previous Values for Band Steering Settings */
 		for ( iLoopCount = 0; iLoopCount < pWifiBandSteering->RadioCount; ++iLoopCount )
 		{
-			/* Memset Allocated Address */
-			memset( &pBSSettings[ iLoopCount ], 0, sizeof( COSA_DML_WIFI_BANDSTEERING_SETTINGS ) );
-
 			/* Instance Number Always from 1 */
 			pBSSettings[ iLoopCount ].InstanceNumber = iLoopCount + 1;
 
@@ -1065,7 +1056,6 @@ CosaWifiInitialize
     pHarvester = (PCOSA_DML_WIFI_HARVESTER)AnscAllocateMemory(sizeof(COSA_DML_WIFI_HARVESTER));
     if ( NULL != pHarvester )
     {
-          memset(pHarvester, 0, sizeof(COSA_DML_WIFI_HARVESTER));
           CosaDmlHarvesterInit(pHarvester);
           pMyObject->pHarvester = pHarvester;
     }
@@ -1086,7 +1076,6 @@ CosaWifiInitialize
 	//CosaWifiRegGetATMInfo((ANSC_HANDLE)pMyObject);
 	pATM = (PCOSA_DML_WIFI_ATM)AnscAllocateMemory(sizeof(COSA_DML_WIFI_ATM));
     if ( NULL != pATM )	{		
-		memset( pATM, 0, sizeof( COSA_DML_WIFI_ATM ) );
 		CosaDmlWiFi_GetATMOptions( pATM );
 		CosaWifiRegGetATMInfo( pATM );
 		pMyObject->pATM	   = pATM;

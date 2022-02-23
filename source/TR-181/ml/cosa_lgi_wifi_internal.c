@@ -91,8 +91,6 @@ ANSC_STATUS CosaLgiWifiInitialize( ANSC_HANDLE hThisObject )
         PCOSA_DML_LG_WIFI_ATM_BAND_SETTING pAtmBand = NULL;
         int  iLoopCount = 0;
 
-        /* Memset Allocated Address */
-        memset( pAATM, 0, sizeof( COSA_DML_LG_WIFI_ATM ) );
         AnscCopyString(pAATM->AtmInfo.AtmCapability, WIFI_ATM_CAPABILITY);
 
         pAATM->RadioCount = CosaDmlWiFiAtmBand_GetNumberOfBands();
@@ -112,9 +110,6 @@ ANSC_STATUS CosaLgiWifiInitialize( ANSC_HANDLE hThisObject )
         /* Load Previous Values for Band Steering Settings */
         for ( iLoopCount = 0; iLoopCount < pAATM->RadioCount; ++iLoopCount )
         {
-            /* Memset Allocated Address */
-            memset( &pAtmBand[ iLoopCount ], 0, sizeof( COSA_DML_LG_WIFI_ATM_BAND_SETTING ) );
-
             /* Instance Number Always from 1 */
             pAtmBand[ iLoopCount ].InstanceNumber = iLoopCount + 1;
 
