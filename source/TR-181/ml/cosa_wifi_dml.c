@@ -5059,7 +5059,6 @@ ZeroWaitDFS_GetParamBoolValue
         BOOL*                       pBool
     )
 {
-#ifdef _LG_MV2_PLUS_
     PCOSA_DML_WIFI_RADIO            pWifiRadio      = hInsContext;
     PCOSA_DML_WIFI_RADIO_FULL       pWifiRadioFull = &pWifiRadio->Radio;
     PCOSA_DML_WIFI_RADIO_CFG        pWifiRadioCfg  = &pWifiRadioFull->Cfg;
@@ -5071,10 +5070,11 @@ ZeroWaitDFS_GetParamBoolValue
     }
     /* check the parameter name and return the corresponding value */
     if (strcmp(ParamName, "Enable") == 0) {
+#ifdef _LG_MV2_PLUS_
          *pBool = pWifiRadioZeroWaitDFS->Enable;
+#endif //_LG_MV2_PLUS_
          return TRUE;
     }
-#endif //_LG_MV2_PLUS_
     return FALSE;
 }
 
