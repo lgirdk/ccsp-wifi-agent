@@ -22,4 +22,13 @@ lib_LTLIBRARIES=libCcspWifiAgent_qm.la
 
 libCcspWifiAgent_qm_la_SOURCES = qm_conn.c
 
-libCcspWifiAgent_qm_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/lib/common -I$(top_srcdir)/source/TR-181/lib/const -I$(top_srcdir)/source/TR-181/lib/ds -I$(top_srcdir)/source/TR-181/lib/inc -I$(top_srcdir)/source/TR-181/lib/json_util -I$(top_srcdir)/source/TR-181/lib/log -I$(top_srcdir)/source/TR-181/lib/osa -I$(top_srcdir)/source/TR-181/lib/ovsdb -I$(top_srcdir)/source/TR-181/lib/pjs -I$(top_srcdir)/source/TR-181/lib/schema
+libCcspWifiAgent_qm_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/lib/common \
+                                  -I$(top_srcdir)/source/TR-181/lib/const \
+                                  -I$(top_srcdir)/source/TR-181/lib/ds \
+                                  -I$(top_srcdir)/source/TR-181/lib/inc \
+                                  -I$(top_srcdir)/source/TR-181/lib/json_util \
+                                  -I$(top_srcdir)/source/TR-181/lib/log \
+                                  -I$(top_srcdir)/source/TR-181/lib/osa \
+                                  -I$(top_srcdir)/source/TR-181/lib/ovsdb \
+                                  -I$(top_srcdir)/source/TR-181/lib/pjs \
+                                  -I$(top_srcdir)/source/TR-181/lib/schema
