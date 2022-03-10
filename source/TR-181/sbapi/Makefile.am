@@ -29,7 +29,6 @@ libCcspWifiAgent_sbapi_la_CPPFLAGS = \
     -I$(top_srcdir)/source/TR-181/sbapi \
     -I$(top_srcdir)/include/TR-181/ml \
     -I$(top_srcdir)/source/Custom \
-    -I$(top_srcdir)/include \
     -I$(top_srcdir)/source/TR-181/lib/ovsdb \
     -I$(top_srcdir)/source/TR-181/lib/common \
     -I$(top_srcdir)/source/TR-181/lib/inc \
