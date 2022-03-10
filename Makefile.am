@@ -24,7 +24,7 @@ OPT_SRCDIR = source
 endif
 SUBDIRS = $(OPT_SRCDIR)
 
-lib_LTLIBRARIES=libwifi.la
+lib_LTLIBRARIES = libwifi.la
 
 if CCSP_ARCH_PC
 libwifi_la_CPPFLAGS = \

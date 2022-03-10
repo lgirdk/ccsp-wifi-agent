@@ -19,4 +19,5 @@
 
 lib_LTLIBRARIES=libCcspWifiAgent_inc.la
 
-libCcspWifiAgent_inc_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/lib/schema -I$(top_srcdir)/source/TR-181/lib/pjs
+libCcspWifiAgent_inc_la_CPPFLAGS = -I$(top_srcdir)/source/TR-181/lib/schema \
+                                   -I$(top_srcdir)/source/TR-181/lib/pjs
