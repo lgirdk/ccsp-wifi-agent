@@ -153,13 +153,7 @@ COSA_Init
     {
         goto EXIT;
     }
-/*
-#ifndef _ANSC_WINDOWSNT
-#ifdef _SOFTWAREMODULES_SUPPORT_NAF    
-    CosaSoftwareModulesInit(hCosaPlugInfo);
-#endif
-#endif
-*/
+
     pGetRegistryRootFolder = (COSAGetHandleProc)pPlugInfo->AcquireFunction("COSAGetRegistryRootFolder");
 
     if ( pGetRegistryRootFolder != NULL )
