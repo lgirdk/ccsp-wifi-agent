@@ -52,10 +52,8 @@
 #include "webconfig_framework.h"
 #endif
 
-#ifdef _ANSC_LINUX
 #include <semaphore.h>
 #include <fcntl.h>
-#endif
 
 #ifdef INCLUDE_BREAKPAD
 #include "breakpad_wrapper.h"
@@ -79,9 +77,7 @@ PCCC_MBI_INTERFACE              pWifiMbiIf               = (PCCC_MBI_INTERFACE  
 BOOL                            g_bActive               = FALSE;
 int gChannelSwitchingCount = 0;
 
-#ifdef _ANSC_LINUX
     sem_t *sem;
-#endif
 
 void* getSyscfgLogLevel( void *arg );
 
@@ -208,7 +204,6 @@ int  cmd_dispatch(int  command)
     {
             case	'e' :
 
-#ifdef _ANSC_LINUX
                 CcspTraceInfo(("Connect to bus daemon...\n"));
 
             {
@@ -231,7 +226,6 @@ int  cmd_dispatch(int  command)
                     );
             }
 
-#endif
 
                 ssp_create_wifi(gpWifiStartCfg);
                 ssp_engage_wifi(gpWifiStartCfg);
@@ -310,7 +304,6 @@ static void _print_stack_backtrace(void)
 #endif
 }
 
-#if defined(_ANSC_LINUX)
 static void daemonize(void) {
 	
 	/* initialize semaphores for shared processes */
@@ -459,7 +452,6 @@ static int is_core_dump_opened(void)
 }
 #endif
 
-#endif
 
 #if defined (_CBR_PRODUCT_REQ_) || (defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_))
 static bool drop_root()
@@ -538,21 +530,6 @@ int main(int argc, char* argv[])
         }
     }
 
-#if  defined(_ANSC_WINDOWSNT)
-
-    AnscStartupSocketWrapper(NULL);
-
-    display_info();
-
-    cmd_dispatch('e');
-
-    while ( cmdChar != 'q' )
-    {
-        cmdChar = getchar();
-
-        cmd_dispatch(cmdChar);
-    }
-#elif defined(_ANSC_LINUX)
   #if defined (_CBR_PRODUCT_REQ_) || (defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)) //Applicable only for TCHCBR, TCHXB6 & TCHXB7
     if(!drop_root())
     {
@@ -677,7 +654,6 @@ int main(int argc, char* argv[])
             cmd_dispatch(cmdChar);
         }
     }
-#endif
 
     err = Cdm_Term();
     if (err != CCSP_SUCCESS)
