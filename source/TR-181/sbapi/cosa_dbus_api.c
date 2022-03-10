@@ -321,8 +321,6 @@ void Cosa_BackgroundCommit
     params->pDestPath = pDestPath;
     params->bSet = bSet;
     handle = AnscCreateTask(commitThread, USER_DEFAULT_TASK_STACK_SIZE, USER_DEFAULT_TASK_PRIORITY, (void*)params, "SNMPWifiCustomCommitThread");
-#ifdef _ANSC_LINUX
     pthread_detach((pthread_t)handle);
-#endif
 //    AnscSpawnTask(commitThread, (void*)params, "SNMPBackgroundCommitThread");
 }
