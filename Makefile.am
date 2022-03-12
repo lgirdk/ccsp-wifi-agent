@@ -22,7 +22,6 @@ SUBDIRS = source
 lib_LTLIBRARIES = libwifi.la
 
 libwifi_la_CPPFLAGS = \
-    -D_ANSC_LINUX \
     -I$(top_srcdir)/source/TR-181/ml \
     -I$(top_srcdir)/source/TR-181/sbapi \
     -I$(top_srcdir)/source/TR-181/lib \
