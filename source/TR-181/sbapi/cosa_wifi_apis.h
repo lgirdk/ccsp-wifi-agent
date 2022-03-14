@@ -1305,6 +1305,7 @@ _COSA_DML_WIFI_AP_MAC_FILTER
 
     char                            MACAddress[18];
     char                            DeviceName[64];
+    char                            Description[64];
 }
 COSA_DML_WIFI_AP_MAC_FILTER, *PCOSA_DML_WIFI_AP_MAC_FILTER;
 
