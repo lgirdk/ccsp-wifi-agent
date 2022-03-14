@@ -1765,6 +1765,7 @@ static char *MacFilterMode      = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.
 static char *MacFilterList      = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.MacFilterList";
 static char *MacFilter          = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.MacFilter.%d";
 static char *MacFilterDevice    = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.MacFilterDevice.%d";
+static char *MacFilterDescription    = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.MacFilterDescription.%d";
 #if defined(CISCO_XB3_PLATFORM_CHANGES) || !defined(_XB6_PRODUCT_REQ_) 
 static char *WepKeyLength    = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.WepKeyLength";
 #endif
@@ -8434,6 +8435,8 @@ int DeleteMacFilter(int AccessPointIndex, int MacfilterInstance)
     PSM_Del_Record(bus_handle,g_Subsystem, recName);
     snprintf(recName, sizeof(recName), MacFilterDevice, AccessPointIndex, MacfilterInstance);
     PSM_Del_Record(bus_handle,g_Subsystem, recName);
+    snprintf(recName, sizeof(recName), MacFilterDescription, AccessPointIndex, MacfilterInstance);
+    PSM_Del_Record(bus_handle,g_Subsystem, recName);
     return 0;
 }
 
@@ -9339,6 +9342,8 @@ wifiDbgPrintf("%s ulInstance = %lu\n",__FUNCTION__, ulInstance);
 		    PSM_Del_Record(bus_handle,g_Subsystem, recName);
 		    snprintf(recName, sizeof(recName), MacFilterDevice, ulInstance, macInstance);
 		    PSM_Del_Record(bus_handle,g_Subsystem, recName);
+		    snprintf(recName, sizeof(recName), MacFilterDescription, ulInstance, macInstance);
+		    PSM_Del_Record(bus_handle,g_Subsystem, recName);
                 }
 
             // get last one
@@ -9359,6 +9364,9 @@ wifiDbgPrintf("%s ulInstance = %lu\n",__FUNCTION__, ulInstance);
                         ERR_CHK(rc);
                     }
                     PSM_Del_Record(bus_handle,g_Subsystem, recName);
+
+		    snprintf(recName, sizeof(recName), MacFilterDescription, ulInstance, macInstance);
+		    PSM_Del_Record(bus_handle,g_Subsystem, recName);
                 }
             }
         }
@@ -21344,6 +21352,14 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 	((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(devName);
     }
 
+    memset(recName, 0, sizeof(recName));
+    snprintf(recName, sizeof(recName), MacFilterDescription, apIns, pMacFilt->InstanceNumber);
+    retPsmGet = PSM_Get_Record_Value2(bus_handle, g_Subsystem, recName, NULL, &devName);
+    if (retPsmGet == CCSP_SUCCESS) {
+	sprintf(pMacFilt->Description, "%s",devName);
+	((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(devName);
+    }
+
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -21437,6 +21453,17 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     if (retPsmSet != CCSP_SUCCESS) {
 	wifiDbgPrintf("%s Error %d adding mac device name = %s \n", __FUNCTION__, retPsmSet, pMacFilt->DeviceName);
 	CcspWifiTrace(("RDK_LOG_ERROR,%s : %d adding mac device name = %s \n",__FUNCTION__, retPsmSet, pMacFilt->DeviceName));
+	pthread_mutex_unlock(&MacFilt_CountMutex);
+        return ANSC_STATUS_FAILURE;
+    }
+
+    // Add Description to Non-Vol PSM
+    memset(recName, 0, sizeof(recName));
+    snprintf(recName, sizeof(recName), MacFilterDescription, apIns, pMacFilt->InstanceNumber);
+    retPsmSet = PSM_Set_Record_Value2(bus_handle, g_Subsystem, recName, ccsp_string, pMacFilt->Description);
+    if (retPsmSet != CCSP_SUCCESS) {
+	wifiDbgPrintf("%s Error %d adding mac device Description = %s \n", __FUNCTION__, retPsmSet, pMacFilt->Description);
+	CcspWifiTrace(("RDK_LOG_ERROR,%s : %d adding mac device Description = %s \n",__FUNCTION__, retPsmSet, pMacFilt->Description));
 	pthread_mutex_unlock(&MacFilt_CountMutex);
         return ANSC_STATUS_FAILURE;
     }
@@ -21553,12 +21580,13 @@ wifiDbgPrintf("%s apIns = %lu macFiltIns = %lu g_macFiltCnt = %d\n",__FUNCTION__
 	if ( g_macFiltCnt[apIns-1] > 0 )
 	    g_macFiltCnt[apIns-1]--;
 
-        memset(recName, 0, sizeof(recName));
 	snprintf(recName, sizeof(recName), MacFilter, apIns, macFiltIns);
 	PSM_Del_Record(bus_handle,g_Subsystem,recName);
 
-        memset(recName, 0, sizeof(recName));
 	snprintf(recName, sizeof(recName), MacFilterDevice, apIns, macFiltIns);
+	PSM_Del_Record(bus_handle,g_Subsystem, recName);
+
+	snprintf(recName, sizeof(recName), MacFilterDescription, apIns, macFiltIns);
 	PSM_Del_Record(bus_handle,g_Subsystem, recName);
 
         // Remove from MacFilterList
@@ -21668,6 +21696,16 @@ CosaDmlMacFilt_SetConf(ULONG apIns, ULONG macFiltIns, PCOSA_DML_WIFI_AP_MAC_FILT
     if (retPsmSet != CCSP_SUCCESS) {
 	wifiDbgPrintf("%s Error %d adding mac device name = %s \n", __FUNCTION__, retPsmSet, pMacFilt->DeviceName);
 	CcspWifiTrace(("RDK_LOG_ERROR,%s :adding mac device name = %s \n",__FUNCTION__, pMacFilt->DeviceName));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    // Add MacFilterDescription to Non-Vol PSM
+    memset(recName, 0, sizeof(recName));
+    snprintf(recName, sizeof(recName), MacFilterDescription, apIns, pMacFilt->InstanceNumber);
+    retPsmSet = PSM_Set_Record_Value2(bus_handle, g_Subsystem, recName, ccsp_string, pMacFilt->Description);
+    if (retPsmSet != CCSP_SUCCESS) {
+	wifiDbgPrintf("%s Error %d adding mac device Description = %s \n", __FUNCTION__, retPsmSet, pMacFilt->Description);
+	CcspWifiTrace(("RDK_LOG_ERROR,%s :adding mac device Description = %s \n",__FUNCTION__, pMacFilt->Description));
         return ANSC_STATUS_FAILURE;
     }
 	CcspWifiTrace(("RDK_LOG_INFO,%s :adding mac device name = %s \n",__FUNCTION__, pMacFilt->DeviceName));
