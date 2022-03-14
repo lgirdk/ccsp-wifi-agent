@@ -20638,6 +20638,12 @@ MacFiltTab_GetParamStringValue
         AnscCopyString(pValue, pMacFilt->DeviceName);
         return 0;
     }
+    if (strcmp(ParamName, "Description") == 0)
+    {
+        /* collect value */
+        AnscCopyString(pValue, pMacFilt->Description);
+        return 0;
+    }
 
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
@@ -20669,6 +20675,15 @@ MacFiltTab_SetParamStringValue
         if (AnscSizeOfString(pString) >= sizeof(pMacFilt->DeviceName))
             return FALSE;
         AnscCopyString(pMacFilt->DeviceName, pString);
+        return TRUE;
+    }
+
+    if (strcmp(ParamName, "Description") == 0)
+    {
+        /* save update to backup */
+        if (AnscSizeOfString(pString) >= sizeof(pMacFilt->Description))
+            return FALSE;
+        AnscCopyString(pMacFilt->Description, pString);
         return TRUE;
     }
 
