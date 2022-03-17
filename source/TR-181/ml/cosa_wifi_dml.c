@@ -303,6 +303,23 @@ static BOOL isValidSSID(char *SSID)
 }
 #endif
 
+static void remove_spaces (char *input)
+{
+    char *s = input;
+    char *d = input;
+    int c;
+
+    while (1)
+    {
+        if ((c = *s++) == 0)
+            break;
+        if (c != ' ')
+            *d++ = c;
+    }
+
+    *d++ = 0;
+}
+
 //zqiu>>
 //#define WIFIEXT_DM_HOTSPOTSSID_UPDATE  "Device.X_COMCAST_COM_GRE.Interface.1.DHCPCircuitIDSSID"
 #define WIFIEXT_DM_HOTSPOTSSID_UPDATE  "Device.X_COMCAST-COM_GRE.Tunnel.1.EnableCircuitID"
@@ -3463,17 +3480,20 @@ Radio_GetParamStringValue
 
     if (strcmp(ParamName, "CurrentOperatingChannelBandwidth") == 0)
     {
-        char output_string[64] = {};
-        if(!wifi_getCurrentRadioOperatingChannelBandwidth(pWifiRadio->Radio.Cfg.InstanceNumber - 1, output_string))
-        {
-            AnscCopyString(pValue, output_string);
-            return 0;
-        }
-        else
+        if (wifi_getCurrentRadioOperatingChannelBandwidth(pWifiRadio->Radio.Cfg.InstanceNumber - 1, pValue, *pUlSize) != 0)
         {
             CcspTraceError(("%s:%d wifi_getCurrentRadioOperatingChannelBandwidth returning error \n",__func__, __LINE__));
             return 1;
         }
+
+        /*
+           The HAL should return strings such as "40MHz" (ie without any
+           spaces) but try to handle older or broken HALs which include a
+           space (e.g. "40 MHz").
+        */
+        remove_spaces (pValue);
+
+        return 0;
     }
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
