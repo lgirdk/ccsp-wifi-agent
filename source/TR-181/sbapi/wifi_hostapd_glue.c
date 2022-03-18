@@ -1410,6 +1410,8 @@ void update_hostapd_iconf(int ap_index, struct hostapd_config *conf)
      * environments for the current frequency band in the country. */
 #if defined (_XB7_PRODUCT_REQ_)
     snprintf(conf->country, sizeof(conf->country), "US");
+#elif defined (_COSA_BCM_ARM_)
+    wifi_getRadioRegionCode(ap_index, conf->country);
 #else
     wifi_getRadioCountryCode(ap_index, conf->country);
 #endif
