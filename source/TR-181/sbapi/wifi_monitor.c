@@ -1851,7 +1851,7 @@ upload_client_debug_stats(void)
 #ifdef WIFI_HAL_VERSION_3
                 wifi_getRadioCountryCode(getRadioIndexFromAp(apIndex), buf);
 #else //WIFI_HAL_VERSION_3
-                wifi_getRadioCountryCode(apIndex, buf);
+                wifi_getRadioRegionCode(apIndex, buf);
 #endif //WIFI_HAL_VERSION_3
                 memset(tmp, 0, sizeof(tmp));
                 get_formatted_time(tmp);
