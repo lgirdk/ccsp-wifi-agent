@@ -9422,8 +9422,8 @@ CosaDmlWiFi_SetRegionCode(char *code) {
 		return ANSC_STATUS_FAILURE;
 
         /* Check if country codes are already updated in wifi hal */
-        wifi_getRadioCountryCode(0, countryCode0);
-        wifi_getRadioCountryCode(1, countryCode1);
+        wifi_getRadioRegionCode(0, countryCode0);
+        wifi_getRadioRegionCode(1, countryCode1);
 
         if((strcmp(countryCode0, code) != 0 ) || (strcmp(countryCode1, code) != 0 ))
         {
@@ -15392,7 +15392,7 @@ CosaDmlWiFiRadioGetCfg
 
     //wifi_getCountryCode(wlanIndex, pCfg->RegulatoryDomain);
 	//snprintf(pCfg->RegulatoryDomain, 4, "US");
-	wifi_getRadioCountryCode(wlanIndex, pCfg->RegulatoryDomain);
+	wifi_getRadioRegionCode(wlanIndex, pCfg->RegulatoryDomain);
     //zqiu: RDKB-3346
     /*TODO CID: 80249 Out-of-bounds access - Fix in QTN code*/
 	wifi_getRadioBasicDataTransmitRates(wlanIndex,pCfg->BasicDataTransmitRates);
