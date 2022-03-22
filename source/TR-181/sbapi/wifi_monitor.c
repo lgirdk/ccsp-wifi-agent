@@ -1960,7 +1960,11 @@ static void  upload_client_debug_stats_transmit_power_stats(INT apIndex)
 #ifdef WIFI_HAL_VERSION_3
         wifi_getRadioCountryCode(getRadioIndexFromAp(apIndex), buf);
 #else //WIFI_HAL_VERSION_3
+#ifdef _LG_MV2_PLUS_
         wifi_getRadioRegionCode(apIndex, buf);
+#else
+        wifi_getRadioCountryCode(apIndex, buf);
+#endif //_LG_MV2_PLUS_
 #endif //WIFI_HAL_VERSION_3
         memset(tmp, 0, sizeof(tmp));
         get_formatted_time(tmp);
