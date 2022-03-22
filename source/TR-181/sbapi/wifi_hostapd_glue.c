@@ -1402,7 +1402,12 @@ void update_hostapd_iconf(int ap_index, struct hostapd_config *conf)
 #if defined (_XB7_PRODUCT_REQ_)
     snprintf(conf->country, sizeof(conf->country), "US");
 #else
+
+#ifdef _LG_MV2_PLUS_
     wifi_getRadioRegionCode(ap_index, conf->country);
+#else
+    wifi_getRadioCountryCode(ap_index, conf->country);
+#endif //_LG_MV2_PLUS_
 #endif
 
     conf->rssi_reject_assoc_rssi = 0;
