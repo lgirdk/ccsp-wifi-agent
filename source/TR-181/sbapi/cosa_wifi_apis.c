@@ -9365,8 +9365,13 @@ CosaDmlWiFi_SetRegionCode(char *code) {
 		return ANSC_STATUS_FAILURE;
 
         /* Check if country codes are already updated in wifi hal */
+#ifdef _LG_MV2_PLUS_
         wifi_getRadioRegionCode(0, countryCode0);
         wifi_getRadioRegionCode(1, countryCode1);
+#else
+        wifi_getRadioCountryCode(0, countryCode0);
+        wifi_getRadioCountryCode(1, countryCode1);
+#endif //_LG_MV2_PLUS_
 
         if((strcmp(countryCode0, code) != 0 ) || (strcmp(countryCode1, code) != 0 ))
         {
@@ -15313,7 +15318,12 @@ CosaDmlWiFiRadioGetCfg
 
     //wifi_getCountryCode(wlanIndex, pCfg->RegulatoryDomain);
 	//snprintf(pCfg->RegulatoryDomain, 4, "US");
+#ifdef _LG_MV2_PLUS_
 	wifi_getRadioRegionCode(wlanIndex, pCfg->RegulatoryDomain);
+#else
+	wifi_getRadioCountryCode(wlanIndex, pCfg->RegulatoryDomain);
+#endif //_LG_MV2_PLUS_
+
     //zqiu: RDKB-3346
     /*TODO CID: 80249 Out-of-bounds access - Fix in QTN code*/
 	wifi_getRadioBasicDataTransmitRates(wlanIndex,pCfg->BasicDataTransmitRates);
