@@ -83,7 +83,7 @@ for i in $(echo $pod_mac | sed "s/,/ /g"); do
    maclist="$maclist $podmac2,"
   linktype="$linktype Ethernet,"
   ports="$ports $port"
-  phy_rate=`dmcli eRT getv Device.Ethernet.Interface.$port.CurrentBitRate | grep -i value | cut -d":" -f3`
+  phy_rate=`dmcli eRT retv Device.Ethernet.Interface.$port.CurrentBitRate`
   echo_t "Ethernet backhaul network: Port: $port, cli-addr: $podmac2 , Link Phy-Rate:$phy_rate Mbps" >> /rdklogs/logs/MeshAgentLog.txt.0
   pod_found=true
   fi
