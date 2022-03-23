@@ -267,11 +267,11 @@ if [ "$THRESHOLD_REACHED_2G" -eq 0 ] && [ "$THRESHOLD_REACHED_5G" -eq 0 ];then
 	exit
 fi
 
-AutoChannelEnable_2G=`dmcli eRT getv Device.WiFi.Radio.1.AutoChannelEnable  | grep value | awk '{print $5}'`
+AutoChannelEnable_2G=`dmcli eRT retv Device.WiFi.Radio.1.AutoChannelEnable`
 if [ "$AutoChannelEnable_2G" == "" ] ; then
 	AutoChannelEnable_2G=true;
 fi
-AutoChannelEnable_5G=`dmcli eRT getv Device.WiFi.Radio.2.AutoChannelEnable  | grep value | awk '{print $5}'`
+AutoChannelEnable_5G=`dmcli eRT retv Device.WiFi.Radio.2.AutoChannelEnable`
 if [ "$AutoChannelEnable_5G" == "" ] ; then
 	AutoChannelEnable_5G=true;
 fi
