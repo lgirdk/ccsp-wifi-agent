@@ -9442,6 +9442,14 @@ printf("%s g_Subsytem = %s\n",__FUNCTION__,g_Subsystem);
       fclose(fd);
     }
 
+#ifdef _PUMA6_ATOM_
+    /* Remove time zone TZ file during factory reset */
+    if (access("/nvram/TZ", F_OK) == 0)
+    {
+       unlink("/nvram/TZ");
+    }
+#endif
+
 #if defined(_LG_MV1_CELENO_)
     /* Sync the legacy nvram file with default SSID and password */
     if (wifi_sync_legacy_fw_cfg_default())
