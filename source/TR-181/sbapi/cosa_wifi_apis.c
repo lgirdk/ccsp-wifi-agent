@@ -5551,7 +5551,7 @@ printf("%s g_Subsytem = %s wlanIndex %lu ulInstance %lu enabled = %s\n",__FUNCTI
 */
 //<<
 #if !defined(_HUB4_PRODUCT_REQ_) || defined(HUB4_WLDM_SUPPORT)
-#if defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_) && !defined(_LG_MV1_CELENO_)
+#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_)
 #ifdef WIFI_HAL_VERSION_3
     if (isVapPrivate(wlanIndex) || isVapMesh(wlanIndex)) {
 #else
@@ -6697,7 +6697,7 @@ CosaDmlWiFiApGetNeighborReportActivated(ULONG vAPIndex, BOOLEAN *pbNeighborRepor
         }
         sWiFiDmlApStoredCfg[vAPIndex].Cfg.X_RDKCENTRAL_COM_NeighborReportActivated = *pbNeighborReportActivated;
 #if !defined(_HUB4_PRODUCT_REQ_) || defined(HUB4_WLDM_SUPPORT)
-#if defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_) && !defined(_LG_MV1_CELENO_)
+#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_)
         //set to HAL
         CcspWifiTrace(("RDK_LOG_WARN,%s : setting value to HAL\n",__FUNCTION__ ));
         wifi_setNeighborReportActivation(vAPIndex, *pbNeighborReportActivated);
@@ -16127,11 +16127,8 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     }
 
     wifi_getNeighborReportActivation(wlanIndex, &rrmEnabled);
-
-    if (pCfg->X_RDKCENTRAL_COM_NeighborReportActivated != pStoredCfg->X_RDKCENTRAL_COM_NeighborReportActivated ||
-        pCfg->X_RDKCENTRAL_COM_NeighborReportActivated != rrmEnabled) {
-        wifi_setNeighborReportActivation(wlanIndex, &pCfg->X_RDKCENTRAL_COM_NeighborReportActivated);
-
+    if (pCfg->X_RDKCENTRAL_COM_NeighborReportActivated != rrmEnabled) {
+        wifi_setNeighborReportActivation(wlanIndex, pCfg->X_RDKCENTRAL_COM_NeighborReportActivated);
         enable_reset_radio_flag(wlanIndex);
     }
 
