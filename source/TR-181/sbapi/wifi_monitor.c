@@ -4986,7 +4986,7 @@ int associated_devices_diagnostics(void *arg)
     static wifi_associated_dev3_t *dev_array = NULL;
     static unsigned int num_devs = 0;
 
-#if !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(DUAL_CORE_XB3)
+#if !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(DUAL_CORE_XB3) && !defined(_LG_MV1_CELENO_)
     unsigned int i = 0;
     static unsigned int current_dev = 0;
     static int last_valid_dev = 0;

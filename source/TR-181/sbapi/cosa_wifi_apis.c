@@ -21788,6 +21788,21 @@ CosaDmlWiFi_getRadioBeaconPeriod(INT radioIndex, UINT *output)
 	return ANSC_STATUS_SUCCESS;
 }
 
+// LGI ADD - START
+ANSC_STATUS
+CosaDmlWiFi_getWpsStatus(INT apIndex, CHAR *output)
+{
+    int ret = 0;
+    ret = wifi_getWpsStatus(apIndex,output);
+
+    if (ret != 0) {
+        CcspWifiTrace(("RDK_LOG_ERROR,\n%s :wifi_getWpsStatus returned fail response\n",__FUNCTION__));
+        return ANSC_STATUS_FAILURE;
+    }
+
+    return ANSC_STATUS_SUCCESS;
+} // LGI ADD - END
+
 #if defined (FEATURE_OFF_CHANNEL_SCAN_5G)
 
 /*********************************************************************************/
@@ -21850,21 +21865,6 @@ CosaDmlWiFi_setRadio_X_RDK_OffChannelNscan(INT radioIndex, UINT X_RDK_OffChannel
 
     return ANSC_STATUS_SUCCESS;
 }
-
-// LGI ADD - START
-ANSC_STATUS
-CosaDmlWiFi_getWpsStatus(INT apIndex, CHAR *output)
-{
-    int ret = 0;
-    ret = wifi_getWpsStatus(apIndex,output);
-
-    if (ret != 0) {
-        CcspWifiTrace(("RDK_LOG_ERROR,\n%s :wifi_getWpsStatus returned fail response\n",__FUNCTION__));
-        return ANSC_STATUS_FAILURE;
-    }
-
-    return ANSC_STATUS_SUCCESS;
-} // LGI ADD - END
 
 /*********************************************************************************/
 /*                                                                               */
