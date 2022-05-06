@@ -29,4 +29,4 @@ CcspWifiSsp_CPPFLAGS = \
 
 CcspWifiSsp_CFLAGS = $(SYSTEMD_CFLAGS)
 CcspWifiSsp_SOURCES = ssp_main.c ssp_messagebus_interface.c ssp_action.c dm_pack_datamodel.c
-CcspWifiSsp_LDFLAGS = -lccsp_common -lhal_wifi -rdynamic -lsyscfg -lwebconfig_framework -lprint_uptime -lsecure_wrapper $(SYSTEMD_LDFLAGS)
+CcspWifiSsp_LDFLAGS = -lccsp_common -lhal_wifi -rdynamic -lsyscfg -lwebconfig_framework -lprint_uptime -lsecure_wrapper -ltelemetry_msgsender $(SYSTEMD_LDFLAGS) -lpthread
