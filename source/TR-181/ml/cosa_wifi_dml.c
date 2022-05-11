@@ -80,6 +80,7 @@
 #include "cosa_wifi_passpoint.h"
 #include "wifi_monitor.h"
 #include "dslh_definitions_database.h"
+#include <sysevent/sysevent.h>
 
 #if defined (FEATURE_SUPPORT_WEBCONFIG)
 #include "../sbapi/wifi_webconfig.h"
@@ -118,6 +119,12 @@ static ULONG last_tick;
 extern void* g_pDslhDmlAgent;
 extern int gChannelSwitchingCount;
 extern BOOL isWifiApplyLibHostapRunning;
+
+#ifdef _COSA_BCM_ARM_
+#define LGI_SUBNET3_INSTANCE   "6"
+#define WI03_WIFI_SSID_INDEX   6        // Actual index(7) - 1
+#define WI13_WIFI_SSID_INDEX   7        // Actual index(8) - 1
+#endif /* _COSA_BCM_ARM_ */
 
 /***********************************************************************
  IMPORTANT NOTE:
@@ -6202,6 +6209,27 @@ Radio_Commit
             pthread_attr_destroy( attrp );
 	isHotspotSSIDIpdated = FALSE;
     }
+#ifdef _COSA_BCM_ARM_
+    static BOOL guest_enable = FALSE;
+    if (!guest_enable)
+    {
+        BOOL enable;
+        wifi_getApEnable(WI03_WIFI_SSID_INDEX, &enable);
+        if (!enable)
+        {
+            wifi_getApEnable(WI13_WIFI_SSID_INDEX, &enable);
+        }
+        if (enable)
+        {
+            int wifiDml_sysevent_fd = 0;
+            token_t wifiDml_sysEtoken = TOKEN_NULL;
+            CcspTraceWarning(("Enable guest network interface brlan7 \n"));
+            wifiDml_sysevent_fd = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "ccsp_wifi_agent_dml", &wifiDml_sysEtoken);
+            sysevent_set(wifiDml_sysevent_fd, wifiDml_sysEtoken, "ipv4-up", LGI_SUBNET3_INSTANCE, 0);
+            guest_enable = TRUE;
+        }
+    }
+#endif  /* _COSA_BCM_ARM_ */
     return returnStatus; 
 }
 
