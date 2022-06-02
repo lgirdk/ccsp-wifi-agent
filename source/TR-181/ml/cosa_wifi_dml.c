@@ -12324,20 +12324,9 @@ Security_GetParamStringValue
     }
     if (strcmp(ParamName, "MFPConfig") == 0)
     {
-        /* read MFPconfig from wifi hal */
-        char mfpConfig[64] = {0};
-        wifi_getApSecurityMFPConfig(wlanIndex, mfpConfig);
-        if ( AnscSizeOfString(mfpConfig) < *pUlSize )
-        {
-            rc = strcpy_s(pValue, *pUlSize, mfpConfig);
-            ERR_CHK(rc);
-            return 0;
-        }
-        else
-        {
-            *pUlSize = AnscSizeOfString(mfpConfig) + 1;
-            return 1;
-        }
+        rc = strcpy_s(pValue, *pUlSize, pWifiApSec->Cfg.MFPConfig);
+        ERR_CHK(rc);
+        return 0;
     }
     
     if (strcmp(ParamName, "RadiusDASIPAddr") == 0)
