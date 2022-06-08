@@ -1079,7 +1079,6 @@ _COSA_DML_WIFI_AP_ASSOC_DEVICE
     ULONG                           PacketsSent;
     ULONG                           PacketsReceived;
     ULONG                           ErrorsSent;
-    ULONG                           ErrorsReceived;
     ULONG                           RetransCount;
     ULONG                           FailedRetransCount;
     ULONG                           RetryCount;
