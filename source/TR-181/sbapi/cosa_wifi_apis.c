@@ -17796,7 +17796,7 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
         return ANSC_STATUS_FAILURE;
     }
 
-#if defined(_XB6_PRODUCT_REQ_)
+#if defined(_XB6_PRODUCT_REQ_) || defined(_LG_MV3_)
     pEntry->Info.ModesSupported = COSA_DML_WIFI_SECURITY_None | 
 				  COSA_DML_WIFI_SECURITY_WPA2_Personal | 
 				  COSA_DML_WIFI_SECURITY_WPA2_Enterprise |
@@ -18156,7 +18156,7 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     retVal = wifi_getApBasicAuthenticationMode(wlanIndex, authMode);
     wifiDbgPrintf("wifi_getApBasicAuthenticationMode wanIndex = %d return code = %d for auth mode = %s\n",wlanIndex,retVal,authMode);
 
-#ifndef _XB6_PRODUCT_REQ_
+#if !defined(_XB6_PRODUCT_REQ_) && !defined(_LG_MV3_)
     if (strncmp(securityType,"None", strlen("None")) == 0)
     {
 		pCfg->ModeEnabled =  COSA_DML_WIFI_SECURITY_None; 
@@ -18492,7 +18492,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 #endif
 
 #ifndef _COSA_BCM_ARM_
-#ifndef _XB6_PRODUCT_REQ_
+#if !defined(_XB6_PRODUCT_REQ_) && !defined(_LG_MV3_)
         if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_None) 
        {
            rc = strcpy_s(securityType,sizeof(securityType),"None");
@@ -19306,7 +19306,7 @@ ULONG                                          instanceNumber
         sWiFiDmlPushWepKeys[wlanIndex] = TRUE;
         
         }
-#ifdef _XB6_PRODUCT_REQ_
+#if defined(_XB6_PRODUCT_REQ_) || defined(_LG_MV3_)
 	else if ( pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA2_Personal ||
                pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal ||
                pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition ||
@@ -19521,7 +19521,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         sWiFiDmlPushWepKeys[wlanIndex] = TRUE;
 
     } 
-#ifdef _XB6_PRODUCT_REQ_
+#if defined(_XB6_PRODUCT_REQ_) || defined(_LG_MV3_)
 	else  if (pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA2_Personal || 
                 pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal ||
                 pCfg->ModeEnabled == COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition ||
