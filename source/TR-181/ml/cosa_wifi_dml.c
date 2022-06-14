@@ -958,7 +958,8 @@ static ANSC_STATUS CosaDmlWiFi_CheckAndConfigureMFPConfig( BOOLEAN bFeatureMFPCo
 					if( TRUE == bFeatureMFPConfig )
 					{
 						if( ( pWifiAp->SEC.Cfg.ModeEnabled & COSA_DML_WIFI_SECURITY_WPA2_Personal ) || 
-							( pWifiAp->SEC.Cfg.ModeEnabled & COSA_DML_WIFI_SECURITY_WPA2_Enterprise )
+							( pWifiAp->SEC.Cfg.ModeEnabled & COSA_DML_WIFI_SECURITY_WPA2_Enterprise ) ||
+							( pWifiAp->SEC.Cfg.ModeEnabled & COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition )
 						  )
 						{
 							if ( ANSC_STATUS_SUCCESS != CosaDmlWiFiApSecsetMFPConfig( iLoopCount, "Optional" ) )
@@ -967,6 +968,19 @@ static ANSC_STATUS CosaDmlWiFi_CheckAndConfigureMFPConfig( BOOLEAN bFeatureMFPCo
 							}
 
 							rc = strcpy_s( pWifiAp->SEC.Cfg.MFPConfig, sizeof(pWifiAp->SEC.Cfg.MFPConfig), "Optional");
+							ERR_CHK(rc);
+						}
+
+						if( ( pWifiAp->SEC.Cfg.ModeEnabled & COSA_DML_WIFI_SECURITY_WPA3_Personal ) ||
+							( pWifiAp->SEC.Cfg.ModeEnabled & COSA_DML_WIFI_SECURITY_WPA3_Enterprise )
+						  )
+						{
+							if ( ANSC_STATUS_SUCCESS != CosaDmlWiFiApSecsetMFPConfig( iLoopCount, "Required" ) )
+							{
+								return ANSC_STATUS_FAILURE;
+							}
+
+							rc = strcpy_s( pWifiAp->SEC.Cfg.MFPConfig, sizeof(pWifiAp->SEC.Cfg.MFPConfig), "Required");
 							ERR_CHK(rc);
 						}
 
@@ -11601,7 +11615,7 @@ Security_GetParamStringValue
             return -1;
         }
 #else //WIFI_HAL_VERSION_3
-#ifndef _XB6_PRODUCT_REQ_
+#if !defined(_XB6_PRODUCT_REQ_) && !defined(_LG_MV3_)
         if (pWifiApSec->Info.ModesSupported & COSA_DML_WIFI_SECURITY_None )
         {
             rc = strcat_s(buf, sizeof(buf), "None");
@@ -11888,7 +11902,7 @@ Security_GetParamStringValue
 
         if ( 20 < *pUlSize)
         {
-#ifndef _XB6_PRODUCT_REQ_
+#if !defined(_XB6_PRODUCT_REQ_) && !defined(_LG_MV3_)
             if (pWifiApSec->Cfg.ModeEnabled & COSA_DML_WIFI_SECURITY_None )
             {
                 rc = strcpy_s(pValue, *pUlSize, "None");
@@ -12822,7 +12836,7 @@ Security_SetParamStringValue
               printf("unrecognized type name");
               return FALSE;
          }
-#if defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_XB8_PRODUCT_REQ_)
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_XB8_PRODUCT_REQ_) || defined(_LG_MV3_)
 #ifdef WIFI_HAL_VERSION_3
         if((TmpMode != wifi_security_mode_none)
             && (TmpMode != wifi_security_mode_wpa2_personal)
