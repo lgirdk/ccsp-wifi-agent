@@ -20955,8 +20955,8 @@ wifiDbgPrintf("%s apIns = %lu macFiltIns = %lu g_macFiltCnt = %d\n",__FUNCTION__
                 // Not the only or last mac in list
                 if ((nextMac=strstr(mac,","))) {
                     nextMac += 1;
-                    snprintf(mac,sizeof(*mac),"%s",nextMac);
-                    strncat(tmpMacFilterList, nextMac, strlen(nextMac));
+                    *mac = '\0';
+                    strcat(tmpMacFilterList, nextMac);
                 } else {
                     prev = mac - 1;
                     if (strstr(prev,":")) {
