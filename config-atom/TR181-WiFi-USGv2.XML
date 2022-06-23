@@ -1886,7 +1886,7 @@ INSTMSMT_PH2 -->
                             <objects>
                                 <object>
                                     <name>DfsChannels</name>
-                                    <objectType>staticTable</objectType>
+                                    <objectType>dynamicTable</objectType>
                                     <maxInstance>20</maxInstance>
                                     <functions>
                                         <func_GetEntryCount>DfsChannels_GetEntryCount</func_GetEntryCount>
@@ -1904,7 +1904,7 @@ INSTMSMT_PH2 -->
                                        </parameter>
                                        <parameter>
                                            <name>Status</name>
-                                           <type>string: Cleared(1),Not_cleared(2),CAC_period(3)</type>
+                                           <type>string: CAC_PERIOD(1),CLEARED(2),NOT_CLEARED(3)</type>
                                            <syntax>uint32/mapped</syntax>
                                            <writable>false</writable>
                                        </parameter>
