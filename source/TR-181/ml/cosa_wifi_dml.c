@@ -6088,9 +6088,7 @@ ZeroWaitDFS_SetParamBoolValue
               CcspTraceError(("No ZWDFS for 2G4 \n"));
               return FALSE;
         }	
-        // TODO Activate the bellow code once HAL API are implemented 
-
-	// wifi_setZeroDFSState(wlanIndex,bValue,true);
+        wifi_setZeroDFSState(wlanIndex,bValue,true);
         pWifiRadioZeroWaitDFS->Enable = bValue;
     }
 
@@ -6260,26 +6258,27 @@ DfsChannels_Synchronize
     PCOSA_DML_WIFI_RADIO_ZEROWAITDFS      pWifiRadioZeroWaitDFS = &pWifiRadioCfg->ZeroWaitDFS;
 
     // Activate the bellow code once the HAL API are implimented 
-    // int idx;
-    // bool Status; //HAL API wifi_getZeroDFSState need this param but is is not used in OFW requiremet. Trash param
-    // wifi_getZeroDFSState( pWifiRadioCfg->InstanceNumber-1,&pWifiRadioZeroWaitDFS->Enable,&Status );
-    // if (pWifiRadioCfg->InstanceNumber == 2)
-    // {
-    //     wifi_zwdf_list_t* intermidiat_status_list = NULL;
-    //     wifi_getZeroWaitDFSChannels(pWifiRadioCfg.InstanceNumber-1 , &intermidiat_status_list);
-    //     //copy to cfg
-    //     if (intermediate_status_list == NULL)
-    //         return 0;
-    //     while (intermediate_status_list[idx]->Channel != 0 && idx < DFSCHANCOUNT )) //could be replaced by sizeof(intermediate_status_list)/sizeof(intermediate_status_list[0]) 
-    //     {
-    //         pWifiRadioZeroWaitDFS->DFSChannels[idx].channel = intermediate_status_list[idx]->Channel ;
-    //         pWifiRadioZeroWaitDFS->DFSChannels[idx].Status  = intermediate_status_list[idx]->Status ;
-    //         idx++:
-    //     }
-    //     free(intermediate_status_list);
-    // }
+    int idx = 0;
+    unsigned char *Status; //HAL API wifi_getZeroDFSState need this param but is is not used in OFW requiremet. Trash param
+    if (pWifiRadioCfg->InstanceNumber == 2)
+    {
+        wifi_zwdf_list_t* intermediat_status_list = NULL;
+        wifi_getZeroWaitDFSChannelsStatus(pWifiRadioCfg->InstanceNumber-1 , &intermediat_status_list);
+        //copy to cfg
+        if (intermediat_status_list == NULL)
+        {
+            return ANSC_STATUS_FAILURE;
+        }
+        while (intermediat_status_list[idx].Channel != 0 && idx < DFSCHANCOUNT )
+        {
+            pWifiRadioZeroWaitDFS->DFSChannels[idx].Channel = intermediat_status_list[idx].Channel;
+            pWifiRadioZeroWaitDFS->DFSChannels[idx].Status  = intermediat_status_list[idx].Status;
+            idx++;
+        }
+        free(intermediat_status_list);
+    }
 #endif
-    return 0;
+    return ANSC_STATUS_SUCCESS;
 }
 
 /***********************************************************************
