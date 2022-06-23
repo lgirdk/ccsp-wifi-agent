@@ -15511,12 +15511,7 @@ WPS_SetParamStringValue
         }
         if (_ansc_strstr(pString, "PIN"))
         {
-            match++;
-#ifdef WIFI_HAL_VERSION_3
-            vapInfo->u.bss_info.wps.methods = (vapInfo->u.bss_info.wps.methods  | WIFI_ONBOARDINGMETHODS_PIN);
-#else
-            pWifiApWps->Cfg.ConfigMethodsEnabled = (pWifiApWps->Cfg.ConfigMethodsEnabled | COSA_DML_WIFI_WPS_METHOD_Pin);
-#endif
+            return FALSE;
         }
 	if (_ansc_strstr(pString, "NONE"))
         {
