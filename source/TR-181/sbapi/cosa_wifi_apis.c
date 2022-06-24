@@ -8012,6 +8012,17 @@ CosaDmlWiFiFactoryReset
         resetradios = 1;
     }
 
+#if defined(_LG_MV3_)
+    if (resetradios == 0)
+    {
+        /* Support factory reset triggered with HW button */
+        if (access("/nvram/.factory_reset_count", F_OK) != 0)
+        {
+            resetradios = 1;
+        }
+    }
+#endif
+
     if (resetradios == 0)
     {
         char buffer[8];
