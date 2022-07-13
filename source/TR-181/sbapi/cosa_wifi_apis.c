@@ -7813,12 +7813,15 @@ void *wait_for_brlan1_up()
             CcspWifiTrace(("RDK_LOG_ERROR, %s-%d Error in setting sysevent\n", __FUNCTION__, __LINE__));
         }
  
+//Avoid setting the sysevent lnf-setup to block the creation of br106 interface    
+#if 0
         fprintf(stderr,"CALL VLAN UTIL TO SET UP LNF\n");
         if ( (gWrite_sysevent_fd || !initGSyseventVar()) &&
             (sysevent_set(gWrite_sysevent_fd, gWrite_sysEtoken, "lnf-setup", "6", 0)) )
         {
             CcspWifiTrace(("RDK_LOG_ERROR, %s-%d Error in setting sysevent\n", __FUNCTION__, __LINE__));
         }
+#endif	
         //wifi_setLFSecurityKeyPassphrase();
 #endif
 	//CosaDmlWiFi_SetRegionCode(NULL);
