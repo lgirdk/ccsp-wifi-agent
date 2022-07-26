@@ -7332,7 +7332,7 @@ void pktGen_BlastClient ()
             wifi_dbg_print (1, "%s : %d no need to start pktgen for offline client %s\n",__func__,__LINE__,s_mac);
         }
 
-#if (!defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_)) || defined(_SR300_PRODUCT_REQ_)
+#if (!defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_))
         int waittime = config.sendDuration;
 #endif
 
@@ -7361,7 +7361,7 @@ void pktGen_BlastClient ()
         {
             memset(&dev_conn, 0, sizeof(wifi_associated_dev3_t));
 
-#if (!defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_)) || defined(_SR300_PRODUCT_REQ_)
+#if (!defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_))
             wifi_dbg_print(1,"%s : %d WIFI_HAL enabled, calling wifi_getApAssociatedClientDiagnosticResult with mac : %s\n",__func__,__LINE__,s_mac);
             CcspWifiTrace(("RDK_LOG_DEBUG, %s-%d WIFI_HAL enabled, calling wifi_getApAssociatedClientDiagnosticResult with mac : %s for sampling process",
                    __FUNCTION__, __LINE__, s_mac));
