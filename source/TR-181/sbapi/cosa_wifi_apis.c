@@ -14513,7 +14513,11 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
         // if OperatingStandards is set to only g or only n, set only flag to TRUE.
         // wifi_setRadioChannelMode will set PUREG=1/PUREN=1 in the config
         if ( (pCfg->OperatingStandards == COSA_DML_WIFI_STD_g) ||
-             (pCfg->OperatingStandards == (COSA_DML_WIFI_STD_g | COSA_DML_WIFI_STD_n) ) )
+             (pCfg->OperatingStandards == (COSA_DML_WIFI_STD_g | COSA_DML_WIFI_STD_n) )
+#ifdef _WIFI_AX_SUPPORT_
+             || (pCfg->OperatingStandards == (COSA_DML_WIFI_STD_g | COSA_DML_WIFI_STD_n | COSA_DML_WIFI_STD_ax) )
+#endif
+           ) 
         {
             gOnlyFlag = TRUE;
         }
