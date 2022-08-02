@@ -2194,7 +2194,7 @@ INSTMSMT_PH2 -->
                             </parameters>
                         </object>
                         <object>
-                            <name>X_LGI-COM_WifiSupportedRates</name>
+                            <name>X_LGI-COM_WiFiSupportedRates</name>
                             <objectType>object</objectType>
                             <functions>
                                 <func_GetParamStringValue>WifiSupportedRates_GetParamStringValue</func_GetParamStringValue>
@@ -4299,7 +4299,7 @@ INSTMSMT_PH2 -->
                     </objects> 
                 </object>
                 <object>
-                    <name>X_LGI-COM_WifiSupportedRates</name>
+                    <name>X_LGI-COM_WiFiSupportedRates</name>
                     <objectType>object</objectType>
                     <functions>
                         <func_GetParamBoolValue>WifiSupportedRatesControl_GetParamBoolValue</func_GetParamBoolValue>
