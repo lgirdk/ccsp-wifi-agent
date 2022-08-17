@@ -29090,9 +29090,10 @@ ANSC_STATUS CosaDmlWiFi_getInterworkingElement(PCOSA_DML_WIFI_AP_CFG pCfg, ULONG
 #define LMLITE_DBUS_PATH                     "/com/cisco/spvtg/ccsp/lmlite"
 #define LMLITE_COMPONENT_NAME                "eRT.com.cisco.spvtg.ccsp.lmlite"
 #define LMLITE_HOSTS_NOE_PARAM_NAME          "Device.Hosts.HostNumberOfEntries"
-#define LMLITE_LAYER1_IF_PARAM_NAME          "Device.Hosts.Host.%d.Layer1Interface"
-#define LMLITE_ACTIVE_PARAM_NAME             "Device.Hosts.Host.%d.Active"
-#define LMLITE_PHY_ADDR_PARAM_NAME           "Device.Hosts.Host.%d.PhysAddress"
+#define LMLITE_LAYER1_IF_PARAM_NAME          "Layer1Interface"
+#define LMLITE_ACTIVE_PARAM_NAME             "Active"
+#define LMLITE_PHY_ADDR_PARAM_NAME           "PhysAddress"
+#define LMLITE_HOSTS_HOST_NODE               "Device.Hosts.Host."
 
 /* * CosaDmlWiFi_GetParamValues() */
 ANSC_STATUS CosaDmlWiFi_GetParamValues( char *pComponent, char *pBus, char *pParamName, char *pReturnVal )
@@ -29169,6 +29170,7 @@ void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg )
                             iTotalLMHostClients,
                             iTotalLMHostWiFiClients;
     errno_t                 rc = -1;
+    int                     ret = 0;
  
     //detach thread from caller stack
     pthread_detach(pthread_self());
@@ -29187,24 +29189,34 @@ void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg )
 
         //Collect all LMLite WiFi host information
         memset(acTmpReturnValue, 0, sizeof(acTmpReturnValue));
-        if( ANSC_STATUS_FAILURE == CosaDmlWiFi_GetParamValues(LMLITE_COMPONENT_NAME, LMLITE_DBUS_PATH, LMLITE_HOSTS_NOE_PARAM_NAME, acTmpReturnValue))
+
+        parameterInfoStruct_t **HostInfo = NULL;
+        ret = CcspBaseIf_getParameterNames(bus_handle,
+                        LMLITE_COMPONENT_NAME,
+                        LMLITE_DBUS_PATH,
+                        LMLITE_HOSTS_HOST_NODE,
+                        1,
+                        &iTotalLMHostClients,
+                        &HostInfo);
+
+        if ( (ret != CCSP_SUCCESS) || (iTotalLMHostClients == 0) )
         {
-            continue;
-        }
-
-        //Total LMLite host count
-        iTotalLMHostClients = atoi(acTmpReturnValue);
-
-        //CcspTraceInfo(("%s - Total no of LM Host is:%d\n",__FUNCTION__,iTotalLMHostClients));
-
-        if( 0 == iTotalLMHostClients )
-        {
+            if( HostInfo != NULL )
+            {
+                free_parameterInfoStruct_t(bus_handle,iTotalLMHostClients,HostInfo);
+                HostInfo = NULL;
+            }
             continue;
         }
 
         pstWiFiLMHostCfg = (PCOSA_WIFI_LMHOST_CFG)malloc( sizeof(COSA_WIFI_LMHOST_CFG) * iTotalLMHostClients );
         if( NULL == pstWiFiLMHostCfg )
         {
+            if( HostInfo != NULL )
+            {
+                free_parameterInfoStruct_t(bus_handle,iTotalLMHostClients,HostInfo);
+                HostInfo = NULL;
+            }
             continue;
         }
 
@@ -29216,7 +29228,7 @@ void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg )
             //Get Layer1Interface
             memset(acTmpQueryParam, 0, sizeof(acTmpQueryParam));
             memset(acTmpReturnValue, 0, sizeof(acTmpReturnValue));
-            snprintf(acTmpQueryParam, sizeof(acTmpQueryParam), LMLITE_LAYER1_IF_PARAM_NAME, i + 1);
+            snprintf(acTmpQueryParam, sizeof(acTmpQueryParam), "%s%s",HostInfo[i]->parameterName,LMLITE_LAYER1_IF_PARAM_NAME);
             CosaDmlWiFi_GetParamValues(LMLITE_COMPONENT_NAME, LMLITE_DBUS_PATH, acTmpQueryParam, acTmpReturnValue);
 
             //Collect only WiFi clients
@@ -29245,7 +29257,7 @@ void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg )
                  //Get MAC
                  memset(acTmpQueryParam, 0, sizeof(acTmpQueryParam));
                  memset(acTmpReturnValue, 0, sizeof(acTmpReturnValue));
-                 snprintf(acTmpQueryParam, sizeof(acTmpQueryParam), LMLITE_PHY_ADDR_PARAM_NAME, i + 1);
+                 snprintf(acTmpQueryParam, sizeof(acTmpQueryParam),"%s%s",HostInfo[i]->parameterName,LMLITE_PHY_ADDR_PARAM_NAME);
                  CosaDmlWiFi_GetParamValues(LMLITE_COMPONENT_NAME, LMLITE_DBUS_PATH, acTmpQueryParam, acTmpReturnValue);
 
                  rc = sprintf_s( pstWiFiLMHostCfg[iTotalLMHostWiFiClients].acMACAddress, sizeof(pstWiFiLMHostCfg[iTotalLMHostWiFiClients].acMACAddress) - 1 , "%s", acTmpReturnValue );
@@ -29254,7 +29266,7 @@ void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg )
                  //Get Active Flag
                  memset(acTmpQueryParam, 0, sizeof(acTmpQueryParam));
                  memset(acTmpReturnValue, 0, sizeof(acTmpReturnValue));
-                 snprintf(acTmpQueryParam, sizeof(acTmpQueryParam), LMLITE_ACTIVE_PARAM_NAME, i + 1);
+                 snprintf(acTmpQueryParam, sizeof(acTmpQueryParam), "%s%s",HostInfo[i]->parameterName,LMLITE_ACTIVE_PARAM_NAME);
                  CosaDmlWiFi_GetParamValues(LMLITE_COMPONENT_NAME, LMLITE_DBUS_PATH, acTmpQueryParam, acTmpReturnValue);
 
                  if( 0 == strncmp( acTmpReturnValue, "true", strlen("true") ) )
@@ -29271,6 +29283,12 @@ void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg )
         }
 
         //No need to proceed when no WiFi clients connected
+        if( HostInfo != NULL )
+        {
+            free_parameterInfoStruct_t(bus_handle,iTotalLMHostClients,HostInfo);
+            HostInfo = NULL;
+        }
+
         if( 0 == iTotalLMHostWiFiClients )
         {
             if( NULL != pstWiFiLMHostCfg )
@@ -29281,6 +29299,7 @@ void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg )
 
             continue;
         }
+
 #ifdef WIFI_HAL_VERSION_3
         for(UINT radioIndex=0; radioIndex < getNumberRadios(); radioIndex++)
         {
