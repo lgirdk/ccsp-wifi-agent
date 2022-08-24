@@ -2698,11 +2698,13 @@ Radio_GetParamUlongValue
 
     if (strcmp(ParamName, "AutoChannelRefreshPeriod") == 0)
     {
-		//zqiu:  Reason for change: Device.WiFi.Radio.10000.AutoChannelRefreshPeriod parameter is getting updated even after Device.WiFi.Radio.10000.AutoChannelEnable is disabled.
-		if(pWifiRadioFull->Cfg.AutoChannelEnable == TRUE)
-		{
-			/* collect value */
-			*puLong = pWifiRadioFull->Cfg.AutoChannelRefreshPeriod;
+        ULONG  autoChannelRefreshPeriod = 0;
+        if(pWifiRadioFull->Cfg.AutoChannelEnable == TRUE)
+        {
+            if (wifi_getRadioAutoChannelRefreshPeriod(pWifiRadioCfg->InstanceNumber - 1, &autoChannelRefreshPeriod) == 0)
+            {
+                *puLong = autoChannelRefreshPeriod;
+            }
         }
         return TRUE;
     }
