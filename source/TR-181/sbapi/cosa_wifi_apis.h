@@ -192,17 +192,14 @@ _COSA_DML_WIFI_STD
     COSA_DML_WIFI_STD_b             = 2,
     COSA_DML_WIFI_STD_g             = 4,
     COSA_DML_WIFI_STD_n             = 8,
-    COSA_DML_WIFI_STD_ac            = 16
+    COSA_DML_WIFI_STD_ac            = 16,
 #ifdef _WIFI_AX_SUPPORT_
-,
-    COSA_DML_WIFI_STD_ax            = 32
+    COSA_DML_WIFI_STD_ax            = 32,
 #endif
 #ifdef WIFI_HAL_VERSION_3
-,
     COSA_DML_WIFI_STD_h             = 64,
-    COSA_DML_WIFI_STD_ad            = 128
+    COSA_DML_WIFI_STD_ad            = 128,
 #endif
-
 }
 COSA_DML_WIFI_STD, *PCOSA_DML_WIFI_STD;
 
