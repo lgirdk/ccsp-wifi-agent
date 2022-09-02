@@ -83,11 +83,6 @@
 
 #define  ANSC_TRACE_MODULE_ID                       ANSC_TRACE_ID_DM_API
 
-
-#ifdef   _ANSC_ENABLE_PRAGMA_
-#pragma  pack(1)
-#endif
-
 #ifdef  __GNUC__
 
     #ifndef  _struct_pack_
@@ -107,10 +102,6 @@
                 STRUCTURE AND CONSTANT DEFINITIONS
 **********************************************************************/
 
-#define  COSA_DML_LOWERLAYER_NAME_LENGTH            256
-#define  COSA_DML_IF_NAME_LENGTH                    512
-#define  COSA_DML_ALIAS_LENGTH                      64
-#define  COSA_DML_IP_ADDR_LENGTH                    40   /* IPv4 or IPv6 address */
 #define  COSA_DML_MAC_ADDR_LENGTH                   18
 
 typedef  enum
