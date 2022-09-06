@@ -24665,7 +24665,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 #endif
 	BOOL enabled=FALSE;
         int rc = -1;
-#if defined(_INTEL_BUG_FIXES_)
+#if defined(_INTEL_BUG_FIXES_) || !defined(_LG_MV1_CELENO_)
 	char *output_buf = NULL;
 	char partOfAddress[3];
 #else
@@ -24704,8 +24704,13 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 
 			count = 0;
 
-#if !defined(_INTEL_BUG_FIXES_)
+#if !defined(_INTEL_BUG_FIXES_) && defined(_LG_MV1_CELENO_)
             assoc_devices = CosaDmlWiFiApGetAssocDevices(NULL, ssid , &count);
+			if (assoc_devices == NULL && count > 0)
+			{
+				CcspWifiTrace(("RDK_LOG_ERR, (%s:%d) CosaDmlWiFiApGetAssocDevices failed \n", __FUNCTION__, __LINE__));
+				return NULL;
+			}
 #else
 			// Get the num of associated devices
 			wifi_getApNumDevicesAssociated(index-1, &count);  /* override 'count' value */
@@ -24745,7 +24750,11 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 					for (j=0; j < 6; j++)
 					{
 						snprintf(partOfAddress, 3, "%s", &output_buf[i*18 + j*3]);
+#if defined(_LG_MV1_CELENO_)
 						assoc_devices[i].MacAddress[j] = (char)strtol(partOfAddress, NULL, 16);
+#else
+						assoc_devices[count-i-1].MacAddress[j] = (char)strtol(partOfAddress, NULL, 16);
+#endif
 					}
 				}
 			}
@@ -24774,7 +24783,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 			_ansc_snprintf(ssid,sizeof(ssid),"Device.WiFi.SSID.%d",index);
 
 
-#if !defined(_INTEL_BUG_FIXES_)
+#if !defined(_INTEL_BUG_FIXES_) && defined(_LG_MV1_CELENO_)
                 for(j = 0; (j < count) && (assoc_devices != NULL) ; j++)
                 {
                         //CcspWifiTrace(("RDK_LOG_WARN,WIFI-CLIENT <%s> <%d> : j = %d \n",__FUNCTION__, __LINE__ , j));
@@ -24939,8 +24948,13 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 #endif
 			count = 0;
 
-#if !defined(_INTEL_BUG_FIXES_)
+#if !defined(_INTEL_BUG_FIXES_) && defined(_LG_MV1_CELENO_)
             assoc_devices = CosaDmlWiFiApGetAssocDevices(NULL, ssid , &count);
+                        if (assoc_devices == NULL && count > 0)
+                        {
+                            CcspWifiTrace(("RDK_LOG_ERR, (%s:%d) CosaDmlWiFiApGetAssocDevices [Group Notification] failed \n", __FUNCTION__, __LINE__));
+                            return NULL;
+                        }
 #else
 			// Get the num of associated devices
 			wifi_getApNumDevicesAssociated(index-1, &count);  /* override 'count' value */
@@ -25041,7 +25055,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 		CosaDMLWiFi_Send_FullHostDetails_To_LMLite( &hosts );
 	}
 
-#if defined(_INTEL_BUG_FIXES_)
+#if defined(_INTEL_BUG_FIXES_) || !defined(_LG_MV1_CELENO_)
 	if (output_buf)
         {
 		AnscFreeMemory(output_buf);
