@@ -10692,6 +10692,7 @@ ANSC_STATUS CosaDmlWiFiSetForceDisableWiFiRadio(BOOLEAN bValue)
             g_Subsystem, WiFiForceDisableWiFiRadio, ccsp_string, recValue))
     {
 #if !defined(_PUMA6_ATOM_)
+        wifi_apply();
         if(bValue) {
             CcspWifiTrace(("RDK_LOG_WARN, WIFI_FORCE_DISABLE_CHANGED_TO_TRUE\n"));
             system("/etc/plume_init.sh stop");
