@@ -3218,8 +3218,9 @@ char *wifi_apply_security_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr
         }
     }
 
-    if ((strcmp(vap_cfg->vap_name,"hotspot_secure_2g") == 0 || strcmp(vap_cfg->vap_name,"hotspot_secure_5g") == 0) &&
-            ((strcmp((const char *)vap_cfg->u.bss_info.security.u.radius.ip, (const char *)curr_cfg->u.bss_info.security.u.radius.ip) != 0 ||
+    if ((strncmp(vap_cfg->vap_name,"hotspot_secure_2g",strlen("hotspot_secure_2g")) == 0 || strncmp(vap_cfg->vap_name,"hotspot_secure_5g",strlen("hotspot_secure_5g")) == 0 ||
+             strncmp(vap_cfg->vap_name,"hotspot_open_5g",strlen("hotspot_open_5g")) == 0) &&
+             ((strcmp((const char *)vap_cfg->u.bss_info.security.u.radius.ip, (const char *)curr_cfg->u.bss_info.security.u.radius.ip) != 0 ||
               vap_cfg->u.bss_info.security.u.radius.port != curr_cfg->u.bss_info.security.u.radius.port ||
               strcmp(vap_cfg->u.bss_info.security.u.radius.key, curr_cfg->u.bss_info.security.u.radius.key) != 0) || (is_vap_enabled)))
     {
@@ -3232,7 +3233,8 @@ char *wifi_apply_security_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr
                 curr_cfg->u.bss_info.security.u.radius.key, curr_cfg->u.bss_info.security.u.radius.port);
     }
 
-    if ((strcmp(vap_cfg->vap_name,"hotspot_secure_2g") == 0 || strcmp(vap_cfg->vap_name,"hotspot_secure_5g") == 0) &&
+    if ((strncmp(vap_cfg->vap_name,"hotspot_secure_2g",strlen("hotspot_secure_2g")) == 0 || strncmp(vap_cfg->vap_name,"hotspot_secure_5g",strlen("hotspot_secure_5g")) == 0 ||
+         strncmp(vap_cfg->vap_name,"hotspot_open_5g",strlen("hotspot_open_5g")) == 0) &&
             ((strcmp((const char *)vap_cfg->u.bss_info.security.u.radius.s_ip, (const char *)curr_cfg->u.bss_info.security.u.radius.s_ip) != 0 ||
               vap_cfg->u.bss_info.security.u.radius.s_port != curr_cfg->u.bss_info.security.u.radius.s_port ||
               strcmp(vap_cfg->u.bss_info.security.u.radius.s_key, curr_cfg->u.bss_info.security.u.radius.s_key) != 0) || (is_vap_enabled)))
@@ -3461,10 +3463,18 @@ char *wifi_apply_security_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr
             CcspWifiTrace(("RDK_LOG_ERROR, %s-%d Error in setting sysevent\n", __FUNCTION__, __LINE__));
         }
     }
-    if ((strcmp(vap_cfg->vap_name,"hotspot_secure_2g") == 0 || strcmp(vap_cfg->vap_name,"hotspot_secure_5g") == 0) &&
-        ((strcmp((const char *)vap_cfg->u.bss_info.security.u.radius.ip, (const char *)curr_cfg->u.bss_info.security.u.radius.ip) != 0 || 
+
+#if !defined(_CBR_PRODUCT_REQ_)
+    if ((strncmp(vap_cfg->vap_name,"hotspot_secure_2g",strlen("hotspot_secure_2g")) == 0 || strncmp(vap_cfg->vap_name,"hotspot_secure_5g",strlen("hotspot_secure_5g")) == 0 || strncmp(vap_cfg->vap_name,"hotspot_open_5g",strlen("hotspot_open_5g")) == 0 ) &&
+        ((strcmp((const char *)vap_cfg->u.bss_info.security.u.radius.ip, (const char *)curr_cfg->u.bss_info.security.u.radius.ip) != 0 ||
            vap_cfg->u.bss_info.security.u.radius.port != curr_cfg->u.bss_info.security.u.radius.port ||
         strcmp(vap_cfg->u.bss_info.security.u.radius.key, curr_cfg->u.bss_info.security.u.radius.key) != 0) || (is_vap_enabled))) {
+#else
+    if ((strncmp(vap_cfg->vap_name,"hotspot_secure_2g",strlen("hotspot_secure_2g")) == 0 || strncmp(vap_cfg->vap_name,"hotspot_secure_5g",strlen("hotspot_secure_5g")) == 0 ) &&
+        ((strcmp((const char *)vap_cfg->u.bss_info.security.u.radius.ip, (const char *)curr_cfg->u.bss_info.security.u.radius.ip) != 0 ||
+           vap_cfg->u.bss_info.security.u.radius.port != curr_cfg->u.bss_info.security.u.radius.port ||
+        strcmp(vap_cfg->u.bss_info.security.u.radius.key, curr_cfg->u.bss_info.security.u.radius.key) != 0) || (is_vap_enabled))) {
+#endif
         if (vap_cfg->u.bss_info.enabled == TRUE) {
         retval = wifi_setApSecurityRadiusServer(wlan_index, (char *)vap_cfg->u.bss_info.security.u.radius.ip,
                    vap_cfg->u.bss_info.security.u.radius.port, vap_cfg->u.bss_info.security.u.radius.key);
@@ -3481,10 +3491,17 @@ char *wifi_apply_security_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr
         CcspTraceInfo(("%s: Radius Configs applied for wlan index %d\n", __FUNCTION__, wlan_index));
     }
 
-    if ((strcmp(vap_cfg->vap_name,"hotspot_secure_2g") == 0 || strcmp(vap_cfg->vap_name,"hotspot_secure_5g") == 0) &&
+#if !defined(_CBR_PRODUCT_REQ_)
+    if ((strncmp(vap_cfg->vap_name,"hotspot_secure_2g",strlen("hotspot_secure_2g")) == 0 || strncmp(vap_cfg->vap_name,"hotspot_secure_5g",strlen("hotspot_secure_5g")) == 0 || strncmp(vap_cfg->vap_name,"hotspot_open_5g",strlen("hotspot_open_5g")) == 0) &&
         ((strcmp((const char *)vap_cfg->u.bss_info.security.u.radius.s_ip, (const char *)curr_cfg->u.bss_info.security.u.radius.s_ip) != 0 ||
            vap_cfg->u.bss_info.security.u.radius.s_port != curr_cfg->u.bss_info.security.u.radius.s_port ||
         strcmp(vap_cfg->u.bss_info.security.u.radius.s_key, curr_cfg->u.bss_info.security.u.radius.s_key) != 0) || (is_vap_enabled))) {
+#else
+    if ((strncmp(vap_cfg->vap_name,"hotspot_secure_2g",strlen("hotspot_secure_2g")) == 0 || strncmp(vap_cfg->vap_name,"hotspot_secure_5g",strlen("hotspot_secure_5g")) == 0 ) &&
+        ((strcmp((const char *)vap_cfg->u.bss_info.security.u.radius.s_ip, (const char *)curr_cfg->u.bss_info.security.u.radius.s_ip) != 0 ||
+           vap_cfg->u.bss_info.security.u.radius.s_port != curr_cfg->u.bss_info.security.u.radius.s_port ||
+        strcmp(vap_cfg->u.bss_info.security.u.radius.s_key, curr_cfg->u.bss_info.security.u.radius.s_key) != 0) || (is_vap_enabled))) {
+#endif
         if (vap_cfg->u.bss_info.enabled == TRUE) {
         retval = wifi_setApSecuritySecondaryRadiusServer(wlan_index, (char *)vap_cfg->u.bss_info.security.u.radius.s_ip,
                   vap_cfg->u.bss_info.security.u.radius.s_port, vap_cfg->u.bss_info.security.u.radius.s_key);
