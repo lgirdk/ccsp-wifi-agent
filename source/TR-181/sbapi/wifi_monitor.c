@@ -4792,8 +4792,9 @@ static int csi_sheduler_enable(void)
         pthread_mutex_unlock(&g_events_monitor.lock);
         if (enable == TRUE) {
             while (found == 0) {
+                int i;
                 found = 1;
-                for (int i=0; i < count; i++) {
+                for (i=0; i < count; i++) {
                     if ((interval_list[i] % csi_time_interval) != 0 ) {
                         csi_time_interval = csi_time_interval - 100;
                         found = 0;
