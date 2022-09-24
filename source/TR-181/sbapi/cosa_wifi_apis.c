@@ -7222,7 +7222,9 @@ CosaDmlWiFiGetBridgePsmData
                     } //(strlen(ssidName) >=2)
                     ssidName = strtok_r(NULL, " ", &saveptr);
                 } //(ssidName != NULL)
-                for (ULONG idx = 0; idx<pBridge->SSIDCount; idx++) {
+
+                ULONG idx;
+                for (idx = 0; idx<pBridge->SSIDCount; idx++) {
                         retVal = wifi_getIndexFromName(pBridge->SSIDName[idx], &wlanIndex);
                         if (retVal == 0) {
                             char *bridgeName;
@@ -7246,7 +7248,7 @@ CosaDmlWiFiGetBridgePsmData
                                 ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(bridgeName);
                             }
                       } //(retVal == 0)
-                 } //for (int idx = 0; idx<pBridge->SSIDCount; idx++)
+                 } //for (idx = 0; idx<pBridge->SSIDCount; idx++)
 #else
                         retVal = wifi_getIndexFromName(pBridge->SSIDName[pBridge->SSIDCount], &wlanIndex);
                         if (retVal == 0) {

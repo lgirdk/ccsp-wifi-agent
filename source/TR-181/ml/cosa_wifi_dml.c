@@ -10018,6 +10018,7 @@ AccessPoint_SetParamBoolValue
         char tmpBuf[CLIENT_STATS_MAX_LEN_BUF] = {0};
         int len,size,index=0;
         int retPsmSet = CCSP_SUCCESS;
+        int i;
 
         get_device_flag(rxretryflag, "dmsb.device.deviceinfo.X_RDKCENTRAL-COM_WHIX.RxRetryList");
         if( rxretryflag[wlanIndex] == bValue) {
@@ -10026,7 +10027,7 @@ AccessPoint_SetParamBoolValue
             rxretryflag[wlanIndex] = bValue;
             len = sizeof(rxretryflag)/sizeof(rxretryflag[0]);
             
-            for (int i=0; i<len; i++) {
+            for (i=0; i<len; i++) {
               if (rxretryflag[i])
                 index+=sprintf(&buf[index],"%d,",(i+1));
             }
@@ -20938,6 +20939,8 @@ MacFiltTab_SetParamStringValue
 
 BOOL IsMacDuplicate(int nextInstNum, ULONG wifiAPInst, ULONG macFiltInst, char *MACAddress)
 {
+    int host;
+
     PCOSA_DML_WIFI_AP_MAC_FILTER  pMacFilt = AnscAllocateMemory(sizeof(COSA_DML_WIFI_AP_MAC_FILTER));
     if(!pMacFilt)
     {
@@ -20947,7 +20950,7 @@ BOOL IsMacDuplicate(int nextInstNum, ULONG wifiAPInst, ULONG macFiltInst, char *
   extern ANSC_HANDLE bus_handle;
   extern char g_Subsystem[32];
 
-    for (int host=0; host<nextInstNum; host++)
+    for (host=0; host<nextInstNum; host++)
     {
        CosaDmlMacFilt_GetMacInstanceNumber(wifiAPInst,host,pMacFilt);
        if (pMacFilt->InstanceNumber != macFiltInst)
