@@ -3216,8 +3216,13 @@ INSTMSMT_PH2 -->
                                     <type>boolean</type>
                                     <syntax>bool</syntax>
                                 </parameter>
-                   		<parameter>
+                                <parameter>
                                     <name>X_COMCAST-COM_OperatingStandard</name>
+                                    <type>string</type>
+                                    <syntax>string</syntax>
+                                </parameter>
+                                <parameter>
+                                    <name>OperatingStandard</name>
                                     <type>string</type>
                                     <syntax>string</syntax>
                                 </parameter>
