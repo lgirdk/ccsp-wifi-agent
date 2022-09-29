@@ -20994,7 +20994,7 @@ AssociatedDevice1_GetParamStringValue
         }
     }
 
-    if ( (strcmp(ParamName, "X_COMCAST-COM_OperatingStandard") == 0) || (strcmp(ParamName, "OperatingStandard") == 0) )
+    if (strcmp(ParamName, "X_COMCAST-COM_OperatingStandard") == 0)
     {
         /* collect value */
         rc = strcpy_s(pValue, *pUlSize, pWifiApDev->OperatingStandard);
