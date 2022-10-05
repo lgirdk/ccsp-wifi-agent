@@ -16688,9 +16688,10 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
             CcspTraceInfo(("%s:%d, wlanIndex : %d, RetryLimit:%d\n",__FUNCTION__,__LINE__, wlanIndex, uiRetryLimit));
         }
     }
-
-    wifi_setApRetryLimit(wlanIndex,pCfg->RetryLimit);
-
+    else
+    {
+        wifi_setApRetryLimit(wlanIndex,pCfg->RetryLimit);
+    }
     // These should be pushed when the SSID is up
     //  They are currently set from ApGetCfg when it call GetAccessPointPsmData
     #if 0 
