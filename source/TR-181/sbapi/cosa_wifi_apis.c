@@ -3858,7 +3858,11 @@ ANSC_STATUS CosaDmlWiFi_SetWiFiReservedSSIDNames (ANSC_HANDLE phContext, char *R
     }
 
     //Radio resart is required to check the current SSID
+#ifdef WIFI_HAL_VERSION_3
+    gRadioRestartRequest = 3; // To reset both radios (2.4 and 5 Ghz)
+#else
     gRadioRestartRequest[2] = TRUE;
+#endif
     
     return ANSC_STATUS_SUCCESS;
 }
@@ -14708,6 +14712,10 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
         if(gRadioRestartRequest != 0) {
             fprintf(stderr, "----# %s %d gRadioRestartRequest=0x%x\n", __func__, __LINE__, gRadioRestartRequest);		
             wlanRestart=TRUE;
+            if (gRadioRestartRequest == 3) // Reset both radios
+            {
+                reset_both_radios = TRUE;
+            }
             gRadioRestartRequest = 0;
         }
 #else
@@ -18080,12 +18088,14 @@ CosaDmlWiFiApAddEntry
         return ANSC_STATUS_FAILURE;
     }
 
+#ifndef WIFI_HAL_VERSION_3
     if (gSsidCount > WIFI_INDEX_MAX)
     {
         CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s : Max AP count reached \n",__FUNCTION__));
 
         return ANSC_STATUS_FAILURE;
     }
+#endif
 
     CosaDmlWiFiGetAccessPointPsmData(pCfg);
 
@@ -19985,18 +19995,18 @@ CosaDmlWiFiApWpsSetCfg
     }
     ccspWifiDbgPrint(CCSP_WIFI_TRACE,"%s pSsid = %s wlanIndex : %d\n",__FUNCTION__, pSsid, wlanIndex);
 
-    if (strlen(pCfg->X_CISCO_COM_ClientPin) > 0) {
-          wifi_setApWpsEnrolleePin(wlanIndex,pCfg->X_CISCO_COM_ClientPin);
-    } else if (pCfg->X_CISCO_COM_ActivatePushButton == TRUE) {
+    if (strlen(pCfg->X_LGI_COM_ClientPin) > 0) {
+          wifi_setApWpsEnrolleePin(wlanIndex,pCfg-> X_LGI_COM_ClientPin);
+    } else if (pCfg->X_LGI_COM_ActivatePushButton == TRUE) {
           wifi_setApWpsButtonPush(wlanIndex);
-    } else if (pCfg->X_CISCO_COM_CancelSession == TRUE) {
+    } else if (pCfg->X_LGI_COM_CancelSession == TRUE) {
           wifi_cancelApWPS(wlanIndex);
     }
 
     // reset Pin and Activation
-    memset(pCfg->X_CISCO_COM_ClientPin, 0, sizeof(pCfg->X_CISCO_COM_ClientPin));
-    pCfg->X_CISCO_COM_ActivatePushButton = FALSE;
-    pCfg->X_CISCO_COM_CancelSession = FALSE;
+    memset(pCfg->X_LGI_COM_ClientPin, 0, sizeof(pCfg->X_LGI_COM_ClientPin));
+    pCfg->X_LGI_COM_ActivatePushButton = FALSE;
+    pCfg->X_LGI_COM_CancelSession = FALSE;
 
     snprintf(recName, sizeof(recName) - 1, WpsPushButton, wlanIndex+1);
     snprintf(strValue, sizeof(strValue) - 1,"%d", pCfg->WpsPushButton);
