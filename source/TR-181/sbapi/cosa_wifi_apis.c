@@ -24734,7 +24734,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 
 #if !defined(_INTEL_BUG_FIXES_) && defined(_LG_MV1_CELENO_)
                         assoc_devices = CosaDmlWiFiApGetAssocDevices(NULL, ssid , &count);
-                        if (assoc_devices == NULL)
+                        if (assoc_devices == NULL && count > 0)
                         {
                             CcspWifiTrace(("RDK_LOG_ERR, (%s:%d) CosaDmlWiFiApGetAssocDevices failed \n", __FUNCTION__, __LINE__));
                             return NULL;
@@ -24978,7 +24978,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 
 #if !defined(_INTEL_BUG_FIXES_) && defined(_LG_MV1_CELENO_)
                         assoc_devices = CosaDmlWiFiApGetAssocDevices(NULL, ssid , &count);
-                        if (assoc_devices == NULL)
+                        if (assoc_devices == NULL && count > 0)
                         {
                             CcspWifiTrace(("RDK_LOG_ERR, (%s:%d) CosaDmlWiFiApGetAssocDevices [Group Notification] failed \n", __FUNCTION__, __LINE__));
                             return NULL;
