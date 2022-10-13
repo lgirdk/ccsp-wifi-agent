@@ -114,12 +114,6 @@ typedef struct
     char   v6pre[64];
 }ipv6_addr_info_t;
 
-ULONG
-CosaUtilGetIfAddr
-    (
-        char*       netdev
-    );
-
 
 PUCHAR
 CosaUtilGetLowerLayers
