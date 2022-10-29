@@ -8762,6 +8762,10 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
 
 #if defined(DUAL_CORE_XB3) || defined(CISCO_XB3_PLATFORM_CHANGES) || defined (_XB6_PRODUCT_REQ_) || defined (_COSA_BCM_MIPS_) || defined (_HUB4_PRODUCT_REQ_)
     pthread_t tid4;
+#elif !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)
+    pthread_t tid4;
+#elif !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
+    pthread_t tid4;
 #endif
     // Only do once and store BSSID and MacAddress in memory
     if (firstTime == TRUE) {
