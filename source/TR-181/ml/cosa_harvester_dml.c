@@ -1340,7 +1340,7 @@ ActiveMeasurement_Step_GetParamStringValue
     if (ANSC_STATUS_SUCCESS != GetActiveMsmtStepInsNum(pStepCfg, &StepIns))
     {
         AnscTraceWarning(("%s : GetActiveMsmtStepInsNum failed\n", __func__));
-        return FALSE;
+        return -1;
     }
 
     if (strcmp(ParamName, "SourceMac") == 0)
