@@ -1904,7 +1904,7 @@ INSTMSMT_PH2 -->
                                        </parameter>
                                        <parameter>
                                            <name>Status</name>
-                                           <type>string: CAC_PERIOD(1),CLEARED(2),NOT_CLEARED(3)</type>
+                                           <type>string: AVAILABLE(0), CAC_ONGOING(1), NON_OCCUPANCY_PERIOD(2),NOT_CLEARED(3)</type>
                                            <syntax>uint32/mapped</syntax>
                                            <writable>false</writable>
                                        </parameter>
