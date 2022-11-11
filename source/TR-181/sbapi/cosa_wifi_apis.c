@@ -16144,7 +16144,7 @@ CosaDmlWiFiSsidGetDinfo
 {
     ULONG wlanIndex = ulInstanceNumber-1;
     UNREFERENCED_PARAMETER(hContext);
-    char vapStatus[32];
+    char vapStatus[32] = {0};
 
     if (!pInfo)
     {
@@ -16168,7 +16168,7 @@ CosaDmlWiFiSsidGetDinfo
     if (wifiVapInfo->u.bss_info.enabled == FALSE) {
 #else //WIFI_HAL_VERSION_3
 
-	BOOL enabled; 
+	BOOL enabled = FALSE;
 
 	wifi_getApEnable(wlanIndex, &enabled);
 	// Nothing to do if VAP is not enabled
