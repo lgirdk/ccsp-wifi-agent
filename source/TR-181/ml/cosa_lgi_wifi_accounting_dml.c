@@ -429,7 +429,7 @@ Accounting_SetParamUlongValue
     /* check the parameter name and set the corresponding value */
     if (strcmp(ParamName, "InterimInterval") == 0)
     {
-        if ( (pWifiApAcct->Cfg.InterimInterval != uValue) && (uValue >= 0) && (uValue <= 60) )
+        if ( (pWifiApAcct->Cfg.InterimInterval != uValue) && ((uValue == 0) || (uValue >= 60)) )
         {
             /* save update to backup */
             pWifiApAcct->Cfg.InterimInterval = uValue;
