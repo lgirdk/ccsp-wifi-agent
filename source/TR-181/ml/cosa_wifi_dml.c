@@ -6306,7 +6306,7 @@ DfsChannels_GetEntry
     if (wlanIndex == 0) {
         *pInsNumber = 0; // Empty list for 2G4
     } else {
-        *pInsNumber = nIndex;
+        *pInsNumber = nIndex+1; // Start index should be 1
     }
     return (ANSC_HANDLE)&pWifiRadioZeroWaitDFS->DFSChannels[nIndex];
 
