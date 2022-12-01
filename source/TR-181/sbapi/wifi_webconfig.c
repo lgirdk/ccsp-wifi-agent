@@ -2401,7 +2401,7 @@ int wifi_WebConfigSet(const void *buf, size_t len,uint8_t ssid)
         return RETURN_ERR;
     }
 
-    CcspTraceInfo(("%s:Msg unpack success. Offset is %u\n", __FUNCTION__,offset));
+    CcspTraceInfo(("%s:Msg unpack success. Offset is %lu\n", __FUNCTION__, (long unsigned int) offset));
     msgpack_object obj = msg.data;
     
     map = &msg.data.via.map;
@@ -2529,7 +2529,7 @@ int wifi_WebConfigSet(const void *buf, size_t len,uint8_t ssid)
         else if (strncmp(map_ptr->key.via.str.ptr, "version", map_ptr->key.via.str.size) == 0) {
             if (map_ptr->val.type == MSGPACK_OBJECT_POSITIVE_INTEGER) {
                 ps->version = (uint64_t) map_ptr->val.via.u64;
-                CcspTraceError(("Version type %d version %llu\n",map_ptr->val.type,ps->version));
+                CcspTraceError(("Version type %d version %llu\n",map_ptr->val.type, (long long unsigned int) ps->version));
                 }
         }
         else if (strncmp(map_ptr->key.via.str.ptr, "transaction_id", map_ptr->key.via.str.size) == 0) {
@@ -5194,7 +5194,7 @@ int wifi_vapBlobSet(void *data)
         return RETURN_ERR;
     }
 
-    CcspTraceInfo(("%s:Msg unpack success. Offset is %u\n", __FUNCTION__,offset));
+    CcspTraceInfo(("%s:Msg unpack success. Offset is %lu\n", __FUNCTION__, (long unsigned int) offset));
     msgpack_object obj = msg.data;
 
     map = &msg.data.via.map;
@@ -5225,7 +5225,7 @@ int wifi_vapBlobSet(void *data)
         if (strncmp(map_ptr->key.via.str.ptr, "version", map_ptr->key.via.str.size) == 0) {
             if (map_ptr->val.type == MSGPACK_OBJECT_POSITIVE_INTEGER) {
                 vap_data->version = (uint64_t) map_ptr->val.via.u64;
-                CcspTraceInfo(("Version type %d version %llu\n",map_ptr->val.type,vap_data->version));
+                CcspTraceInfo(("Version type %d version %llu\n",map_ptr->val.type, (long long unsigned int) vap_data->version));
             }
         }
         else if (strncmp(map_ptr->key.via.str.ptr, "transaction_id", map_ptr->key.via.str.size) == 0) {
