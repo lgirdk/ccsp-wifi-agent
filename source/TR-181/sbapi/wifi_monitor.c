@@ -104,8 +104,8 @@ void speedtest_handler (rbusHandle_t handle, rbusEvent_t const* event, rbusEvent
 void update_speedtest_tout_value();
 
 rbusEventSubscription_t st_events[] = {
-        { SPEEDTEST_STATUS, NULL, 0, 0, speedtest_handler, NULL, NULL, NULL},
-        { SPEEDTEST_SUBSCRIBE, NULL, 0, 0, speedtest_handler, NULL, NULL, NULL},
+        { SPEEDTEST_STATUS, NULL, 0, 0, speedtest_handler, NULL, NULL, NULL, false},
+        { SPEEDTEST_SUBSCRIBE, NULL, 0, 0, speedtest_handler, NULL, NULL, NULL, false},
 };
 
 rbusHandle_t st_handle;
