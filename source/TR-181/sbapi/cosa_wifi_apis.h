@@ -2332,7 +2332,7 @@ CosaDmlMacFilt_GetEntryByIndex
         PCOSA_DML_WIFI_AP_MAC_FILTER pMacFilt
     );
 
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
 ANSC_STATUS
 cbnCosaDmlMacFilt_PSMSync
     (
