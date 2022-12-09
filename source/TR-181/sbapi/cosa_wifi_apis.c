@@ -449,14 +449,14 @@ static void get_uptime(int *uptime)
 /*This function is for LG Celeno MV1 platform*/
 void enable_reset_radio_flag(int wlanIndex)
 {
-#ifdef _LG_MV1_CELENO_
+#if defined (_LG_MV1_CELENO_) || defined (_LG_MV1_QCA_)
 	gRadioRestartRequest[wlanIndex%2]=TRUE;
 #endif
 }
 
 void enable_reset_both_radio_flag()
 {
-#ifdef _LG_MV1_CELENO_
+#if defined (_LG_MV1_CELENO_) || defined (_LG_MV1_QCA_)
 	gRadioRestartRequest[2]=TRUE;
 #endif
 }
@@ -4608,14 +4608,14 @@ fprintf(stderr, "-- %s %d wifi_setApRadioIndex  wlanIndex = %lu intValue=%d \n",
         //  it should only be brought up once the RouterEnabled=TRUE
         wifiDbgPrintf("%s: found BssHotSpot value = %s \n", __func__, strValue);
 
-#if !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
+#if !defined(_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
         BOOL enable = _ansc_atoi(strValue);
         wifi_setApEnableOnLine(wlanIndex,enable);
 #endif
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     } else {
         wifiDbgPrintf("%s: didn't find BssHotSpot setting EnableOnline to FALSE \n", __func__);
-#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
+#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
         wifi_setApEnableOnLine(wlanIndex,0);
 #endif
     }
@@ -5695,13 +5695,13 @@ CosaDmlWiFiGetAccessPointPsmData
         wifiDbgPrintf("%s: found BssHotSpot value = %s \n", __func__, strValue);
         BOOL enable = _ansc_atoi(strValue);
         pCfg->BssHotSpot  = (enable == TRUE) ? TRUE : FALSE;
-#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
+#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
         wifi_setApEnableOnLine(wlanIndex,enable);
 #endif
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     } else {
         wifiDbgPrintf("%s: didn't find BssHotSpot setting EnableOnline to FALSE \n", __func__);
-#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
+#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
         wifi_setApEnableOnLine(wlanIndex,0);
 #endif
     }
@@ -5782,7 +5782,7 @@ CosaDmlWiFiGetAccessPointPsmData
 */
 //<<
 #if !defined(_HUB4_PRODUCT_REQ_) || defined(HUB4_WLDM_SUPPORT)
-#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_)
+#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
 #ifdef WIFI_HAL_VERSION_3
     if (isVapPrivate(wlanIndex) || isVapMesh(wlanIndex)) {
 #else
@@ -6961,7 +6961,7 @@ CosaDmlWiFiApGetNeighborReportActivated(ULONG vAPIndex, BOOLEAN *pbNeighborRepor
         }
         sWiFiDmlApStoredCfg[vAPIndex].Cfg.X_RDKCENTRAL_COM_NeighborReportActivated = *pbNeighborReportActivated;
 #if !defined(_HUB4_PRODUCT_REQ_) || defined(HUB4_WLDM_SUPPORT)
-#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_)
+#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
         //set to HAL
         CcspWifiTrace(("RDK_LOG_WARN,%s : setting value to HAL\n",__FUNCTION__ ));
         wifi_setNeighborReportActivation(vAPIndex, *pbNeighborReportActivated);
@@ -7977,7 +7977,7 @@ CosaDmlWiFiFactoryReset
     {
         // delete current configuration
 
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
        /* Stop plume agent before removing the configs */
        system("rpcclient2 'syscfg set son_admin_status 0'; /etc/plume_init.sh stop");
 #endif
@@ -8929,10 +8929,10 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
         firstTime = FALSE;
 
 #ifndef WIFI_HAL_VERSION_3
-#if defined (_COSA_BCM_MIPS_) || defined (_PLATFORM_RASPBERRYPI_)|| defined (_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_) || defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_)
+#if defined (_COSA_BCM_MIPS_) || defined (_PLATFORM_RASPBERRYPI_)|| defined (_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_) || defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
 		//Scott: Broadcom hal needs wifi_init to be called when we are started up
 		//wifi_setLFSecurityKeyPassphrase();
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
         if(wifi_apply_customer_index())
         {
             printf("Error in Applying customer index related changes\n");
@@ -8982,7 +8982,7 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
                         }
                     }
                 }
-#if !defined (_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
+#if !defined (_COSA_BCM_MIPS_) && !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
                 wifi_setApEnableOnLine(i-1,0);
 #endif
 #ifdef WIFI_HAL_VERSION_3
@@ -12424,7 +12424,7 @@ CosaDmlWiFiRadioSetTransmitPowerPercent
 
     wifiDbgPrintf("%s: enter wlanIndex %d transmitPowerPercent %d \n", __func__, wlanIndex, transmitPowerPercent);
 
-#if defined(_COSA_BCM_MIPS_)|| defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_) || defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_)
+#if defined(_COSA_BCM_MIPS_)|| defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_) || defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
     wifi_setRadioTransmitPower(wlanIndex, transmitPowerPercent);
 #else
     ULONG curTransmitPower;
@@ -13277,7 +13277,7 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d false\n", __func__, __LINE__, 
             for (i=wlanIndex; i < 16; i += 2)
             {
                 // if ApplySettingSSID has been set, only apply changes to the specified SSIDs
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
                 if ( (pCfg->ApplySettingSSID != 0) && !((1<<i) & pCfg->ApplySettingSSID) || i == 12 || i == 13 )
 #else
                 if ( (pCfg->ApplySettingSSID != 0) && !((1<<i) & pCfg->ApplySettingSSID ) || i == 2 || i == 3 )
@@ -14090,7 +14090,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
             CcspWifiTrace(("RDK_LOG_WARN, %s Failed to configure DFS settings!!!\n",__FUNCTION__));
         }
 
-#if defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_)
+#if defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
          wlanRestart = TRUE;
  #endif
     }
@@ -14928,7 +14928,7 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__,
         if(gRestartRadiusRelay)
         {
             gRestartRadiusRelay = FALSE;
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
             CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : restart Radius Relay \n",__FUNCTION__));
             //Trigerring radius relay restart after radius setting changed
             system("rpcclient2 'sysevent set radiusrelay-restart'");
@@ -15229,7 +15229,7 @@ CosaDmlWiFiRadioGetCfg
 	wifi_getRadioRetryLimit(wlanIndex, &pCfg->RetryLimit);
 
 	pCfgChannel = &pCfg->Channel;
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
 	wifi_getRadioConfiguredChannel(wlanIndex, pCfgChannel);
 #else
 	wifi_getRadioChannel(wlanIndex, pCfgChannel);
@@ -16042,7 +16042,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
                 retStatus = wifi_setApEnable(wlanIndex, pCfg->bEnabled);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
 	        if(retStatus == 0) {
-#ifdef _LG_MV1_CELENO_
+#if defined (_LG_MV1_CELENO_) || defined (_LG_MV1_QCA_)
 	            wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
 	            if(bsEnabled)
 	                enable_reset_both_radio_flag();
@@ -16163,10 +16163,14 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
 #endif
 
         /*Restart Radio needed for 5GHz SSID, in case of 2.4GHz SSID pushSSID function is sufficient*/
-#ifdef _LG_MV1_CELENO_
+#if defined (_LG_MV1_CELENO_) || defined (_LG_MV1_QCA_)
         wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
         if(bsEnabled)
             enable_reset_both_radio_flag();
+#if defined (_LG_MV1_QCA_)
+        else
+            enable_reset_radio_flag(wlanIndex);
+#endif
 #endif
 
         cfgChange = TRUE;
@@ -16214,7 +16218,7 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
         CcspWifiTrace(("RDK_LOG_WARN, WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n"));
     }
     if (pCfg->EnableOnline != pStoredCfg->EnableOnline) {
-#if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
+#if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
         wifi_setApEnableOnLine(wlanIndex, pCfg->EnableOnline);  
 #endif
         cfgChange = TRUE;
@@ -16223,7 +16227,7 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
 	//zqiu: 
     if (pCfg->RouterEnabled != pStoredCfg->RouterEnabled) {
 		CcspWifiTrace(("RDK_LOG_WARN,WIFI %s : Calling wifi_setRouterEnable interface: %d SSID :%d \n",__FUNCTION__,wlanIndex,pCfg->RouterEnabled));
-#if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
+#if !defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
 		wifi_setRouterEnable(wlanIndex, pCfg->RouterEnabled);
 #endif
 		cfgChange = TRUE;
@@ -16461,14 +16465,14 @@ CosaDmlWiFiSsidGetCfg
 
     getDefaultSSID(wlanIndex,pCfg->DefaultSSID);
 
-#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
+#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
     wifi_getApEnableOnLine(wlanIndex, &enabled);
 #else
     wifi_getApEnable(wlanIndex, &enabled);
 #endif
     pCfg->EnableOnline = (enabled == TRUE) ? TRUE : FALSE;
 
-#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
+#if !defined(_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
 	//zqiu:
     wifi_getRouterEnable(wlanIndex, &enabled);
     pCfg->RouterEnabled = (enabled == TRUE) ? TRUE : FALSE;
@@ -17800,7 +17804,7 @@ CosaDmlWiFiApAssociatedDevicesHighWatermarkGetVal
     wifi_getApAssociatedDevicesHighWatermark(wlanIndex,&highWatermark);
 	pCfg->HighWatermark = highWatermark;
 
-#if !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_LG_MV1_CELENO_)
+#if !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
     wifi_VAPTelemetry_t telemetry;
     wifi_getVAPTelemetry(wlanIndex, &telemetry);
     pCfg->TXOverflow = (ULONG)telemetry.txOverflow;
@@ -18557,7 +18561,7 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
 
  //wifi_getApSecurityRadiusServerIPAddr(wlanIndex,&pCfg->RadiusServerIPAddr); //bug
     //wifi_getApSecurityRadiusServerPort(wlanIndex, &pCfg->RadiusServerPort);
-#if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_)
+#if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
     wifi_getApSecurityWpaRekeyInterval(wlanIndex,  (unsigned int *) &pCfg->RekeyingInterval);
 #endif 
 #if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
@@ -18960,7 +18964,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         MeshNotifySecurityChange(wlanIndex, pCfg);
 #endif
 
-#ifdef _LG_MV1_CELENO_
+#if defined (_LG_MV1_CELENO_) || defined (_LG_MV1_QCA_)
         wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
         if(bsEnabled)
             enable_reset_both_radio_flag();
@@ -19038,10 +19042,14 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
              // Notify Mesh components of an AP config change
              MeshNotifySecurityChange(wlanIndex, pCfg);
 #endif
-#ifdef _LG_MV1_CELENO_
+#if defined (_LG_MV1_CELENO_) || defined (_LG_MV1_QCA_)
              wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
              if(bsEnabled)
                  enable_reset_both_radio_flag();
+#if defined (_LG_MV1_QCA_)
+             else
+                 enable_reset_radio_flag(wlanIndex);
+#endif
 #endif
         } else {
              CcspWifiTrace(("RDK_LOG_WARN, WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED \n"));
@@ -19127,7 +19135,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 		enable_reset_radio_flag(wlanIndex);
     } 
 
-#if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_)
+#if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
     if ( pCfg->RekeyingInterval != pStoredCfg->RekeyingInterval) {
 		CcspWifiTrace(("RDK_LOG_WARN,%s calling setWpaRekeyInterval  \n",__FUNCTION__));
         wifi_setApSecurityWpaRekeyInterval(wlanIndex,  pCfg->RekeyingInterval);
@@ -21336,7 +21344,7 @@ CosaDmlWiFi_startDPP(PCOSA_DML_WIFI_AP pWiFiAP, ULONG staIndex)
 {
 
 #if !defined(_BWG_PRODUCT_REQ_)
-#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_LG_MV1_CELENO_)
+#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
     if (start_device_provisioning(pWiFiAP, staIndex)  == RETURN_OK) {
        CcspTraceError(("%s:%d: DPP Authentication Request Frame send success\n", __func__, __LINE__));
        return ANSC_STATUS_SUCCESS;
@@ -24665,7 +24673,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 #endif
 	BOOL enabled=FALSE;
         int rc = -1;
-#if defined(_INTEL_BUG_FIXES_) || !defined(_LG_MV1_CELENO_)
+#if defined(_INTEL_BUG_FIXES_) || (!defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_))
 	char *output_buf = NULL;
 	char partOfAddress[3];
 #else
@@ -24704,7 +24712,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 
 			count = 0;
 
-#if !defined(_INTEL_BUG_FIXES_) && defined(_LG_MV1_CELENO_)
+#if !defined(_INTEL_BUG_FIXES_) && (defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_))
             assoc_devices = CosaDmlWiFiApGetAssocDevices(NULL, ssid , &count);
 			if (assoc_devices == NULL && count > 0)
 			{
@@ -24750,7 +24758,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 					for (j=0; j < 6; j++)
 					{
 						snprintf(partOfAddress, 3, "%s", &output_buf[i*18 + j*3]);
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
 						assoc_devices[i].MacAddress[j] = (char)strtol(partOfAddress, NULL, 16);
 #else
 						assoc_devices[count-i-1].MacAddress[j] = (char)strtol(partOfAddress, NULL, 16);
@@ -24783,7 +24791,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 			_ansc_snprintf(ssid,sizeof(ssid),"Device.WiFi.SSID.%d",index);
 
 
-#if !defined(_INTEL_BUG_FIXES_) && defined(_LG_MV1_CELENO_)
+#if !defined(_INTEL_BUG_FIXES_) && (defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_))
                 for(j = 0; (j < count) && (assoc_devices != NULL) ; j++)
                 {
                         //CcspWifiTrace(("RDK_LOG_WARN,WIFI-CLIENT <%s> <%d> : j = %d \n",__FUNCTION__, __LINE__ , j));
@@ -24948,7 +24956,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 #endif
 			count = 0;
 
-#if !defined(_INTEL_BUG_FIXES_) && defined(_LG_MV1_CELENO_)
+#if !defined(_INTEL_BUG_FIXES_) && (defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_))
             assoc_devices = CosaDmlWiFiApGetAssocDevices(NULL, ssid , &count);
                         if (assoc_devices == NULL && count > 0)
                         {
@@ -25055,7 +25063,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 		CosaDMLWiFi_Send_FullHostDetails_To_LMLite( &hosts );
 	}
 
-#if defined(_INTEL_BUG_FIXES_) || !defined(_LG_MV1_CELENO_)
+#if defined(_INTEL_BUG_FIXES_) || (!defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_))
 	if (output_buf)
         {
 		AnscFreeMemory(output_buf);
@@ -28938,7 +28946,7 @@ ANSC_STATUS CosaDmlWiFi_startHealthMonitorThread(void)
 ANSC_STATUS CosaDmlWiFi_initEasyConnect(PCOSA_DATAMODEL_WIFI pWifiDataModel)
 {
 #if !defined(_BWG_PRODUCT_REQ_)
-#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
+#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
     if ((init_easy_connect(pWifiDataModel) < 0)) {
         fprintf(stderr, "-- %s %d CosaDmlWiFi_startEasyConnect fail\n", __func__, __LINE__);
         return ANSC_STATUS_FAILURE;
@@ -29453,7 +29461,7 @@ BOOL CosaDmlWiFi_ValidateEasyConnectSingleChannelString(UINT apIndex, const char
 void CosaDmlWiFi_AllPossibleEasyConnectChannels(UINT apIndex, PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppSta)
 {
 #if !defined(_BWG_PRODUCT_REQ_)
-#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_LG_MV1_CELENO_)
+#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_) && !defined(_PLATFORM_TURRIS_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
     wifi_easy_connect_best_enrollee_channels_t *channels;
     unsigned int i, tmp;
     ULONG op_channel = 0;
