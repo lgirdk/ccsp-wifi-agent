@@ -588,9 +588,11 @@ int main(int argc, char* argv[])
         fclose(fd);
     }
 
-#if defined(_LG_MV1_CELENO_) 
+#if defined(_LG_MV1_CELENO_)
     if (access("/tmp/cbn_mv1_to_mng", F_OK) == 0)
         unlink("/tmp/cbn_mv1_to_mng");
+#endif
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
     //Passing wifi initialized status
     system("rpcclient2 'touch /tmp/wifi_initialized'");
 
@@ -620,7 +622,7 @@ int main(int argc, char* argv[])
         char strCronCmd[256];
 
         //remove the current entry from crontab, if any
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
         system("rpcclient2 'sed -i \"/Device.WiFi.SSID./d\" /var/spool/cron/crontabs/root'");
         system("rpcclient2 'sed -i \'/Device.WiFi.Radio./d\' /var/spool/cron/crontabs/root'");
 #else
@@ -630,7 +632,7 @@ int main(int argc, char* argv[])
 
         //setup the crontab entry
         sscanf(ppReturnVal[0]->parameterValue,"%d/%d/%d-%d:%d", &iDay, &iMonth, &iYear, &iHour, &iMin);
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
         snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient2 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
             iMin, iHour, iDay, iMonth, iGnIndex24);
 #else
@@ -642,7 +644,7 @@ int main(int argc, char* argv[])
         system(strCronCmd);
 
         //setup the next crontab entry
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
         snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient2 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
             iMin, iHour, iDay, iMonth, iGnIndex50);
 #else
