@@ -13282,7 +13282,11 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d false\n", __func__, __LINE__, 
             for (i=wlanIndex; i < 16; i += 2)
             {
                 // if ApplySettingSSID has been set, only apply changes to the specified SSIDs
-                if ( (pCfg->ApplySettingSSID != 0) && !((1<<i) & pCfg->ApplySettingSSID ))
+#if defined(_LG_MV1_CELENO_)
+                if ( (pCfg->ApplySettingSSID != 0) && !((1<<i) & pCfg->ApplySettingSSID) || i == 12 || i == 13 )
+#else
+                if ( (pCfg->ApplySettingSSID != 0) && !((1<<i) & pCfg->ApplySettingSSID ) || i == 2 || i == 3 )
+#endif
                 {
                     printf("%s: Skipping SSID %d, it was not in ApplySettingSSID(%d)\n", __func__, i, pCfg->ApplySettingSSID);
                     sWiFiDmlAffectedVap[i] = FALSE;
