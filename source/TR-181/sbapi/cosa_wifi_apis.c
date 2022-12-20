@@ -16398,6 +16398,8 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         if (!isHostapdAuthEnabled) {
             wifi_pushSSID(wlanIndex, pCfg->SSID);
         }
+#elif defined (_COSA_BCM_ARM_)
+        wifi_setSSIDName(wlanIndex, pCfg->SSID);
 #else
         wifi_pushSSID(wlanIndex, pCfg->SSID);
 #endif
@@ -21019,12 +21021,6 @@ CosaDmlWiFiApMfSetCfg
 		}
 #endif /* _ENABLE_BAND_STEERING_ */
 	}
-
-#if (defined(_COSA_BCM_ARM_) && defined(_XB7_PRODUCT_REQ_)) || defined(_XB8_PRODUCT_REQ_) || defined(_CBR2_PRODUCT_REQ_) || defined(_CBR_PRODUCT_REQ_)
-    /* Converting brcm patch to code and this code will be removed as part of Hal Version 3 changes */
-    fprintf(stderr, "%s: calling wifi_apply()...\n", __func__);
-    wifi_apply();
-#endif
 
     return ANSC_STATUS_SUCCESS;
 }
