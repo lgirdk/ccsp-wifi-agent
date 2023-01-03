@@ -11238,24 +11238,44 @@ fprintf(stderr, "-- %s %lu %lu %lu %lu\n", __func__,  radioIndex,   radioIndex_2
                 pthread_attr_destroy( attrp );
             return ANSC_STATUS_FAILURE;
         }
-        /* RDKB-38467: flush the MAC Filter Enteries */
+        /* RDKB-38467: flush the MAC Filter Enteries when private VAPs are Factory Resetted */
 #ifdef WIFI_HAL_VERSION_3
         int totalVAP = getTotalNumberVAPs();
-        for(apIns = 0; apIns < totalVAP; apIns++)
-        {
-            if (isVapHotspot(apIns))
-            {
-                wifi_factoryResetAP(apIns);
+        UINT radioIns;
 
+        for (radioIns = 0; radioIns < getNumberRadios(); radioIns++)
+        {
+            if (isVapPrivate(apIndexList[radioIns]))
+            {
+                for(apIns = 0; apIns < totalVAP; apIns++)
+                {
+                    if (isVapHotspot(apIns)) //Flushing MAC entries of all hotspot VAPs when private VAP is FR'ed
+                    {
+                        if(wifi_delApAclDevices(apIns) != RETURN_OK)
+                        {
+                            CcspWifiTrace(("RDK_LOG_ERROR, %s %d, wifi_delApAclDevices failed, returning error!!\n", __FUNCTION__, __LINE__));
+                            return ANSC_STATUS_FAILURE;
+                        }
+                    }
+                }
+                Delete_Hotspot_MacFilt_Entries();
+                break; //As all mac filter entries are flushed, not necessary to check the rest of the VAPs
             }
         }
-#else
-        for(apIns=0; apIns<HOTSPOT_NO_OF_INDEX; apIns++)
+#else //WIFI_HAL_VERSION_3
+        if ((apIndex == 1 || apIndex == 2) || (apIndex_2 == 1 || apIndex_2 == 2))
         {
-            wifi_factoryResetAP(Hotspot_Index[apIns]-1);
+            for(apIns=0; apIns<HOTSPOT_NO_OF_INDEX; apIns++)
+            {
+                if(wifi_delApAclDevices(apIns) != RETURN_OK)
+                {
+                    CcspWifiTrace(("RDK_LOG_ERROR, %s %d, wifi_delApAclDevices failed, returning error!!\n", __FUNCTION__, __LINE__));
+                    return ANSC_STATUS_FAILURE;
+                }
+            }
+            Delete_Hotspot_MacFilt_Entries();
         }
-#endif
-        Delete_Hotspot_MacFilt_Entries();
+#endif //WIFI_HAL_VERSION_3
 
         if(attrp != NULL)
                 pthread_attr_destroy( attrp );
