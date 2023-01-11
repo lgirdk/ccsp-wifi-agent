@@ -553,12 +553,6 @@ WiFi_GetParamBoolValue
         return TRUE;
     }
 
-    if (strcmp(ParamName, "X_RDK_ShowWiFiCredential") == 0)
-    {
-        CosaDmlWiFiGetShowCredential(pBool);
-        return TRUE;
-    }
-
     return FALSE;
 }
 
@@ -1194,15 +1188,6 @@ WiFi_SetParamBoolValue
         if (ANSC_STATUS_SUCCESS == CosaDmlWiFiSetDFS(bValue))
         {
             pMyObject->bDFS = bValue;
-            return TRUE;
-        }
-    }
-
-    if (strcmp(ParamName, "X_RDK_ShowWiFiCredential") == 0)
-    {
-        if (ANSC_STATUS_SUCCESS == CosaDmlWiFiSetShowCredential( bValue ))
-        {
-            pMyObject->bShowWiFiCredential = bValue;
             return TRUE;
         }
     }
@@ -8257,6 +8242,13 @@ AccessPoint_GetParamBoolValue
         return TRUE;
     }
 
+    if (strcmp(ParamName, "X_RDK_ShowWiFiCredential") == 0)
+    {
+        /* collect value */
+        *pBool = pWifiAp->AP.Cfg.X_RDK_ShowWiFiCredential;
+        return TRUE;
+    }
+
     if (strcmp(ParamName, "WMMCapability") == 0)
     {
         /* collect value */
@@ -9012,6 +9004,18 @@ AccessPoint_SetParamBoolValue
         pWifiAp->AP.Cfg.SSIDAdvertisementEnabled = bValue;
         pWifiAp->bApChanged = TRUE;
 #endif
+        return TRUE;
+    }
+
+    if (strcmp(ParamName, "X_RDK_ShowWiFiCredential") == 0)
+    {
+        if( pWifiAp->AP.Cfg.X_RDK_ShowWiFiCredential == bValue )
+	{
+            return TRUE;
+	}
+        /* save update to backup */
+	pWifiAp->AP.Cfg.X_RDK_ShowWiFiCredential= bValue;
+        pWifiAp->bApChanged = TRUE;
         return TRUE;
     }
 

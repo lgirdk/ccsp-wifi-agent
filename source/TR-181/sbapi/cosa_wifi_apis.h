@@ -846,6 +846,7 @@ _COSA_DML_WIFI_AP_CFG
 
     BOOLEAN                   bEnabled;
     BOOLEAN                   SSIDAdvertisementEnabled;
+    BOOLEAN                   X_RDK_ShowWiFiCredential;
     ULONG                       RetryLimit;
     BOOLEAN                   WMMEnable;
     BOOLEAN                   UAPSDEnable;
@@ -2498,8 +2499,8 @@ INT wifi_getApWpsEnable(INT apIndex, BOOL *output_bool);
     ANSC_STATUS CosaDmlWiFiRadioGetDBWCfg(ANSC_HANDLE hContext, PCOSA_DML_WIFI_RADIO_CFG pCfg);
 #endif
 
-ANSC_STATUS CosaDmlWiFiSetShowCredential(BOOLEAN bValue);
-ANSC_STATUS CosaDmlWiFiGetShowCredential(BOOLEAN *pbValue);
+ANSC_STATUS CosaDmlWiFiSetShowCredential(INT radioInstanceNumber, BOOLEAN bValue);
+ANSC_STATUS CosaDmlWiFiGetShowCredential(INT radioInstanceNumber, BOOLEAN *pbValue);
 
 int monitor_apis_param_send(int index, PCOSA_DML_WIFI_AP_ASSOC_DEVICE pWifiApDev);
 

@@ -1718,7 +1718,7 @@ static char *FeatureMFPConfig	 = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.F
 static char *WiFiTxOverflowSelfheal = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.TxOverflowSelfheal";
 static char *WiFiForceDisableWiFiRadio = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDK-CENTRAL_COM_ForceDisable";
 static char *WiFiForceDisableRadioStatus = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDK-CENTRAL_COM_ForceDisable_RadioStatus";
-static char *WiFiShowCredential = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.X_RDK_ShowWiFiCredential";
+static char *WiFiShowCredential = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDK_ShowWiFiCredential";
 #if defined (FEATURE_HOSTAP_AUTHENTICATOR)
 static char *WiFiEnableHostapdAuthenticator = "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Control.DisableNativeHostapd";
 #endif
@@ -16771,6 +16771,8 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
             }
         }
 #endif
+
+    CosaDmlWiFiSetShowCredential(wlanIndex,pCfg->X_RDK_ShowWiFiCredential);
     }
 
     if (pCfg->MaxAssociatedDevices != pStoredCfg->MaxAssociatedDevices) {
@@ -16996,12 +16998,14 @@ ANSC_STATUS CosaDmlWiFiApSetStatsEnable(UINT InstanceNumber, BOOLEAN bValue)
 }
 
 /* CosaDmlWiFiSetShowCredentials() */
-ANSC_STATUS CosaDmlWiFiSetShowCredential(BOOLEAN bValue)
+ANSC_STATUS CosaDmlWiFiSetShowCredential(INT radioInstanceNumber, BOOLEAN bValue)
 {
     char *recValue = bValue ? "true" : "false";
+    char record[256]="";
 
+    sprintf(record, WiFiShowCredential, radioInstanceNumber);
     if (CCSP_SUCCESS == PSM_Set_Record_Value2(bus_handle,
-            g_Subsystem, WiFiShowCredential, ccsp_string, recValue))
+            g_Subsystem, record, ccsp_string, recValue))
     {
         return ANSC_STATUS_SUCCESS;
     }
@@ -17009,15 +17013,18 @@ ANSC_STATUS CosaDmlWiFiSetShowCredential(BOOLEAN bValue)
 }
 
 /* CosaDmlWiFiGetShowCredentials() */
-ANSC_STATUS CosaDmlWiFiGetShowCredential(BOOLEAN *pbValue)
+ANSC_STATUS CosaDmlWiFiGetShowCredential(INT radioInstanceNumber, BOOLEAN *pbValue)
 {
     char* strValue = NULL;
+    char record[256]="";
 
     // Initialize the value as FALSE always
     *pbValue = TRUE;
 
+    sprintf(record, WiFiShowCredential, radioInstanceNumber);
+
     if (CCSP_SUCCESS == PSM_Get_Record_Value2(bus_handle,
-                g_Subsystem, WiFiShowCredential, NULL, &strValue))
+                g_Subsystem, record, NULL, &strValue))
     {
         if (0 == strcmp(strValue, "true"))
         {
@@ -17238,6 +17245,7 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     wifi_getApManagementFramePowerControl(wlanIndex , pCfgMFP);
     CcspTraceWarning(("X_RDKCENTRAL-COM_ManagementFramePowerControl_Get:<%d>\n", pCfg->ManagementFramePowerControl));
 
+    CosaDmlWiFiGetShowCredential(wlanIndex,&pCfg->X_RDK_ShowWiFiCredential);
 //>> zqiu
 #ifdef _BEACONRATE_SUPPORT
 	wifi_getApBeaconRate(wlanIndex, pCfg->BeaconRate);
