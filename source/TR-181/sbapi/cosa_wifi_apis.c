@@ -13073,12 +13073,32 @@ fprintf(stderr, "----# %s %d 	pStoredSsidCfg->EnableOnline=%d  pStoredSsidCfg->R
                        (pStoredSsidCfg->RouterEnabled == TRUE)))
                 {
                     sWiFiDmlAffectedVap[i] = TRUE;
-#if (_XB6_PRODUCT_REQ_)
+                    int retStatus = 0;
+#if defined(_XB6_PRODUCT_REQ_) && !defined(CS_XB7)
 //Enabling  the ssids
-                    wifi_setSSIDEnable(i,TRUE);
+                    retStatus = wifi_setSSIDEnable(i,TRUE);
+#elif defined(CS_XB7)
+                    char vap_status[16] = {0};
+//Adding this createAp for devices which would not have recovered after vap configs are deleted in uci 
+                    if( wifi_getApStatus(i,vap_status) != RETURN_OK){
+                            retStatus = wifi_createAp(i,wlanIndex,pStoredSsidCfg->SSID, (pStoredApCfg->SSIDAdvertisementEnabled == TRUE) ? FALSE : TRUE);
+                            if(retStatus == 0) {
+                                    CcspWifiTrace(("RDK_LOG_WARN,WIFI %s wifi_createAp success index %d , True \n",__FUNCTION__,i));
+                            } else {
+                                    CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s wifi_createAp failed index %d , True \n",__FUNCTION__,i));
+                            }
+                    }
+// In CMXB7, wifi_pushApEnable enables/disables the vap and also does apply. wifi_setSSIDEnable only enables/disables the vap.
+                    retStatus = wifi_pushApEnable(i,TRUE);
 #else
-                    wifi_createAp(i,wlanIndex,pStoredSsidCfg->SSID, (pStoredApCfg->SSIDAdvertisementEnabled == TRUE) ? FALSE : TRUE);
+                    retStatus = wifi_createAp(i,wlanIndex,pStoredSsidCfg->SSID, (pStoredApCfg->SSIDAdvertisementEnabled == TRUE) ? FALSE : TRUE);
 #endif
+                    if(retStatus == 0) {
+                            CcspWifiTrace(("RDK_LOG_WARN,WIFI %s wifi_setSSIDEnable/pushAp/createAp success index %d , True \n",__FUNCTION__,i));
+                    }
+                    else {
+                            CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s wifi_setSSIDEnable/pushAp/createAp failed index %d , True \n",__FUNCTION__,i));
+                    }
 #if !defined(_INTEL_WAV_)
                     createdNewVap = TRUE;
 #endif
@@ -13115,12 +13135,23 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d false\n", __func__, __LINE__, 
 							CcspWifiTrace(("RDK_LOG_WARN,WIFI %s wifi_setApEnable success index %d , false \n",__FUNCTION__,i));
 						}
 						else {
-								CcspWifiTrace(("RDK_LOG_WARN,WIFI %s wifi_setApEnable failed index %d , false \n",__FUNCTION__,i));
+							CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s wifi_setApEnable failed index %d , false \n",__FUNCTION__,i));
 						}
 					}
 					//<<
-//Disbling the ssids
-wifi_deleteAp(i);
+                                        //Disabling the ssids
+#if !defined(CS_XB7)
+                                        int ret = wifi_deleteAp(i);
+#else 
+                                        int ret = wifi_pushApEnable(i, FALSE);
+#endif
+                                        if(ret == 0) {
+                                                CcspWifiTrace(("RDK_LOG_WARN,WIFI %s wifi_deleteAp/wifi_pushApEnable success index %d , false \n",__FUNCTION__,i));
+                                        }
+                                        else {
+                                                CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s wifi_deleteAp/wifi_pushApEnable failed index %d , false \n",__FUNCTION__,i));
+                                        }
+
 #if !defined(_INTEL_WAV_)
                     if (pRunningApSecCfg->ModeEnabled >= COSA_DML_WIFI_SECURITY_WPA_Personal)
                     {
