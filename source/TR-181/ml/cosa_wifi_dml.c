@@ -9091,15 +9091,23 @@ AccessPoint_SetParamBoolValue
     {
 
         if(pWifiAp->AP.Cfg.InterworkingCapability == TRUE) {
+#ifdef WIFI_HAL_VERSION_3
+            if ( vapInfo->u.bss_info.interworking.interworking.interworkingEnabled == bValue )
+            {
+                return  TRUE;
+            }
+#else
             if ( pWifiAp->AP.Cfg.InterworkingEnable == bValue )
             {
                 return  TRUE;
             }
+#endif
             /* save update to backup */
             pWifiAp->AP.Cfg.InterworkingEnable = bValue;
 #ifdef WIFI_HAL_VERSION_3
-            vapInfo->u.bss_info.interworking.interworking.interworkingEnabled = bValue; 
+            vapInfo->u.bss_info.interworking.interworking.interworkingEnabled = bValue;
 #endif
+
             if((!pWifiAp->AP.Cfg.InterworkingEnable) && (pWifiAp->AP.Cfg.IEEE80211uCfg.PasspointCfg.Status)){
                 CosaDmlWiFi_SetHS2Status(&pWifiAp->AP.Cfg,false,true);
                 pWifiAp->AP.Cfg.IEEE80211uCfg.PasspointCfg.Capability = false;
