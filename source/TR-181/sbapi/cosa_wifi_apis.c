@@ -11267,13 +11267,15 @@ fprintf(stderr, "-- %s %lu %lu %lu %lu\n", __func__,  radioIndex,   radioIndex_2
 
         for (radioIns = 0; radioIns < getNumberRadios(); radioIns++)
         {
-            if (isVapPrivate(apIndexList[radioIns]))
+            if (isVapPrivate(apIndexList[radioIns] - 1))
             {
+                CcspWifiTrace(("RDK_LOG_DEBUG, %s private VAP %u\n", __FUNCTION__, apIndexList[radioIns]));
                 for(apIns = 0; apIns < totalVAP; apIns++)
                 {
                     if (isVapHotspot(apIns)) //Flushing MAC entries of all hotspot VAPs when private VAP is FR'ed
                     {
-                        if(wifi_delApAclDevices(apIns) != RETURN_OK)
+                        CcspWifiTrace(("RDK_LOG_DEBUG, %s hotspot VAP %d \n", __FUNCTION__, apIns));
+                        if (wifi_delApAclDevices(apIns) != RETURN_OK)
                         {
                             CcspWifiTrace(("RDK_LOG_ERROR, %s %d, wifi_delApAclDevices failed, returning error!!\n", __FUNCTION__, __LINE__));
                             return ANSC_STATUS_FAILURE;
@@ -11285,11 +11287,13 @@ fprintf(stderr, "-- %s %lu %lu %lu %lu\n", __func__,  radioIndex,   radioIndex_2
             }
         }
 #else //WIFI_HAL_VERSION_3
-        if ((apIndex == 1 || apIndex == 2) || (apIndex_2 == 1 || apIndex_2 == 2))
+        if ((apIndex == 1 || apIndex == 2) || (apIndex_2 == 1 || apIndex_2 == 2)) //Checking if one of the entries is a private VAP
         {
+            CcspWifiTrace(("RDK_LOG_DEBUG, %s VAPS: %lu, %lu \n", __FUNCTION__, apIndex, apIndex_2));
             for(apIns=0; apIns<HOTSPOT_NO_OF_INDEX; apIns++)
             {
-                if(wifi_delApAclDevices(apIns) != RETURN_OK)
+                CcspWifiTrace(("RDK_LOG_DEBUG, %s hotspot VAP %d \n", __FUNCTION__, apIns));
+                if (wifi_delApAclDevices(apIns) != RETURN_OK)
                 {
                     CcspWifiTrace(("RDK_LOG_ERROR, %s %d, wifi_delApAclDevices failed, returning error!!\n", __FUNCTION__, __LINE__));
                     return ANSC_STATUS_FAILURE;
