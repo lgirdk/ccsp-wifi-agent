@@ -8135,18 +8135,6 @@ CosaDmlWiFiFactoryReset
     syscfg_set(NULL, "wifi_factory_reset_ssid", "0");
 #endif
 
-    // Clear OpenSync persistant storage folders
-    v_secure_system("rm -rf /nvram/opensync");          //CONFIG_PSFS_DIR
-    v_secure_system("rm -rf /nvram/opensync_preserve"); //CONFIG_PSFS_PRESERVE_DIR
-#if !defined (_HUB4_PRODUCT_REQ_)
-    const char *meshAP = "/usr/ccsp/wifi/meshapcfg.sh"; 
-    //Bring Mesh AP up after captive portal configuration
-    if( access( meshAP, F_OK) != -1)
-    {
-      printf("Bringing up mesh interface after factory reset\n");
-      v_secure_system("/usr/ccsp/wifi/meshapcfg.sh");
-    }
-#endif /* * _HUB4_PRODUCT_REQ_ */
 #ifdef WIFI_HAL_VERSION_3
     for (UINT i = 0; i < getNumberRadios(); ++i)
     {
