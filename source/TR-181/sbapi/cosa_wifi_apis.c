@@ -15164,6 +15164,7 @@ CosaDmlWiFiRadioGetCfg
     wifi_getRadioMCS(wlanIndex, pCfgMCS);
     pCfgAutoChannelRefreshPeriod = &pCfg->AutoChannelRefreshPeriod;
     wifi_getRadioAutoChannelRefreshPeriod(wlanIndex, pCfgAutoChannelRefreshPeriod);
+    wifi_getRadioIEEE80211hSupported(wlanIndex,&pCfg->X_COMCAST_COM_IEEE80211hSupported);
     pCfg->TxRate                         = COSA_DML_WIFI_TXRATE_Auto;
 
     pCfg->ApplySetting  = FALSE;
