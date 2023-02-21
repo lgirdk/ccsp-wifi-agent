@@ -15163,6 +15163,7 @@ CosaDmlWiFiRadioGetCfg
     wifi_getRadio11nGreenfieldEnable(wlanIndex, &pCfg->X_CISCO_COM_11nGreenfieldEnabled );
     pCfg->FrameBurst                     = TRUE;
     wifi_getApRtsThresholdSupported(wlanIndex,&pCfg->X_COMCAST_COM_RtsThresholdSupported);
+    pCfg->RtsThresholdSupported = pCfg->X_COMCAST_COM_RtsThresholdSupported;
     wifi_getRadioAutoBlockAckEnable(wlanIndex, &pCfg->X_CISCO_COM_AutoBlockAck);
     wifi_getRadioIGMPSnoopingEnable(wlanIndex, &pCfg->X_COMCAST_COM_IGMPSnoopingEnable);
     pCfgMCS = &pCfg->MCS;
