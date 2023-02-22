@@ -10783,7 +10783,7 @@ AccessPoint_SetParamStringValue
             int    iGnIndex24 = 7, iGnIndex50 = 8;
 
             //remove the current entry from crontab, if any
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
             system("rpcclient2 'sed -i \'/Device.WiFi.SSID./d\' /var/spool/cron/crontabs/root'");
             system("rpcclient2 'sed -i \'/Device.WiFi.Radio./d\' /var/spool/cron/crontabs/root'");
 #else
@@ -10800,7 +10800,7 @@ AccessPoint_SetParamStringValue
                 sscanf(pString,"%d/%d/%d-%d:%d", &iDay, &iMonth, &iYear, &iHour, &iMin);
 
                 //prepare the crontab entry
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
                 snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient2 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
                     iMin, iHour, iDay, iMonth, iGnIndex24);
 #else
@@ -10812,7 +10812,7 @@ AccessPoint_SetParamStringValue
                 system(strCronCmd);
 
                 //prepare the next crontab entry
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
                 snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient2 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
                     iMin, iHour, iDay, iMonth, iGnIndex50);
 #else
@@ -12850,7 +12850,7 @@ Security_SetParamStringValue
 
         if (pWifiAp->AP.Cfg.InstanceNumber == 5 || pWifiAp->AP.Cfg.InstanceNumber == 6)
         {
-#if defined (_LG_MV1_CELENO_)
+#if defined (_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
             /* Allow only WPA2-Enterprise for hotspot/community wifi */
             if (!(COSA_DML_WIFI_SECURITY_WPA2_Enterprise & TmpMode))
             {
@@ -18150,7 +18150,7 @@ static BOOL DPP_STA_ProvisionStart_Validate(PCOSA_DML_WIFI_DPP_STA_CFG pWifiDppS
 #define LARRAY 32
 
 #if !defined(_BWG_PRODUCT_REQ_)
-#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_)
+#if !defined(_XF3_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_) && !defined(_HUB4_PRODUCT_REQ_) && !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
     int asn1len;
     const unsigned char *key;
     ULONG apIns, staIndex;
