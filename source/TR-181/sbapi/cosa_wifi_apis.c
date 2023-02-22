@@ -5795,7 +5795,7 @@ CosaDmlWiFiGetAccessPointPsmData
 */
 //<<
 #if !defined(_HUB4_PRODUCT_REQ_) || defined(HUB4_WLDM_SUPPORT)
-#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_)
+#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
 #ifdef WIFI_HAL_VERSION_3
     if (isVapPrivate(wlanIndex) || isVapMesh(wlanIndex)) {
 #else
@@ -6974,7 +6974,7 @@ CosaDmlWiFiApGetNeighborReportActivated(ULONG vAPIndex, BOOLEAN *pbNeighborRepor
         }
         sWiFiDmlApStoredCfg[vAPIndex].Cfg.X_RDKCENTRAL_COM_NeighborReportActivated = *pbNeighborReportActivated;
 #if !defined(_HUB4_PRODUCT_REQ_) || defined(HUB4_WLDM_SUPPORT)
-#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_)
+#if (defined(ENABLE_FEATURE_MESHWIFI) || defined(_CBR_PRODUCT_REQ_) || defined(_COSA_BCM_MIPS_)) && !defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_)
         //set to HAL
         CcspWifiTrace(("RDK_LOG_WARN,%s : setting value to HAL\n",__FUNCTION__ ));
         wifi_setNeighborReportActivation(vAPIndex, *pbNeighborReportActivated);
@@ -7990,7 +7990,7 @@ CosaDmlWiFiFactoryReset
     {
         // delete current configuration
 
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
        /* Stop plume agent before removing the configs */
        system("rpcclient2 'syscfg set son_admin_status 0'; /etc/plume_init.sh stop");
 #endif
@@ -13279,7 +13279,7 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d false\n", __func__, __LINE__, 
             for (i=wlanIndex; i < 16; i += 2)
             {
                 // if ApplySettingSSID has been set, only apply changes to the specified SSIDs
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
                 if ( (pCfg->ApplySettingSSID != 0) && !((1<<i) & pCfg->ApplySettingSSID) || i == 12 || i == 13 )
 #else
                 if ( (pCfg->ApplySettingSSID != 0) && !((1<<i) & pCfg->ApplySettingSSID ) || i == 2 || i == 3 )
@@ -14061,7 +14061,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
             CcspWifiTrace(("RDK_LOG_WARN, %s Failed to configure DFS settings!!!\n",__FUNCTION__));
         }
 
-#if defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_)
+#if defined(_INTEL_WAV_) || defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
          wlanRestart = TRUE;
  #endif
     }
@@ -14899,7 +14899,7 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__,
         if(gRestartRadiusRelay)
         {
             gRestartRadiusRelay = FALSE;
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
             CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : restart Radius Relay \n",__FUNCTION__));
             //Trigerring radius relay restart after radius setting changed
             system("rpcclient2 'sysevent set radiusrelay-restart'");
@@ -15201,7 +15201,7 @@ CosaDmlWiFiRadioGetCfg
 	wifi_getRadioRetryLimit(wlanIndex, &pCfg->RetryLimit);
 
 	pCfgChannel = &pCfg->Channel;
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
 	wifi_getRadioConfiguredChannel(wlanIndex, pCfgChannel);
 #else
 	wifi_getRadioChannel(wlanIndex, pCfgChannel);
@@ -18525,7 +18525,7 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
 
  //wifi_getApSecurityRadiusServerIPAddr(wlanIndex,&pCfg->RadiusServerIPAddr); //bug
     //wifi_getApSecurityRadiusServerPort(wlanIndex, &pCfg->RadiusServerPort);
-#if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_)
+#if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
     wifi_getApSecurityWpaRekeyInterval(wlanIndex,  (unsigned int *) &pCfg->RekeyingInterval);
 #endif 
 #if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
@@ -19099,7 +19099,7 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 		enable_reset_radio_flag(wlanIndex);
     } 
 
-#if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_)
+#if (!defined (_COSA_BCM_MIPS_)&& !defined(_COSA_BCM_ARM_) && !defined(_PLATFORM_TURRIS_) && !defined(_INTEL_WAV_)) || defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
     if ( pCfg->RekeyingInterval != pStoredCfg->RekeyingInterval) {
 		CcspWifiTrace(("RDK_LOG_WARN,%s calling setWpaRekeyInterval  \n",__FUNCTION__));
         wifi_setApSecurityWpaRekeyInterval(wlanIndex,  pCfg->RekeyingInterval);
@@ -24690,7 +24690,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 #endif
 	BOOL enabled=FALSE;
         int rc = -1;
-#if defined(_INTEL_BUG_FIXES_) || !defined(_LG_MV1_CELENO_)
+#if defined(_INTEL_BUG_FIXES_) || (!defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_))
 	char *output_buf = NULL;
 	char partOfAddress[3];
 #else
@@ -24729,7 +24729,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 
 			count = 0;
 
-#if !defined(_INTEL_BUG_FIXES_) && defined(_LG_MV1_CELENO_)
+#if !defined(_INTEL_BUG_FIXES_) && (defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_))
             assoc_devices = CosaDmlWiFiApGetAssocDevices(NULL, ssid , &count);
 			if (assoc_devices == NULL && count > 0)
 			{
@@ -24775,7 +24775,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 					for (j=0; j < 6; j++)
 					{
 						snprintf(partOfAddress, 3, "%s", &output_buf[i*18 + j*3]);
-#if defined(_LG_MV1_CELENO_)
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
 						assoc_devices[i].MacAddress[j] = (char)strtol(partOfAddress, NULL, 16);
 #else
 						assoc_devices[count-i-1].MacAddress[j] = (char)strtol(partOfAddress, NULL, 16);
@@ -24808,7 +24808,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 			_ansc_snprintf(ssid,sizeof(ssid),"Device.WiFi.SSID.%d",index);
 
 
-#if !defined(_INTEL_BUG_FIXES_) && defined(_LG_MV1_CELENO_)
+#if !defined(_INTEL_BUG_FIXES_) && (defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_))
                 for(j = 0; (j < count) && (assoc_devices != NULL) ; j++)
                 {
                         //CcspWifiTrace(("RDK_LOG_WARN,WIFI-CLIENT <%s> <%d> : j = %d \n",__FUNCTION__, __LINE__ , j));
@@ -24973,7 +24973,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 #endif
 			count = 0;
 
-#if !defined(_INTEL_BUG_FIXES_) && defined(_LG_MV1_CELENO_)
+#if !defined(_INTEL_BUG_FIXES_) && (defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_))
             assoc_devices = CosaDmlWiFiApGetAssocDevices(NULL, ssid , &count);
                         if (assoc_devices == NULL && count > 0)
                         {
@@ -25089,7 +25089,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 #endif
 	}
 
-#if defined(_INTEL_BUG_FIXES_) || !defined(_LG_MV1_CELENO_)
+#if defined(_INTEL_BUG_FIXES_) || (!defined(_LG_MV1_CELENO_) && !defined(_LG_MV1_QCA_))
 	if (output_buf)
         {
 		AnscFreeMemory(output_buf);
