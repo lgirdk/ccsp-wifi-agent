@@ -15116,7 +15116,11 @@ CosaDmlWiFiRadioGetCfg
     wifi_getRadioAutoChannelRefreshPeriod(wlanIndex, pCfgAutoChannelRefreshPeriod);
     wifi_getRadioIEEE80211hSupported(wlanIndex,&pCfg->X_COMCAST_COM_IEEE80211hSupported);
     pCfg->TxRate                         = COSA_DML_WIFI_TXRATE_Auto;
-
+    wifi_getRadioReverseDirectionGrantSupported(wlanIndex,&pCfg->X_COMCAST_COM_ReverseDirectionGrantSupported);
+    wifi_getRadioAMSDUEnable(wlanIndex, &pCfg->X_CISCO_COM_AggregationMSDU);
+    wifi_getRadioDCSEnable(wlanIndex, &pCfg->X_COMCAST_COM_DCSEnable);
+    wifi_getRadioReverseDirectionGrantSupported(wlanIndex, &pCfg->ReverseDirectionGrantSupported);
+    CosaDmlWiFiGetRadioPsmData(pCfg);
     pCfg->ApplySetting  = FALSE;
     pCfg->ApplySettingSSID = 0;
 
@@ -20666,7 +20670,7 @@ CosaDmlWiFiApMfGetCfg
     }
 
     pCfg->bEnabled = wifiVapInfo->u.bss_info.mac_filter_enable;
-    pCfg->FilterAsBlackList = ((wifiVapInfo->u.bss_info.mac_filter_mode == wifi_mac_filter_mode_black_list) ? TRUE : FALSE);
+    pCfg->FilterAsBlackList = ((wifiVapInfo->u.bss_info.mac_filter_enable && (wifiVapInfo->u.bss_info.mac_filter_mode == wifi_mac_filter_mode_black_list)) ? TRUE : FALSE);
 
     ccspWifiDbgPrint(CCSP_WIFI_TRACE,"%s %d macfilter bEnabled : %d FilterAsBlackList : %d mac_filter_mode : %d\n",
             __FUNCTION__, wlanIndex, pCfg->bEnabled, pCfg->FilterAsBlackList,wifiVapInfo->u.bss_info.mac_filter_mode);
