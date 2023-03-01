@@ -15152,6 +15152,21 @@ CosaDmlWiFiRadioGetCfg
 
     radioGetCfgUpdateFromHalToDml(wlanIndex, pCfg, wifiRadioOperParam);
 
+    wifi_getRadioDfsMoveBackEnable(wlanIndex, &pCfg->EnhancedACS.DFSMoveBack);
+    wifi_getRadioExcludeDfs(wlanIndex, &pCfg->EnhancedACS.ExcludeDFS);
+    {
+        ULONG halWeights[sizeof(pCfg->EnhancedACS.ChannelWeights)] = {0};
+        memset(pCfg->EnhancedACS.ChannelWeights, 0, sizeof(pCfg->EnhancedACS.ChannelWeights));
+        wifi_getRadioChannelWeights(wlanIndex, halWeights);
+        fromHalWeightsToChannelWeights(wlanIndex, halWeights, pCfg->EnhancedACS.ChannelWeights, sizeof(pCfg->EnhancedACS.ChannelWeights));
+    }
+    unsigned char* precac = NULL; // Fix Me, The Variable required as per HAL standard.
+    wifi_getZeroDFSState(wlanIndex, &pCfg->ZeroWaitDFS.Enable,precac);
+    if (precac)
+    {
+        free(precac);
+    }
+
     //HAL cmds for updating AutoChannelRefreshPeriodSupported status
     wifi_getRadioAutoChannelRefreshPeriodSupported(wlanIndex,&pCfg->X_COMCAST_COM_AutoChannelRefreshPeriodSupported);
     wifi_getRadioAutoChannelRefreshPeriodSupported(wlanIndex, &pCfg->AutoChannelRefreshPeriodSupported);
