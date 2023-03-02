@@ -946,7 +946,7 @@ int upload_client_telemetry_data(void *arg)
         memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
         int compare = i + 1 ;
             get_formatted_time(tmp);
-       	    snprintf(buff, 2048, "%s WIFI_MAC_%d:", tmp, i + 1);
+       	    snprintf(buff, sizeof(buff), "%s WIFI_MAC_%d:", tmp, i + 1);
 
 	    num_devs = 0;
        	    sta = hash_map_get_first(sta_map);
@@ -996,7 +996,7 @@ int upload_client_telemetry_data(void *arg)
        	    wifi_dbg_print(1, "%s", buff);
 
 	    get_formatted_time(tmp);
-	    snprintf(buff, 2048, "%s WIFI_MAC_%d_TOTAL_COUNT:%d\n", tmp, i + 1, num_devs);
+	    snprintf(buff, sizeof(buff), "%s WIFI_MAC_%d_TOTAL_COUNT:%d\n", tmp, i + 1, num_devs);
 	    write_to_file(wifi_health_log, buff);
 	    //    "header": "Total_2G_clients_split", "content": "WIFI_MAC_1_TOTAL_COUNT:", "type": "wifihealth.txt",
 	    //    "header": "Total_5G_clients_split", "content": "WIFI_MAC_2_TOTAL_COUNT:","type": "wifihealth.txt",
@@ -1060,7 +1060,7 @@ int upload_client_telemetry_data(void *arg)
         if(strncmp(vap_status,"Up",2)==0)
         {
             get_formatted_time(tmp);
-            snprintf(buff, 2048, "%s WiFi_TX_Overflow_SSID_%d:%u\n", tmp, i + 1, telemetry.txOverflow);
+            snprintf(buff, sizeof(buff), "%s WiFi_TX_Overflow_SSID_%d:%u\n", tmp, i + 1, telemetry.txOverflow);
             write_to_file(wifi_health_log, buff);
             wifi_dbg_print(1, "%s", buff);
         }
@@ -1078,7 +1078,7 @@ int upload_client_telemetry_data(void *arg)
             }
             return TIMER_TASK_CONTINUE;
         }
-        snprintf(buff, 2048, "%s WIFI_RSSI_%d:", tmp, i + 1);
+        snprintf(buff, sizeof(buff), "%s WIFI_RSSI_%d:", tmp, i + 1);
        	sta = hash_map_get_first(sta_map);
        	while (sta != NULL) {
 			if (sta->dev_stats.cli_Active == true) {
@@ -1117,7 +1117,7 @@ int upload_client_telemetry_data(void *arg)
 
 		get_formatted_time(tmp);
 	memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-       	snprintf(buff, 2048, "%s WIFI_CHANNEL_WIDTH_%d:", tmp, i + 1);
+       	snprintf(buff, sizeof(buff), "%s WIFI_CHANNEL_WIDTH_%d:", tmp, i + 1);
        	sta = hash_map_get_first(sta_map);
        	while (sta != NULL) {
 			if (sta->dev_stats.cli_Active == true) {
@@ -1148,7 +1148,7 @@ int upload_client_telemetry_data(void *arg)
 
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && nrflag[i]) {
 			get_formatted_time(tmp);
-       		snprintf(buff, 2048, "%s WIFI_NORMALIZED_RSSI_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_NORMALIZED_RSSI_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1165,7 +1165,7 @@ int upload_client_telemetry_data(void *arg)
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && snflag[i]) {
 			get_formatted_time(tmp);
 		memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-       		snprintf(buff, 2048, "%s WIFI_SNR_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_SNR_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1196,7 +1196,7 @@ int upload_client_telemetry_data(void *arg)
         if ((isErrorsReceivedRFCenabled == TRUE) && rxretryflag[i]) {
 	    get_formatted_time(tmp);
 	    memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-	    snprintf(buff, 2048, "%s UP_RetransCount_%d:", tmp, i + 1);
+	    snprintf(buff, sizeof(buff), "%s UP_RetransCount_%d:", tmp, i + 1);
 	    sta = hash_map_get_first(sta_map);
 	    while (sta != NULL) {
 		if (sta->dev_stats.cli_Active == true) {
@@ -1218,7 +1218,7 @@ int upload_client_telemetry_data(void *arg)
           
 		get_formatted_time(tmp);
 	memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-       	snprintf(buff, 2048, "%s WIFI_TXCLIENTS_%d:", tmp, i + 1);
+       	snprintf(buff, sizeof(buff), "%s WIFI_TXCLIENTS_%d:", tmp, i + 1);
        	sta = hash_map_get_first(sta_map);
        	while (sta != NULL) {
 			if (sta->dev_stats.cli_Active == true) {
@@ -1249,7 +1249,7 @@ int upload_client_telemetry_data(void *arg)
 
 		get_formatted_time(tmp);
 	memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-       	snprintf(buff, 2048, "%s WIFI_RXCLIENTS_%d:", tmp, i + 1);
+       	snprintf(buff, sizeof(buff), "%s WIFI_RXCLIENTS_%d:", tmp, i + 1);
        	sta = hash_map_get_first(sta_map);
        	while (sta != NULL) {
 			if (sta->dev_stats.cli_Active == true) {
@@ -1281,7 +1281,7 @@ int upload_client_telemetry_data(void *arg)
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && trflag[i]) {
 			get_formatted_time(tmp);
 		memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-       		snprintf(buff, 2048, "%s WIFI_MAX_TXCLIENTS_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_MAX_TXCLIENTS_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1312,7 +1312,7 @@ int upload_client_telemetry_data(void *arg)
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && trflag[i]) {
 			get_formatted_time(tmp);
 		memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-       		snprintf(buff, 2048, "%s WIFI_MAX_RXCLIENTS_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_MAX_RXCLIENTS_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1344,7 +1344,7 @@ int upload_client_telemetry_data(void *arg)
                 if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && trflag[i])
                 {
                     get_formatted_time(tmp);
-                    snprintf(buff, 2048, "%s WIFI_RXTXCLIENTDELTA_%d:", tmp, i + 1);
+                    snprintf(buff, sizeof(buff), "%s WIFI_RXTXCLIENTDELTA_%d:", tmp, i + 1);
                     sta = hash_map_get_first(sta_map);
                     while (sta != NULL)
                     {
@@ -1361,7 +1361,7 @@ int upload_client_telemetry_data(void *arg)
                 }
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && stflag[i]) {
 			get_formatted_time(tmp);
-       		snprintf(buff, 2048, "%s WIFI_BYTESSENTCLIENTS_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_BYTESSENTCLIENTS_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1379,7 +1379,7 @@ int upload_client_telemetry_data(void *arg)
 
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && stflag[i]) {
 			get_formatted_time(tmp);
-       		snprintf(buff, 2048, "%s WIFI_BYTESRECEIVEDCLIENTS_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_BYTESRECEIVEDCLIENTS_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1398,7 +1398,7 @@ int upload_client_telemetry_data(void *arg)
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && stflag[i]) {
 			get_formatted_time(tmp);
 		memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-       		snprintf(buff, 2048, "%s WIFI_PACKETSSENTCLIENTS_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_PACKETSSENTCLIENTS_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1430,7 +1430,7 @@ int upload_client_telemetry_data(void *arg)
 		}
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && stflag[i]) {
 			get_formatted_time(tmp);
-       		snprintf(buff, 2048, "%s WIFI_PACKETSRECEIVEDCLIENTS_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_PACKETSRECEIVEDCLIENTS_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1449,7 +1449,7 @@ int upload_client_telemetry_data(void *arg)
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && stflag[i]) {
 			get_formatted_time(tmp);
 		memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-       		snprintf(buff, 2048, "%s WIFI_ERRORSSENT_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_ERRORSSENT_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1482,7 +1482,7 @@ int upload_client_telemetry_data(void *arg)
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && stflag[i]) {
 			get_formatted_time(tmp);
                 memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-       		snprintf(buff, 2048, "%s WIFI_RETRANSCOUNT_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_RETRANSCOUNT_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1513,7 +1513,7 @@ int upload_client_telemetry_data(void *arg)
 		}
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && stflag[i]) {
 			get_formatted_time(tmp);
-       		snprintf(buff, 2048, "%s WIFI_FAILEDRETRANSCOUNT_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_FAILEDRETRANSCOUNT_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1531,7 +1531,7 @@ int upload_client_telemetry_data(void *arg)
 
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && stflag[i]) {
 			get_formatted_time(tmp);
-       		snprintf(buff, 2048, "%s WIFI_RETRYCOUNT_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_RETRYCOUNT_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1548,7 +1548,7 @@ int upload_client_telemetry_data(void *arg)
 		}
 		if ((sWiFiDmlvApStatsFeatureEnableCfg == true) && stflag[i]) {
 			get_formatted_time(tmp);
-       		snprintf(buff, 2048, "%s WIFI_MULTIPLERETRYCOUNT_%d:", tmp, i + 1);
+       		snprintf(buff, sizeof(buff), "%s WIFI_MULTIPLERETRYCOUNT_%d:", tmp, i + 1);
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
 				if (sta->dev_stats.cli_Active == true) {
@@ -1574,7 +1574,7 @@ int upload_client_telemetry_data(void *arg)
 #endif
 			get_formatted_time(tmp);
        		memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-                snprintf(buff, 2048, "%s WIFI_GOODBADRSSI_%d:", tmp, i + 1);
+                snprintf(buff, sizeof(buff), "%s WIFI_GOODBADRSSI_%d:", tmp, i + 1);
         
        		sta = hash_map_get_first(sta_map);
        		while (sta != NULL) {
@@ -1626,7 +1626,7 @@ int upload_client_telemetry_data(void *arg)
 			{
 				get_formatted_time(tmp);
 				memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-				snprintf(buff, 2048, "%s WIFI_RECONNECT_%d:", tmp, i + 1);
+				snprintf(buff, sizeof(buff), "%s WIFI_RECONNECT_%d:", tmp, i + 1);
 				sta = hash_map_get_first(sta_map);
 				while (sta != NULL) {
 				
@@ -1674,7 +1674,7 @@ int upload_client_telemetry_data(void *arg)
             if (report_ss_info) {
                 get_formatted_time(tmp);
                 memset(telemetryBuff, 0, TELEMETRY_MAX_BUFFER);
-                snprintf(buff, 2048, "%s WIFI_CAPSS_%d:", tmp, i + 1);
+                snprintf(buff, sizeof(buff), "%s WIFI_CAPSS_%d:", tmp, i + 1);
                 sta = hash_map_get_first(sta_map);
                 while (sta != NULL) {
                     if (sta->dev_stats.cli_Active == true) {
@@ -3311,7 +3311,7 @@ void process_deauthenticate	(unsigned int ap_index, auth_deauth_dev_t *dev)
 #endif
         {
        	 
-   	       snprintf(buff, 2048, "%s WIFI_PASSWORD_FAIL:%d,%s\n", tmp, ap_index + 1, to_sta_key(dev->sta_mac, sta_key));
+   	       snprintf(buff, sizeof(buff), "%s WIFI_PASSWORD_FAIL:%d,%s\n", tmp, ap_index + 1, to_sta_key(dev->sta_mac, sta_key));
 	       /* send telemetry of password failure */
 	       write_to_file(wifi_health_log, buff);
         }
@@ -3323,7 +3323,7 @@ void process_deauthenticate	(unsigned int ap_index, auth_deauth_dev_t *dev)
 #endif
         {
        	 
-   	       snprintf(buff, 2048, "%s WIFI_POSSIBLE_WPS_PSK_FAIL:%d,%s,%d\n", tmp, ap_index + 1, to_sta_key(dev->sta_mac, sta_key), dev->reason);
+   	       snprintf(buff, sizeof(buff), "%s WIFI_POSSIBLE_WPS_PSK_FAIL:%d,%s,%d\n", tmp, ap_index + 1, to_sta_key(dev->sta_mac, sta_key), dev->reason);
 	       /* send telemetry of WPS failure */
 	       write_to_file(wifi_health_log, buff);
         }
