@@ -266,17 +266,16 @@ static void to_plan_id (unsigned char *PlanId, unsigned char Plan[])
 
 char *get_formatted_time(char *time)
 {
-    struct tm *tm_info;
     struct timeval tv_now;
-    char tmp[128];
+    struct tm *tm_info;
+    size_t len;
     errno_t rc = -1;
 
     gettimeofday(&tv_now, NULL);
     tm_info = localtime(&tv_now.tv_sec);
 
-    strftime(tmp, 128, "%y%m%d-%T", tm_info);
-    
-    rc = sprintf_s(time, 128, "%s.%06d", tmp, (int)tv_now.tv_usec);
+    len = strftime(time, 128, "%y%m%d-%T", tm_info);
+    rc = sprintf_s(time + len, 128 - len, ".%06d", (int) tv_now.tv_usec);
     if(rc < EOK) ERR_CHK(rc);
     return time;
 }
