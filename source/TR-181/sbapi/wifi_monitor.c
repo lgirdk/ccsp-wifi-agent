@@ -7200,14 +7200,21 @@ wifi_actvie_msmt_t *get_active_msmt_data()
 
 void wifi_dbg_print(int level, char *format, ...)
 {
-    char buff[4096] = {0};
-    va_list list;
     static FILE *fpg = NULL;
+    char buff[4096];
+    va_list list;
     errno_t rc = -1;
     UNREFERENCED_PARAMETER(level);
    
     if ((access("/nvram/wifiMonDbg", R_OK)) != 0) {
         return;
+    }
+
+    if (fpg == NULL) {
+        fpg = fopen("/tmp/wifiMon", "a+");
+        if (fpg == NULL) {
+            return;
+        }
     }
 
     get_formatted_time(buff);
@@ -7218,19 +7225,11 @@ void wifi_dbg_print(int level, char *format, ...)
     vsprintf(&buff[strlen(buff)], format, list);
     va_end(list);
     
-    if (fpg == NULL) {
-        fpg = fopen("/tmp/wifiMon", "a+");
-        if (fpg == NULL) {
-            return;
-        } else {
-            fputs(buff, fpg);
-        }
-    } else {
-        fputs(buff, fpg);
-    }
-    
+    fputs(buff, fpg);
+
     fflush(fpg);
 }
+
 /*********************************************************************************/
 /*                                                                               */
 /* FUNCTION NAME : startWifiBlast                                                */
