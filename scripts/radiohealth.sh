@@ -171,7 +171,7 @@ if [ "x$BOX_TYPE" == "xTCCBR" ] || [ "x$BOX_TYPE" == "xXF3" ]; then
                 if [ $? -ne 0 ]; then
                         WL0_VER=`cat /tmp/wifihealth/tmp_output | cut -f2 -d":" | awk '{$1=$1};1'`
 		else
-			WL0_VER=`cat /tmp/wifihealth/tmp_output | tail -1 | tr -s [:space:] ' ' | cut -f7 -d" "`
+			WL0_VER=`cat /tmp/wifihealth/tmp_output | tail -1 | grep -o "version.*" | awk '{print $2}'`
                 fi
 
                 echo_t "WIFI_WL0_VER: $WL0_VER"
@@ -179,7 +179,7 @@ if [ "x$BOX_TYPE" == "xTCCBR" ] || [ "x$BOX_TYPE" == "xXF3" ]; then
                 if [ $? -ne 0 ]; then
                         WL1_VER=`cat /tmp/wifihealth/tmp_output | cut -f2 -d":" | awk '{$1=$1};1'`
 		else
-			WL1_VER=`cat /tmp/wifihealth/tmp_output | tail -1 | tr -s [:space:] ' ' | cut -f7 -d" "`
+			WL1_VER=`cat /tmp/wifihealth/tmp_output | tail -1 | grep -o "version.*" | awk '{print $2}'`
                 fi
                 echo_t "WIFI_WL1_VER: $WL1_VER"
                 wl -i wl0 fabid > /tmp/wifihealth/tmp_output 2>&1
