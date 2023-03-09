@@ -2605,6 +2605,10 @@ BOOL isVapLnfSecure(UINT apIndex);
 
 #endif
 
+#if defined(_COSA_BCM_ARM_)
+void Guest_Interface_Status(BOOL isEnable);
+#endif
+
 #ifdef FEATURE_RADIO_WEBCONFIG
 INT getRadioIndexFromRadioName(char *radio_name, wifi_radio_index_t *radio_instance);
 #endif
