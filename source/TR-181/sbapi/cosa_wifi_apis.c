@@ -156,6 +156,10 @@
 #define MAX_NEIGHBOURS          250
 #define MAC_ADDR_CHAR_LEN       18
 #endif
+
+#if defined(_COSA_BCM_ARM_)
+#define LGI_SUBNET3_INSTANCE   "6"
+#endif
 /**************************************************************************
 *
 *	Function Declarations
@@ -247,6 +251,35 @@ static void checkforbiddenSSID(int index);
 static void MeshNotifySecurityChange(INT apIndex, PCOSA_DML_WIFI_APSEC_CFG pStoredApSecCfg);
 static ANSC_STATUS getPMKCaching (int index, BOOLEAN *pmkEnable);
 static ANSC_STATUS setPmkCachingintoPSM (int index, BOOLEAN pmkEnable);
+
+#if defined(_COSA_BCM_ARM_)
+void Guest_Interface_Status(BOOL isEnable)
+{
+    char cmd[16], guestIfStatus[8];
+    if (gWrite_sysevent_fd || !initGSyseventVar())
+    {
+       if (isEnable)
+       {
+           snprintf(cmd, sizeof(cmd), "ipv4_%d-status", LGI_SUBNET3_INSTANCE);
+           sysevent_get(gWrite_sysevent_fd, gWrite_sysEtoken, cmd, guestIfStatus, sizeof(guestIfStatus));
+           if (strcmp(guestIfStatus, "up") != 0)
+           {
+               CcspTraceWarning(("enabling guest network interface brlan7\n"));
+               sysevent_set(gWrite_sysevent_fd, gWrite_sysEtoken, "ipv4-up", LGI_SUBNET3_INSTANCE, 0);
+           }
+       }
+       else
+       {
+           CcspTraceWarning(("disabling guest network interface brlan7\n"));
+           sysevent_set(gWrite_sysevent_fd, gWrite_sysEtoken, "ipv4-down", LGI_SUBNET3_INSTANCE, 0);
+       }
+    }
+    else
+    {
+       CcspTraceWarning(("sysevent open failed!\n"));
+    }
+}
+#endif
 
 void wifidb_print(char *format, ...)
 {
@@ -12760,6 +12793,12 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
                 CcspWifiTrace(("RDK_LOG_ERROR, %s wifiRadioVapInfoValidation returned with error %d\n", __FUNCTION__, ret));
                 goto ValidationFailed;
             }
+#if defined(_COSA_BCM_ARM_)
+            if (vapIndex == 6 || vapIndex == 7)
+            {
+                Guest_Interface_Status(wifiVapInfo->u.bss_info.enabled);
+            }
+#endif
             memcpy(&tmpWifiVapInfoMap.vap_array[vapArrayIndex], wifiVapInfo, sizeof(wifi_vap_info_t));
             ccspWifiDbgPrint(CCSP_WIFI_TRACE, " %s %d vapIndex : %d is placed at vapArrayIndex : %d\n", __FUNCTION__, __LINE__, vapIndex, vapArrayIndex);
             vapArrayIndex++;
