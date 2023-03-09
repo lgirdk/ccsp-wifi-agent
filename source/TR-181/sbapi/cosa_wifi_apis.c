@@ -9252,9 +9252,7 @@ void AssociatedDevice_callback_register()
 {
 	pthread_mutex_lock(&g_apRegister_lock);
 	wifi_newApAssociatedDevice_callback_register(CosaDmlWiFi_AssociatedDevice_callback);
-#if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
 	wifi_apDisassociatedDevice_callback_register(CosaDmlWiFi_DisAssociatedDevice_callback);
-#endif
 	pthread_mutex_unlock(&g_apRegister_lock);
 }
 
@@ -19583,7 +19581,9 @@ CosaDmlWiFiApGetAssocDevices
     UINT array_size = 0;
     ULLONG handle;
     INT diagStatus = RETURN_ERR;
+#if !defined(_PLATFORM_RASPBERRYPI_)
     INT monStatus = RETURN_ERR;
+#endif
     UNREFERENCED_PARAMETER(hContext);
 
     if (!pSsid)
@@ -19660,12 +19660,13 @@ CosaDmlWiFiApGetAssocDevices
                                 cli_stats = NULL;
                         }
                         //--RDKB-28981
-
+#if !defined(_PLATFORM_RASPBERRYPI_) 
                         //Fetching CapStream via monitor.c
                         monStatus = monitor_apis_param_send(wlanIndex, pd);
                         if (monStatus != RETURN_OK) {
                             CcspWifiTrace(("RDK_LOG_ERROR, WIFI %s Error in fetching Capablestreams\n", __FUNCTION__));
                         }
+#endif
                 }
                 free(wifi_associated_dev_array);
                 wifi_associated_dev_array = NULL;
@@ -23633,64 +23634,6 @@ void Hotspot_Macfilter_sync(char *mac) {
 	Hotspot_MacFilter_AddEntry(mac);
 }
 
-#if defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_TURRIS_)
-typedef struct _wifi_disassociation_details
-{
-        CHAR  wifi_mac[64];
-        INT   wifi_state;
-        INT   wifi_SignalStrength;
-
-}wifi_disassociation_details_t;
-void update_wifi_inactive_AssociatedDeviceInfo(char *filename)
-{
-        LM_wifi_hosts_t hosts;
-        char ssid[256]= {0},assoc_device[256] = {0};
-        ULONG count = 0;
-        ULONG j = 0,i = 0;
-        int rc = -1;
-        memset(&hosts,0,sizeof(LM_wifi_hosts_t));
-        memset(assoc_device,0,sizeof(assoc_device));
-        memset(ssid,0,sizeof(ssid));
-
-        if(strcmp(filename,"/tmp/AllAssociated_Devices_2G.txt") == 0)
-                i = 1;
-        else
-                i = 2;
-        wifi_disassociation_details_t *w_disassoc_clients=NULL;
-        wifi_getApInactiveAssociatedDeviceDiagnosticResult(filename,&w_disassoc_clients, &count);
-        hosts.count = count;
-        for(j=0 ; j<count ; j++)
-        {
-                _ansc_snprintf(ssid,sizeof(ssid),"Device.WiFi.SSID.%lu",i);
-                _ansc_snprintf(assoc_device,sizeof(assoc_device),"Device.WiFi.AccessPoint.%ld.AssociatedDevice.%ld",i,j+1);
-
-                rc = strcpy_s((char *)hosts.host[j].AssociatedDevice,sizeof(hosts.host[j].AssociatedDevice),assoc_device);
-	        if (rc != 0) {
-                    ERR_CHK(rc);
-                    return;
-                }
-                rc = strcpy_s((char *)hosts.host[j].phyAddr,sizeof(hosts.host[j].phyAddr),w_disassoc_clients[j].wifi_mac);
-	        if (rc != 0) {
-                    ERR_CHK(rc);
-                    return;
-                }
-                rc = strcpy_s((char *)hosts.host[j].ssid,sizeof(hosts.host[j].ssid),ssid);
-	        if (rc != 0) {
-                    ERR_CHK(rc);
-                    return;
-                }
-                hosts.host[j].Status = w_disassoc_clients[j].wifi_state;
-                hosts.host[j].RSSI = w_disassoc_clients[j].wifi_SignalStrength;
-                printf("*** phyAddr : %s,Status : %d : RSSI %d\n",hosts.host[j].phyAddr,hosts.host[j].Status,hosts.host[j].RSSI);
-        }
-        if(hosts.count)
-                CosaDMLWiFi_Send_FullHostDetails_To_LMLite( &hosts );
-        if(w_disassoc_clients)
-                free(w_disassoc_clients);
-}
-#endif
-
-
 void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associated_dev, BOOL bCallForFullSync, BOOL bCallFromDisConnCB )
 {
 
@@ -24081,17 +24024,8 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 		}
 
 		CcspWifiTrace(("RDK_LOG_WARN, Total Hosts Count is %d\n",hosts.count));
-#if !defined(_PLATFORM_RASPBERRYPI_)
 		if(hosts.count)
 		CosaDMLWiFi_Send_FullHostDetails_To_LMLite( &hosts );
-#endif
-#if defined(_PLATFORM_RASPBERRYPI_) || defined(_PLATFORM_TURRIS_)
-		if(hosts.count >= 0)
-		{
-			update_wifi_inactive_AssociatedDeviceInfo("/tmp/AllAssociated_Devices_2G.txt");
-			update_wifi_inactive_AssociatedDeviceInfo("/tmp/AllAssociated_Devices_5G.txt");
-		}
-#endif
 	}
 
 #if defined(_INTEL_BUG_FIXES_)
