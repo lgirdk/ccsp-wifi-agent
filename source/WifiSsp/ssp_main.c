@@ -511,7 +511,7 @@ int main(int argc, char* argv[])
     gpWifiStartCfg = (PCCSP_COMPONENT_CFG)AnscAllocateMemory(sizeof(CCSP_COMPONENT_CFG));
     if ( gpWifiStartCfg )
     {
-        CcspComponentLoadCfg(CCSP_WIFI_START_CFG_FILE, gpWifiStartCfg);
+        CcspComponentLoadCfg("/usr/ccsp/wifi/CcspWifi.cfg", gpWifiStartCfg);
     }
     else
     {

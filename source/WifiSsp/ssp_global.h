@@ -47,7 +47,6 @@
 #include "ccsp_trace.h"
 
 #include "ccsp_custom.h"
-#include "wifi_custom.h"
 
 #include "dslh_cpeco_interface.h"
 #include "dslh_cpeco_exported_api.h"
