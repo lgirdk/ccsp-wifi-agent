@@ -181,10 +181,9 @@ ssp_engage_wifi
 {
     ANSC_STATUS                     returnStatus    = ANSC_STATUS_SUCCESS;
     char                            CrName[256]     = {0};
-    PCCSP_DM_XML_CFG_LIST           pXmlCfgList     = NULL;
     errno_t                         rc              = -1;
-    g_pComponent_Common_Dm->Health = CCSP_COMMON_COMPONENT_HEALTH_Yellow;
 
+    g_pComponent_Common_Dm->Health = CCSP_COMMON_COMPONENT_HEALTH_Yellow;
 
     if ( pWifiCcdIf )
     {
@@ -204,14 +203,6 @@ ssp_engage_wifi
     {
         ERR_CHK(rc);
         return ANSC_STATUS_FAILURE;
-    }
-
-    returnStatus = CcspComponentLoadDmXmlList(pStartCfg->DmXmlCfgFileName, &pXmlCfgList);
-
-    if ( returnStatus != ANSC_STATUS_SUCCESS )
-    {
-	CcspTraceWarning(("Failed while loading WiFi Data MOdel returnStatus = %lu\n",returnStatus));
-        return  returnStatus;
     }
 
     returnStatus =
@@ -235,8 +226,6 @@ ssp_engage_wifi
     {
         CcspTraceWarning(("%s WiFi Failed to register with CR ret = %lu\n",__FUNCTION__,returnStatus));
     }
-
-    AnscFreeMemory(pXmlCfgList);
 
     return ANSC_STATUS_SUCCESS;
 }
