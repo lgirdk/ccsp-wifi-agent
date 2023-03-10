@@ -12008,64 +12008,38 @@ CosaDmlWiFiRadioGetSinfo
     }
 
     /*CID: 69532 Out-of-bounds access*/
-    char frequencyBand[64] = {0};
+    char frequencyBand[64];
     int ret = RETURN_ERR;
     ULONG supportedStandards = 0;
 
-    wifi_getRadioSupportedFrequencyBands(wlanIndex, frequencyBand);
     ret = CosaDmlWiFiRadiogetSupportedStandards(wlanIndex, &supportedStandards);
     if(ret == RETURN_OK)
     {
-        pInfo->SupportedStandards =  supportedStandards;
+        pInfo->SupportedStandards = supportedStandards;
+    }
 
+    frequencyBand[0] = 0;
+    ret = wifi_getRadioSupportedFrequencyBands(wlanIndex, frequencyBand);
+
+    if ((ret == RETURN_OK) && (strstr(frequencyBand, "2.4G") != NULL)) {
+        pInfo->SupportedFrequencyBands = COSA_DML_WIFI_FREQ_BAND_2_4G;
+        pInfo->IEEE80211hSupported = FALSE;
+    } else if ((ret == RETURN_OK) && (strstr(frequencyBand, "5G") != NULL)) {
+        pInfo->SupportedFrequencyBands = COSA_DML_WIFI_FREQ_BAND_5G;
+        pInfo->IEEE80211hSupported = TRUE;	    
     }
-    //zqiu: Make it more generic
-    if (strstr(frequencyBand,"2.4") != NULL) {
-        pInfo->SupportedFrequencyBands = COSA_DML_WIFI_FREQ_BAND_2_4G; /* Bitmask of COSA_DML_WIFI_FREQ_BAND */
-        pInfo->IEEE80211hSupported     = FALSE;
-    } else if (strstr(frequencyBand,"5G_11N") != NULL) {
-        pInfo->SupportedFrequencyBands = COSA_DML_WIFI_FREQ_BAND_5G; /* Bitmask of COSA_DML_WIFI_FREQ_BAND */
-        pInfo->IEEE80211hSupported     = TRUE;	    
-    } else if (strstr(frequencyBand,"5G_11AC") != NULL) {
-        pInfo->SupportedFrequencyBands = COSA_DML_WIFI_FREQ_BAND_5G; /* Bitmask of COSA_DML_WIFI_FREQ_BAND */
-        pInfo->IEEE80211hSupported     = TRUE;
-    } 
-#if defined (_WIFI_AX_SUPPORT_)
-    else if (strstr(frequencyBand,"5G_11AX") != NULL) {
-        pInfo->SupportedFrequencyBands = COSA_DML_WIFI_FREQ_BAND_5G; /* Bitmask of COSA_DML_WIFI_FREQ_BAND */
-        pInfo->IEEE80211hSupported     = TRUE;
-    }
-#endif
     else {
-#ifdef WIFI_HAL_VERSION_3
-        pInfo->SupportedFrequencyBands = (COSA_DML_WIFI_FREQ_BAND)(1 << wlanIndex ); /* Bitmask of COSA_DML_WIFI_FREQ_BAND */
-        switch(pInfo->SupportedFrequencyBands)
-        {
-            case COSA_DML_WIFI_FREQ_BAND_5G:
-                pInfo->IEEE80211hSupported     = TRUE;
-                break;
-            case COSA_DML_WIFI_FREQ_BAND_6G:
-                pInfo->IEEE80211hSupported     = TRUE;
-                break;
-            case COSA_DML_WIFI_FREQ_BAND_2_4G:
-            default:
-                pInfo->IEEE80211hSupported     = FALSE;
-                break;
-        }
-#else
-        // if we can't determine frequency band assue wifi0 is 2.4 and wifi1 is 5 11n
+        // If HAL doesn't supply frequency band, derive from WLAN index.
         if (wlanIndex == 0)
-    {
-        pInfo->SupportedFrequencyBands = COSA_DML_WIFI_FREQ_BAND_2_4G; /* Bitmask of COSA_DML_WIFI_FREQ_BAND */
-        pInfo->IEEE80211hSupported     = FALSE;
-    }
-    else 
-    {	
-	//zqiu: set 11ac as 5G default
-        pInfo->SupportedFrequencyBands = COSA_DML_WIFI_FREQ_BAND_5G; /* Bitmask of COSA_DML_WIFI_FREQ_BAND */
-        pInfo->IEEE80211hSupported     = TRUE;
+        {
+            pInfo->SupportedFrequencyBands = COSA_DML_WIFI_FREQ_BAND_2_4G;
+            pInfo->IEEE80211hSupported = FALSE;
         }
-#endif
+        else
+        {
+            pInfo->SupportedFrequencyBands = COSA_DML_WIFI_FREQ_BAND_5G;
+            pInfo->IEEE80211hSupported = TRUE;
+        }
     }
 
     wifi_getRadioPossibleChannels(wlanIndex, pInfo->PossibleChannels);
@@ -14965,36 +14939,35 @@ CosaDmlWiFiRadioGetCfg
     pCfg->bEnabled = (radioEnabled == TRUE) ? 1 : 0;
 
     /*CID: 69532 Out-of-bounds access*/
-    char frequencyBand[64] = {0};
+    char frequencyBand[64];
 
-    wifi_getRadioSupportedFrequencyBands(wlanIndex, frequencyBand);
-    if (strstr(frequencyBand,"2.4G") != NULL)
+    frequencyBand[0] = 0;
+    ret = wifi_getRadioSupportedFrequencyBands(wlanIndex, frequencyBand);
+
+    if ((ret == RETURN_OK) && (strstr(frequencyBand, "2.4G") != NULL))
     {
         pCfg->OperatingFrequencyBand = COSA_DML_WIFI_FREQ_BAND_2_4G; 
-    } else if (strstr(frequencyBand,"5G_11N") != NULL)
+    }
+    else if ((ret == RETURN_OK) && (strstr(frequencyBand, "5G") != NULL))
     {
         pCfg->OperatingFrequencyBand = COSA_DML_WIFI_FREQ_BAND_5G;
-    } else if (strstr(frequencyBand,"5G_11AC") != NULL)
-    {
-        pCfg->OperatingFrequencyBand = COSA_DML_WIFI_FREQ_BAND_5G;
-#if defined(_INTEL_BUG_FIXES_)
-    } else if ( strstr(frequencyBand,"5G_11AX") != NULL)
-    {
-        pCfg->OperatingFrequencyBand = COSA_DML_WIFI_FREQ_BAND_5G;
-#endif
-    } else if ( strstr(frequencyBand,"6G_11AX") != NULL)
+    }
+    else if ((ret == RETURN_OK) && (strstr(frequencyBand, "6G") != NULL))
     {
         pCfg->OperatingFrequencyBand = COSA_DML_WIFI_FREQ_BAND_6G;
-    } else
+    }
+    else
     {
-        // if we can't determine frequency band assume wifi0 is 2.4 and wifi1 is 5 11n
+        // If HAL doesn't supply frequency band, derive from WLAN index.
         if (wlanIndex == 0)
         {
             pCfg->OperatingFrequencyBand = COSA_DML_WIFI_FREQ_BAND_2_4G;
-        } else if (wlanIndex == 2)
+        }
+        else if (wlanIndex == 2)
         {
             pCfg->OperatingFrequencyBand = COSA_DML_WIFI_FREQ_BAND_6G;
-        } else
+        }
+        else
         {
             pCfg->OperatingFrequencyBand = COSA_DML_WIFI_FREQ_BAND_5G; 
         }
