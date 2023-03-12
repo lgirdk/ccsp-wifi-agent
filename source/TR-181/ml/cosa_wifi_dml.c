@@ -1056,10 +1056,18 @@ WiFi_SetParamBoolValue
     }
     if (strcmp(ParamName, "X_RDKCENTRAL-COM_PreferPrivate") == 0)
     {
-        if(CosaDmlWiFi_SetPreferPrivatePsmData(bValue) == ANSC_STATUS_SUCCESS)
+#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
+        if (bValue && pMyObject->bEnableRadiusGreyList)
         {
-		pMyObject->bPreferPrivateEnabled = bValue;
-		return TRUE;
+            CcspWifiTrace(("RDK_LOG_ERROR,RadiusGreylist enabled disabling prefer private %s : \n",__FUNCTION__));
+            pMyObject->bPreferPrivateEnabled = !bValue;
+            return FALSE;
+        }
+#endif
+        if(CosaDmlWiFi_SetPreferPrivatePsmData(bValue,FALSE) == ANSC_STATUS_SUCCESS)
+        {
+            pMyObject->bPreferPrivateEnabled = bValue;
+            return TRUE;
         }
     }
 
@@ -1137,7 +1145,10 @@ WiFi_SetParamBoolValue
         if (ANSC_STATUS_SUCCESS == CosaDmlWiFiSetEnableRadiusGreylist( bValue ))
         {
             pMyObject->bEnableRadiusGreyList = bValue;
-	    pMyObject->bPreferPrivateEnabled = !bValue;
+            if (bValue) {
+                CcspWifiTrace(("RDK_LOG_ERROR,RadiusGreylist enabled disabling prefer private %s : \n",__FUNCTION__));
+                pMyObject->bPreferPrivateEnabled = !bValue;
+            }
             return TRUE;
         }
 #endif

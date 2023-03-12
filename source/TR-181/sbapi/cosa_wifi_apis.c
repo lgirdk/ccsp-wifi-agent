@@ -8147,12 +8147,13 @@ CosaDmlWiFiFactoryReset
             return ANSC_STATUS_FAILURE;
         }
     }
+    CcspWifiTrace(("RDK_LOG_WARN, WIFI %s : Returning Success \n",__FUNCTION__));
     return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
 CosaDmlWiFiFactoryResetRadioAndAp( ULONG radioIndex, ULONG apIndex, BOOL needRestart) {
-    
+    PCOSA_DATAMODEL_WIFI            pMyObject     = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
 	if(radioIndex>0) {
 fprintf(stderr, "+++++++++++++++++++++ wifi_factoryResetRadio %lu\n", radioIndex-1);
 		wifi_factoryResetRadio(radioIndex-1);
@@ -8178,6 +8179,9 @@ fprintf(stderr, "+++++++++++++++++++++ wifi_init\n");
     }
 
     g_wifidb_update_pending = TRUE;
+    CosaDmlWiFi_SetPreferPrivatePsmData(FALSE,FALSE);
+    pMyObject->bPreferPrivateEnabled = FALSE;
+    CcspWifiTrace(("RDK_LOG_WARN, WIFI %s : Returning Success \n",__FUNCTION__));
 
     return ANSC_STATUS_SUCCESS;
 }
@@ -9037,6 +9041,13 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
 #endif
 #if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
     CosaDmlWiFiCheckEnableRadiusGreylist(&(pMyObject->bEnableRadiusGreyList));
+    CcspWifiTrace(("RDK_LOG_ERROR,RadiusGreyList enabled %d and PreferPrivate value is  %d\n",pMyObject->bEnableRadiusGreyList,pMyObject->bPreferPrivateEnabled));
+    if (pMyObject->bEnableRadiusGreyList  && pMyObject->bPreferPrivateEnabled) {
+        pMyObject->bPreferPrivateEnabled = FALSE;
+        CosaDmlWiFi_SetPreferPrivatePsmData(FALSE, TRUE);
+        CosaDmlWiFiCheckEnableRadiusGreylist(&(pMyObject->bEnableRadiusGreyList));
+        CcspWifiTrace(("RDK_LOG_ERROR,RadiusGreyList enabled %d hence PreferPrivate should be disabled %d\n",pMyObject->bEnableRadiusGreyList,pMyObject->bPreferPrivateEnabled));
+    }
 #endif
 
     CosaDmlWiFi_GetGoodRssiThresholdValue(&(pMyObject->iX_RDKCENTRAL_COM_GoodRssiThreshold));
@@ -9072,7 +9083,6 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
 #if (defined(_COSA_BCM_ARM_) && defined(_XB7_PRODUCT_REQ_)) || defined(_XB8_PRODUCT_REQ_) || defined(_SR300_PRODUCT_REQ_) || defined (_HUB4_PRODUCT_REQ_)
     wifi_chan_eventRegister(channel_change_event);
 #endif
-
     return ANSC_STATUS_SUCCESS;
 }
 
@@ -9615,9 +9625,20 @@ CosaDmlWiFi_Get2G80211axEnabled(BOOL *value)
 ANSC_STATUS
 CosaDmlWiFi_GetPreferPrivateData(BOOL *value)
 {
-	PCOSA_DATAMODEL_WIFI            pMyObject     = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
-	*value = pMyObject->bPreferPrivateEnabled;
-	return ANSC_STATUS_SUCCESS;
+    PCOSA_DATAMODEL_WIFI            pMyObject     = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
+#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
+    if (pMyObject->bEnableRadiusGreyList)
+    {
+        CcspWifiTrace(("RDK_LOG_ERROR,RadiusGreylist enabled\n"));
+        *value = FALSE;
+    }
+    else {
+#endif
+        *value = pMyObject->bPreferPrivateEnabled;
+#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
+     }
+#endif
+     return ANSC_STATUS_SUCCESS;
 }
 
 ANSC_STATUS
@@ -9651,13 +9672,13 @@ CosaDmlWiFi_GetPreferPrivatePsmData(BOOL *value)
           }
         else
           {
-             *value = TRUE; //Default value , TRUE
+             *value = FALSE; //Default value , FALSE as per RDKB-47552
              rc = sprintf_s(str, sizeof(str) ,"%d",*value);
              if(rc < EOK)
              {
                 ERR_CHK(rc);
             }
-             CcspWifiTrace(("RDK_LOG_WARN,%s-%d Enable PreferPrivate by default\n",__FUNCTION__,__LINE__));
+             CcspWifiTrace(("RDK_LOG_WARN,%s-%d Disable PreferPrivate by default\n",__FUNCTION__,__LINE__));
              retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, PreferPrivate, ccsp_string, str);
              if (retPsmGet != CCSP_SUCCESS) {
                 CcspWifiTrace(("RDK_LOG_WARN,%s PSM_Set_Record_Value2 returned error %d while setting %s \n",__FUNCTION__, retPsmGet, PreferPrivate));
@@ -9674,13 +9695,13 @@ CosaDmlWiFi_GetPreferPrivatePsmData(BOOL *value)
     }
     else
     {
-        *value = TRUE; //Default value , TRUE
+        *value = FALSE; //Default value , FALSE as per RDKB-47552
         rc = sprintf_s(str, sizeof(str) , "%d",*value);
         if(rc < EOK)
         {
             ERR_CHK(rc);
         }
-        CcspWifiTrace(("RDK_LOG_WARN,%s Enable PreferPrivate by default\n",__FUNCTION__));
+        CcspWifiTrace(("RDK_LOG_WARN,%s Disable PreferPrivate by default\n",__FUNCTION__));
         retPsmGet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, PreferPrivate, ccsp_string, str);
         if (retPsmGet != CCSP_SUCCESS) {
            CcspWifiTrace(("RDK_LOG_WARN,%s PSM_Set_Record_Value2 returned error %d while setting %s \n",__FUNCTION__, retPsmGet, PreferPrivate));
@@ -9718,8 +9739,9 @@ CosaDmlWiFi_Set2G80211axEnabled(BOOL value)
 }
 
 
+/* At bootup time init_flag will be sent as TRUE else always send init_flag as false */
 ANSC_STATUS
-CosaDmlWiFi_SetPreferPrivatePsmData(BOOL value)
+CosaDmlWiFi_SetPreferPrivatePsmData(BOOL value,BOOL init_flag)
 {
     char strValue[2] = {0};
     int retPsmSet = CCSP_SUCCESS;
@@ -9729,7 +9751,7 @@ CosaDmlWiFi_SetPreferPrivatePsmData(BOOL value)
 #endif
     char recName[256];
     errno_t rc = -1;
-
+    BOOL pRadius_greylist_Enabled = FALSE;
     rc = sprintf_s(strValue, sizeof(strValue) , "%d",value);
     if(rc < EOK)
     {
@@ -9771,8 +9793,13 @@ CosaDmlWiFi_SetPreferPrivatePsmData(BOOL value)
             }
             else
             {
-                wifi_setApMacAddressControlMode(apIndex, 0);
-                PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, "0");
+#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
+                CosaDmlWiFiGetEnableRadiusGreylist(&pRadius_greylist_Enabled);
+#endif
+                if (pRadius_greylist_Enabled == FALSE) {
+                    wifi_setApMacAddressControlMode(apIndex, 0);
+                    PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, "0");
+                }
             }
         }
     }
@@ -9795,13 +9822,18 @@ CosaDmlWiFi_SetPreferPrivatePsmData(BOOL value)
    
    if(value == FALSE)
    { 
+#if defined (FEATURE_SUPPORT_RADIUSGREYLIST)
+    CosaDmlWiFiGetEnableRadiusGreylist(&pRadius_greylist_Enabled);
+#endif
     for(index = 0; index <4 ; index++) {
                 apIndex=idx[index];
 
     		memset(recName, 0, sizeof(recName));
     		snprintf(recName, sizeof(recName), MacFilterMode, apIndex);
-		wifi_setApMacAddressControlMode(apIndex-1, 0);
-		PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, "0");
+		if (pRadius_greylist_Enabled == FALSE ) {
+			wifi_setApMacAddressControlMode(apIndex-1, 0);
+			PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, "0");
+		}
     }
     
     if (g_wifidb_rfc) {
@@ -9829,7 +9861,13 @@ CosaDmlWiFi_SetPreferPrivatePsmData(BOOL value)
 	Delete_Hotspot_MacFilt_Entries();
   }
 #endif
-    CosaDmlWiFi_UpdateMfCfg();
+/* At bootup time init_flag will be sent as TRUE else always send init_flag as false
+ because at bootup time AccessPointQueue will not be set and
+ CosaDmlWiFi_UpdateMfCfg() should not be invoked
+*/ 
+	if (init_flag == FALSE) {
+        CosaDmlWiFi_UpdateMfCfg();
+    }
 #else
     UNREFERENCED_PARAMETER(recName);
 #ifndef WIFI_HAL_VERSION_3
@@ -9905,7 +9943,7 @@ CosaDmlWiFiSetEnableRadiusGreylist(BOOLEAN value) {
     if (value == TRUE)
     {
 	CcspTraceInfo(("[%s] Enabled\n",__FUNCTION__));
-	CosaDmlWiFi_SetPreferPrivatePsmData(FALSE);
+	CosaDmlWiFi_SetPreferPrivatePsmData(FALSE,FALSE);
 #ifdef WIFI_HAL_VERSION_3
         for (UINT apIndex = 0; apIndex < getTotalNumberVAPs(); ++apIndex)
         {
@@ -9933,7 +9971,6 @@ CosaDmlWiFiSetEnableRadiusGreylist(BOOLEAN value) {
     }
     else {
         CcspTraceInfo(("[%s] Disabled\n",__FUNCTION__));
-        CosaDmlWiFi_SetPreferPrivatePsmData(TRUE);
         wifi_enableGreylistAccessControl(value);
 #ifdef WIFI_HAL_VERSION_3
         for (UINT apIndex = 0; apIndex < getTotalNumberVAPs(); ++apIndex)

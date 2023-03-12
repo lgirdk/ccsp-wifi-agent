@@ -1405,7 +1405,8 @@ CosaDmlWiFi_GetPreferPrivatePsmData
 ANSC_STATUS
 CosaDmlWiFi_SetPreferPrivatePsmData
     (
-        BOOL value
+        BOOL value,
+        BOOL init_flag
     );
 
 void
