@@ -95,6 +95,8 @@ extern char g_Subsystem[32];
 #define MIN_TO_MILLISEC 60000
 #define SEC_TO_MILLISEC 1000
 
+#define SIZE_OF_BUFF 8
+
 #if defined (WIFI_STATS_DISABLE_SPEEDTEST_RUNNING)
 #define SPEEDTEST_STATUS "Device.IP.Diagnostics.X_RDKCENTRAL-COM_SpeedTest.Status"
 #define SPEEDTEST_SUBSCRIBE "Device.IP.Diagnostics.X_RDK_SpeedTest.SubscriberUnPauseTimeOut"
@@ -209,7 +211,10 @@ int radio_diagnostics(void *arg);
 int associated_device_diagnostics_send_event(void *arg);
 static void scheduler_telemetry_tasks(void);
 int upload_vap_rejection_sta_count_telemetry(void *arg);
-
+#if (defined(_CBR_PRODUCT_REQ_) && !defined(_CBR2_PRODUCT_REQ_))
+int upload_vap_rejection_sta_count_telemetry_cbr(int apIndex);
+int upload_vap_rejection_sta_count_telemetry_cbr_time(int apIndex);
+#endif
 
 #if defined (FEATURE_CSI)
 
@@ -623,6 +628,192 @@ int radio_health_telemetry_logger(void *arg)
     return TIMER_TASK_COMPLETE;
 }
 
+/* Function to calculate time for CBR last rejected sta time for deauth 17*/
+#if (defined(_CBR_PRODUCT_REQ_) && !defined(_CBR2_PRODUCT_REQ_))
+int upload_vap_rejection_sta_count_telemetry_cbr_time(INT apIndex)
+{
+    char cmd[256] = {0};
+    snprintf(cmd,sizeof(cmd),"journalctl |  grep 'BRCM-WIFI' |grep 'denied association due to max' | grep -v '\\[' | grep 'wl%d' | tail -1 | awk '{print $1,$2,$3,$4}'",apIndex);
+    char buff[24] = {0};
+    FILE* pipe = NULL;
+    pipe = (FILE*)(long int)v_secure_popen("r",cmd);
+    if(pipe == NULL)
+    {
+        wifi_dbg_print(1,"Pipe opening has failed in %s\n",__FUNCTION__);
+        return RETURN_ERR;
+    }
+    fgets(buff,sizeof(buff),pipe);
+    v_secure_pclose(pipe);
+    int i = 1;
+    char year[5] = {0};
+    char mon[4] = {0};
+    char day[3] = {0};
+    char time_deauth[9] = {0};
+    char* token = strtok(buff, " ");
+    while(token)
+    {
+        if(i == 1)
+        {
+            strncpy(year,token+2,sizeof(year));
+        }
+        else if(i == 2)
+        {
+            strncpy(mon,token,sizeof(mon));
+        }
+        else if(i == 3)
+        {
+            strncpy(day,token,sizeof(day));
+        }
+        else if(i == 4)
+        {
+            strncpy(time_deauth,token,sizeof(time_deauth));
+        }
+        else
+        {
+            break;
+        }
+        i++;
+        token = strtok(NULL," ");
+    }
+    char formatted_time[24] = {0};
+    int today = 0;
+    if(strcmp(mon,"Jan") == 0)
+    {
+        today = 1;
+    }
+    else if(strcmp(mon,"Feb") == 0)
+    {
+        today = 2;
+    }
+    else if(strcmp(mon,"Mar") == 0)
+    {
+        today = 3;
+    }
+    else if(strcmp(mon,"Apr") == 0)
+    {
+        today = 4;
+    }
+    else if(strcmp(mon,"May") == 0)
+    {
+        today = 5;
+    }
+    else if(strcmp(mon,"Jun") == 0)
+    {
+        today = 6;
+    }
+    else if(strcmp(mon,"Jul") == 0)
+    {
+        today = 7;
+    }
+    else if(strcmp(mon,"Aug") == 0)
+    {
+        today = 8;
+    }
+    else if(strcmp(mon,"Sep") == 0)
+    {
+        today = 9;
+    }
+    else if(strcmp(mon,"Oct") == 0)
+    {
+        today = 10;
+    }
+    else if(strcmp(mon,"Nov") == 0)
+    {
+        today = 11;
+    }
+    else if(strcmp(mon,"Dec") == 0)
+    {
+        today = 12;
+    }
+    else
+    {
+        wifi_dbg_print(1,"Invalid month in %s returning status: %d\n",__FUNCTION__,RETURN_ERR);
+        return RETURN_ERR;
+    }
+    if(today < 10)
+    {
+        snprintf(formatted_time, sizeof(formatted_time), "%s0%d%s-%s",year,today,day,time_deauth);
+    }
+    else
+    {
+        snprintf(formatted_time, sizeof(formatted_time), "%s%d%s-%s",year,today,day,time_deauth);
+    }
+    strncpy(g_monitor_module.ap_params[apIndex].last_time_ap_rejected_sta, formatted_time, sizeof(g_monitor_module.ap_params[apIndex].last_time_ap_rejected_sta));
+    return RETURN_OK;
+}
+
+/* The upload_vap_rejection_sta_count_telemetry update rejected client counts to telemetry for CBR as reason code 17 is not available ( Association denied because AP is unable to handle additional associated stations(*/
+int upload_vap_rejection_sta_count_telemetry_cbr(INT apIndex)
+{
+    char cmd[256] = {0};
+    snprintf(cmd,sizeof(cmd), "journalctl |  grep 'BRCM-WIFI' |grep 'denied association due to max' | grep -v '\\[' | grep 'wl%d' | wc -l",apIndex);
+    static int prev_count_1 = 0;
+    static int prev_count_2 = 0;
+    char* buff = (char*)malloc(SIZE_OF_BUFF*sizeof(char));
+    if(buff == NULL)
+    {
+        wifi_dbg_print(1,"Memory allocation has failed in %s\n",__FUNCTION__);
+        return RETURN_ERR;
+    }
+    FILE* pipe = NULL;
+    pipe =(FILE*)(long int) v_secure_popen("r",cmd);
+    if(pipe == NULL)
+    {
+        wifi_dbg_print(1,"Pipe opening has failed in %s\n",__FUNCTION__);
+        free(buff);
+        buff = NULL;
+        return RETURN_ERR;
+    }
+    fgets(buff,SIZE_OF_BUFF,pipe);
+    v_secure_pclose(pipe);
+    int buff_value = atoi(buff);
+    if(apIndex == 0)
+    {
+        if(buff_value >= prev_count_1)
+        {
+            g_monitor_module.ap_params[apIndex].ap_rejected_sta_count = buff_value - prev_count_1;
+        }
+        else
+        {
+            g_monitor_module.ap_params[apIndex].ap_rejected_sta_count = buff_value;
+        }
+        prev_count_1 = buff_value;
+        if(buff_value == 0)
+        {
+            return RETURN_OK;
+        }
+    }
+    else if(apIndex == 1)
+    {
+        if(buff_value >= prev_count_2)
+        {
+            g_monitor_module.ap_params[apIndex].ap_rejected_sta_count = buff_value - prev_count_2;
+        }
+        else
+        {
+            g_monitor_module.ap_params[apIndex].ap_rejected_sta_count = buff_value;
+        }
+        prev_count_2 = buff_value;
+        if(buff_value == 0)
+        {
+            return RETURN_OK;
+        }
+    }
+    free(buff);
+    buff = NULL;
+    int res = upload_vap_rejection_sta_count_telemetry_cbr_time(apIndex);
+    if(res != RETURN_ERR)
+    {
+        return RETURN_OK;
+    }
+    else
+    {
+        wifi_dbg_print(1,"%s failed with return status : %d\n",__FUNCTION__,res);
+        return RETURN_ERR;
+    }
+}
+#endif
+
 /* The upload_vap_rejection_sta_count_telemetry update rejected client couts to telemetry for reason code 17 ( Association denied because AP is unable to handle additional associated stations(*/
 
 int upload_vap_rejection_sta_count_telemetry (void *arg)
@@ -642,7 +833,11 @@ int upload_vap_rejection_sta_count_telemetry (void *arg)
             if ( strncasecmp(VapStatus, "Up", 2) == 0 ) {
 
                 ap_params =  &g_monitor_module.ap_params[VapIndex];
-
+#if (defined(_CBR_PRODUCT_REQ_) && !defined(_CBR2_PRODUCT_REQ_))
+                int res = upload_vap_rejection_sta_count_telemetry_cbr(VapIndex);
+                if(res == RETURN_OK)
+                {
+#endif
                 if ( ap_params->ap_rejected_sta_count ) {
 
                     get_formatted_time(Temp);
@@ -661,6 +856,14 @@ int upload_vap_rejection_sta_count_telemetry (void *arg)
                     g_monitor_module.ap_params[VapIndex].ap_rejected_sta_count = 0;
                     memset(g_monitor_module.ap_params[VapIndex].last_time_ap_rejected_sta, '\0', sizeof(g_monitor_module.ap_params[VapIndex].last_time_ap_rejected_sta));
                 }
+#if (defined(_CBR_PRODUCT_REQ_) && !defined(_CBR2_PRODUCT_REQ_))
+                }
+                else
+                {
+                    wifi_dbg_print(1,"%s has failed with return status : %d\n",__FUNCTION__, res);
+                    return TIMER_TASK_ERROR;
+                }
+#endif
             } else {
                 wifi_dbg_print(1, "%s : vap %d is down\n", __FUNCTION__, VapIndex);
             }
