@@ -163,7 +163,6 @@ ANSC_STATUS CosaDmlWiFiApApplyCfg(PCOSA_DML_WIFI_AP_CFG pCfg);
 #if defined (FEATURE_SUPPORT_INTERWORKING)
 ANSC_STATUS CosaDmlWiFi_setInterworkingElement(PCOSA_DML_WIFI_AP_CFG pCfg);
 ANSC_STATUS CosaDmlWiFi_getInterworkingElement(PCOSA_DML_WIFI_AP_CFG pCfg, ULONG apIns);
-void CosaDmlWiFiPsmDelInterworkingEntry();
 #endif
 ANSC_STATUS CosaDmlWiFi_ApplyRoamingConsortiumElement(PCOSA_DML_WIFI_AP_CFG pCfg);
 ANSC_STATUS CosaDmlWifi_setBSSTransitionActivated(PCOSA_DML_WIFI_AP_CFG pCfg, ULONG apIns);
@@ -1831,18 +1830,6 @@ static char *SetChanUtilThreshold ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.%
 static char *SetChanUtilSelfHealEnable ="eRT.com.cisco.spvtg.ccsp.Device.WiFi.Radio.%d.ChanUtilSelfHealEnable";
 #if defined (FEATURE_SUPPORT_INTERWORKING)
 static char *InterworkingRFCEnable = "Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.WiFi-Interworking.Enable";
-static char *InterworkingServiceCapability      = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingServiceCapability";
-static char *InterworkingServiceEnable   = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingServiceEnable";
-static char *InterworkingASRAEnable      = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingElement.ASRA";
-static char *InterworkingESREnable       = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingElement.ESR";
-static char *SetInterworkingVenueGroup   = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingElement.VenueInfo.VenueGroup";
-static char *SetInterworkingVenueType    = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingElement.VenueInfo.VenueType";
-static char *InterworkingUESAEnable      = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingElement.UESA";
-static char *SetInterworkingHESSID       = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingElement.HESSID";
-static char *SetInterworkingInternetAvailable    = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingElement.Internet";
-static char *SetInterworkingVenueOptionPresent   = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingElement.VenueOptionPresent";
-static char *InterworkingAccessNetworkType       = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingElement.AccessNetworkType";
-static char *InterworkingHESSOptionPresentEnable         = "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_InterworkingElement.HESSOptionPresent";
 #endif
 #if defined (FEATURE_OFF_CHANNEL_SCAN_5G)
 static char *setRadio_X_RDK_OffChannelNscan = "Device.WiFi.Radio.2.Radio_X_RDK_OffChannelNscan";
@@ -8794,10 +8781,6 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
             }
         }
 #endif //WIFI_HAL_VERSION_3
-#if defined (FEATURE_SUPPORT_INTERWORKING)
-    //RDKB-33024: Cleanup all existing PSM entries
-    CosaDmlWiFiPsmDelInterworkingEntry();
-#endif
 
         firstTime = FALSE;
 
@@ -28969,85 +28952,6 @@ ANSC_STATUS CosaDmlWiFi_ApplyRoamingConsortiumElement(PCOSA_DML_WIFI_AP_CFG pCfg
 }
 
 #if defined (FEATURE_SUPPORT_INTERWORKING)
-
-void CosaDmlWiFiPsmDelInterworkingEntry()
-{
-    char recName[256];
-    char *strValue = NULL;
-    int retPsmGet;
-    int apIns;
-#ifdef WIFI_HAL_VERSION_3
-    for (apIns = 1; apIns <= (int)getTotalNumberVAPs(); apIns++) {
-#else
-    for (apIns = 1; apIns <= 16; apIns++) {
-#endif
- 
-        memset(recName, 0, 256);
-        snprintf(recName, sizeof(recName), InterworkingServiceCapability, apIns);
-        retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
-        if (retPsmGet == CCSP_SUCCESS) {
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-	    ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
-
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), InterworkingServiceEnable, apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-
-            //ASRA
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), InterworkingASRAEnable, apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-
-            //InternetAvailable
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), SetInterworkingInternetAvailable, apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-
-            //VenueOption Present
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), SetInterworkingVenueOptionPresent, apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-
-            //ESR
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), InterworkingESREnable, apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-
-            //UESA
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), InterworkingUESAEnable, apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-
-            //HESSOptionPresent
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), SetInterworkingHESSID, apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), InterworkingHESSOptionPresentEnable, apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-
-            //AccessNetworkType
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), InterworkingAccessNetworkType, apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-
-            //VenueGroup
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), SetInterworkingVenueGroup, apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-
-            //VenueType
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), SetInterworkingVenueType, apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-
-            //GAS PauseForServerResponse
-            memset(recName, 0, 256);
-            snprintf(recName, sizeof(recName), "eRT.com.cisco.spvtg.ccsp.tr181pa.Device.WiFi.AccessPoint.%d.X_RDKCENTRAL-COM_GASConfiguration.1.PauseForServerResponse", apIns);
-            PSM_Del_Record(bus_handle,g_Subsystem, recName);
-        }
-    }
-}
 
 ANSC_STATUS CosaDmlWiFi_ApplyInterworkingElement(PCOSA_DML_WIFI_AP_CFG pCfg)
 {
