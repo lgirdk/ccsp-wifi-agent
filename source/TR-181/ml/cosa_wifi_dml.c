@@ -12622,6 +12622,7 @@ Security_SetParamUlongValue
         {
             /* save update to backup */
             vapInfo->u.bss_info.security.rekey_interval = uValue;
+            pWifiApSec->Cfg.RekeyingInterval = uValue;
             pWifiApSec->isSecChanged = TRUE;
 #else
         if ( pWifiApSec->Cfg.RekeyingInterval != uValue )
