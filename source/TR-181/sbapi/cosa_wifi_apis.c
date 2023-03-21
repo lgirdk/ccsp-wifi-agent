@@ -4396,7 +4396,10 @@ CosaDmlWiFiSetDefaultApSecCfg
 {
     wifi_vap_security_t security;
     wifi_vap_info_t *vapInfo = getVapInfo(wlanIndex);
-    char *DefaultPwd = "1234567890";
+    char DefaultPwd[64];
+
+    DefaultPwd[0] = 0;
+    getDefaultPassphase(wlanIndex, &DefaultPwd);
 
     if (vapInfo == NULL) {
         CcspWifiTrace(("RDK_LOG_ERROR, %s Unable to get VAP info for apIndex:%lu\n",
