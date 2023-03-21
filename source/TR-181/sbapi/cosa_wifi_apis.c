@@ -27112,7 +27112,11 @@ ANSC_STATUS radioGetCfgUpdateFromHalToDml(UINT wlanIndex, PCOSA_DML_WIFI_RADIO_C
     /*Update from RadioOperatingParams*/
     countryCode = pWifiRadioOperParam->countryCode;
 
-    snprintf(pCfg->RegulatoryDomain, sizeof(pCfg->RegulatoryDomain), "%s", wifiCountryMap[countryCode].countryStr);
+    #ifdef _COSA_BCM_ARM_
+        wifi_getRadioRegionCode(wlanIndex, pCfg->RegulatoryDomain);
+    #else
+        wifi_getRadioCountryCode(wlanIndex, pCfg->RegulatoryDomain);
+    #endif
 
     ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s SupportedDataTransmitRates : %s RegulatoryDomain : %s\n", __FUNCTION__, pCfg->SupportedDataTransmitRates, pCfg->RegulatoryDomain);
 
