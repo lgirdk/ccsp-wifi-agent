@@ -3350,144 +3350,140 @@ int vap_stats_flag_change(int ap_index, bool enable)
     return 0;
 }
 
-void process_diagnostics	(unsigned int ap_index, wifi_associated_dev3_t *dev, unsigned int num_devs)
+void process_diagnostics (unsigned int ap_index, wifi_associated_dev3_t *dev, unsigned int num_devs)
 {
-	hash_map_t     *sta_map = NULL;
-       sta_data_t *sta = NULL, *tmp_sta = NULL;
-	unsigned int i;
-	wifi_associated_dev3_t	*hal_sta;
-    sta_key_t	sta_key;
+    hash_map_t     *sta_map = NULL;
+    sta_data_t *sta = NULL, *tmp_sta = NULL;
+    unsigned int i;
+    wifi_associated_dev3_t *hal_sta;
+    sta_key_t sta_key;
     char bssid[MIN_MAC_LEN+1];
-        struct timeval tv_now;
+    struct timeval tv_now;
 
     wifi_associated_dev_stats_t * cli_stats;
     BOOL ret;
     int alloc_count = 0;
     ULLONG handle;
-    
-        sta_map = g_monitor_module.bssid_data[ap_index].sta_map;
-        gettimeofday(&tv_now, NULL);
+
+    sta_map = g_monitor_module.bssid_data[ap_index].sta_map;
+    gettimeofday(&tv_now, NULL);
 
 
-        snprintf(bssid, MIN_MAC_LEN+1, "%02x%02x%02x%02x%02x%02x",
-                    g_monitor_module.bssid_data[ap_index].bssid[0], g_monitor_module.bssid_data[ap_index].bssid[1],
-                    g_monitor_module.bssid_data[ap_index].bssid[2], g_monitor_module.bssid_data[ap_index].bssid[3],
-                    g_monitor_module.bssid_data[ap_index].bssid[4], g_monitor_module.bssid_data[ap_index].bssid[5]);
+    snprintf(bssid, MIN_MAC_LEN+1, "%02x%02x%02x%02x%02x%02x",
+                g_monitor_module.bssid_data[ap_index].bssid[0], g_monitor_module.bssid_data[ap_index].bssid[1],
+                g_monitor_module.bssid_data[ap_index].bssid[2], g_monitor_module.bssid_data[ap_index].bssid[3],
+                g_monitor_module.bssid_data[ap_index].bssid[4], g_monitor_module.bssid_data[ap_index].bssid[5]);
 
-        hal_sta = dev;
-        memset(sta_key, 0, STA_KEY_LEN); 
-	// update all sta(s) that are in the record retrieved from hal
-	for (i = 0; i < num_devs; i++) {
-		sta = (sta_data_t *)hash_map_get(sta_map, to_sta_key(hal_sta->cli_MACAddress, sta_key));
-		if (sta == NULL) {
-			sta = (sta_data_t *)malloc(sizeof(sta_data_t));
-			memset(sta, 0, sizeof(sta_data_t));	
-			memcpy(sta->sta_mac, hal_sta->cli_MACAddress, sizeof(mac_addr_t));
-			hash_map_put(sta_map, strdup(to_sta_key(hal_sta->cli_MACAddress, sta_key)), sta);
-        }
-
-        //wifi_dbg_print(1, "Current Stored for:%s Packets Sent:%d Packets Recieved:%d Errors Sent:%d Retrans:%d Retry:%d Multiple:%d at index:%d on vap:%d\n",
-        //    to_sta_key(sta->dev_stats.cli_MACAddress, sta_key),
-        //    sta->dev_stats.cli_PacketsSent, sta->dev_stats.cli_PacketsReceived, sta->dev_stats.cli_ErrorsSent,
-        //    sta->dev_stats.cli_RetransCount, sta->dev_stats.cli_RetryCount, sta->dev_stats.cli_MultipleRetryCount, i, ap_index);
-
-	memcpy((unsigned char *)&sta->dev_stats, (unsigned char *)hal_sta, sizeof(wifi_associated_dev3_t)); 
-
-        //wifi_dbg_print(1, "Current Polled for:%s Packets Sent:%d Packets Recieved:%d Errors Sent:%d Retrans:%d Retry:%d Multiple:%d\n",
-        //    to_sta_key(sta->dev_stats.cli_MACAddress, sta_key),
-        //    hal_sta->cli_PacketsSent, hal_sta->cli_PacketsReceived, hal_sta->cli_ErrorsSent,
-        //    hal_sta->cli_RetransCount, hal_sta->cli_RetryCount, hal_sta->cli_MultipleRetryCount);
-        //wifi_dbg_print(1, "Current Last for: %s Packets Sent:%d Packets Recieved:%d Errors Sent:%d Retrans:%d Retry:%d Multiple:%d\n",
-        //    to_sta_key(sta->dev_stats.cli_MACAddress, sta_key),
-        //    sta->dev_stats_last.cli_PacketsSent, sta->dev_stats_last.cli_PacketsReceived, sta->dev_stats_last.cli_ErrorsSent,
-        //    sta->dev_stats_last.cli_RetransCount, sta->dev_stats_last.cli_RetryCount, sta->dev_stats_last.cli_MultipleRetryCount);
-        cli_stats = (wifi_associated_dev_stats_t *) malloc(sizeof(wifi_associated_dev_stats_t));
-        if(cli_stats == NULL) {
-            wifi_dbg_print(1, "%s %d Failed to allocate memory. Retrying",__func__,__LINE__);
-            while (cli_stats == NULL && alloc_count<5) {
-                cli_stats = (wifi_associated_dev_stats_t *) malloc(sizeof(wifi_associated_dev_stats_t));
-                alloc_count++;
+    hal_sta = dev;
+    memset(sta_key, 0, STA_KEY_LEN);
+    // update all sta(s) that are in the record retrieved from hal
+    if (NULL != hal_sta) {
+        for (i = 0; i < num_devs; i++) {
+            sta = (sta_data_t *)hash_map_get(sta_map, to_sta_key(hal_sta->cli_MACAddress, sta_key));
+            if (sta == NULL) {
+                sta = (sta_data_t *)malloc(sizeof(sta_data_t));
+                memset(sta, 0, sizeof(sta_data_t));
+                memcpy(sta->sta_mac, hal_sta->cli_MACAddress, sizeof(mac_addr_t));
+                hash_map_put(sta_map, strdup(to_sta_key(hal_sta->cli_MACAddress, sta_key)), sta);
             }
-            if (alloc_count >= 5) {
-                wifi_dbg_print(1, "%s %d Failed to allocate memory as system resources are unavailable",__func__,__LINE__);
+
+            //wifi_dbg_print(1, "Current Stored for:%s Packets Sent:%d Packets Recieved:%d Errors Sent:%d Retrans:%d Retry:%d Multiple:%d at index:%d on vap:%d\n",
+            //    to_sta_key(sta->dev_stats.cli_MACAddress, sta_key),
+            //    sta->dev_stats.cli_PacketsSent, sta->dev_stats.cli_PacketsReceived, sta->dev_stats.cli_ErrorsSent,
+            //    sta->dev_stats.cli_RetransCount, sta->dev_stats.cli_RetryCount, sta->dev_stats.cli_MultipleRetryCount, i, ap_index);
+
+            memcpy((unsigned char *)&sta->dev_stats, (unsigned char *)hal_sta, sizeof(wifi_associated_dev3_t));
+
+            //wifi_dbg_print(1, "Current Polled for:%s Packets Sent:%d Packets Recieved:%d Errors Sent:%d Retrans:%d Retry:%d Multiple:%d\n",
+            //    to_sta_key(sta->dev_stats.cli_MACAddress, sta_key),
+            //    hal_sta->cli_PacketsSent, hal_sta->cli_PacketsReceived, hal_sta->cli_ErrorsSent,
+            //    hal_sta->cli_RetransCount, hal_sta->cli_RetryCount, hal_sta->cli_MultipleRetryCount);
+            //wifi_dbg_print(1, "Current Last for: %s Packets Sent:%d Packets Recieved:%d Errors Sent:%d Retrans:%d Retry:%d Multiple:%d\n",
+            //    to_sta_key(sta->dev_stats.cli_MACAddress, sta_key),
+            //    sta->dev_stats_last.cli_PacketsSent, sta->dev_stats_last.cli_PacketsReceived, sta->dev_stats_last.cli_ErrorsSent,
+            //    sta->dev_stats_last.cli_RetransCount, sta->dev_stats_last.cli_RetryCount, sta->dev_stats_last.cli_MultipleRetryCount);
+            cli_stats = (wifi_associated_dev_stats_t *) malloc(sizeof(wifi_associated_dev_stats_t));
+            if(cli_stats == NULL) {
+                wifi_dbg_print(1, "%s %d Failed to allocate memory. Retrying",__func__,__LINE__);
+                while (cli_stats == NULL && alloc_count<5) {
+                    cli_stats = (wifi_associated_dev_stats_t *) malloc(sizeof(wifi_associated_dev_stats_t));
+                    alloc_count++;
+                }
+                if (alloc_count >= 5) {
+                    wifi_dbg_print(1, "%s %d Failed to allocate memory as system resources are unavailable",__func__,__LINE__);
+                }
             }
-        }
-        ret = wifi_getApAssociatedDeviceStats(ap_index, &(hal_sta->cli_MACAddress) , cli_stats, &handle);
-    
-        if ((ret == RETURN_OK) && (cli_stats != NULL))
-            sta->cli_rx_retries = cli_stats->cli_rx_retries;
+            ret = wifi_getApAssociatedDeviceStats(ap_index, &(hal_sta->cli_MACAddress) , cli_stats, &handle);
 
-        if (cli_stats) {
-            free(cli_stats);
-            cli_stats = NULL;
-        }
+            if ((ret == RETURN_OK) && (cli_stats != NULL))
+                sta->cli_rx_retries = cli_stats->cli_rx_retries;
 
-        sta->updated = true;
+            if (cli_stats) {
+                free(cli_stats);
+                cli_stats = NULL;
+            }
 
-        //RDKB-41125
-        if ((UINT)(tv_now.tv_sec - sta->last_disconnected_time.tv_sec) <= g_monitor_module.bssid_data[i].ap_params.rapid_reconnect_threshold) {
-          if (sta->dev_stats.cli_Active == false) {
-            wifi_dbg_print(1, "Func:%s Device:%s connected on ap:%d connected within rapid reconnect time\n",__FUNCTION__, to_sta_key(sta->sta_mac, sta_key), ap_index);
-            sta->rapid_reconnects++;
-          }
-        }
+            sta->updated = true;
 
-	sta->dev_stats.cli_Active = true;
-	sta->dev_stats.cli_SignalStrength = hal_sta->cli_SignalStrength;  //zqiu: use cli_SignalStrength as normalized rssi
-	if (sta->dev_stats.cli_SignalStrength >= g_monitor_module.sta_health_rssi_threshold) {
-		sta->good_rssi_time += g_monitor_module.poll_period;
-	} else {
-		sta->bad_rssi_time += g_monitor_module.poll_period;
+            //RDKB-41125
+            if ((UINT)(tv_now.tv_sec - sta->last_disconnected_time.tv_sec) <= g_monitor_module.bssid_data[i].ap_params.rapid_reconnect_threshold) {
+                if (sta->dev_stats.cli_Active == false) {
+                    wifi_dbg_print(1, "Func:%s Device:%s connected on ap:%d connected within rapid reconnect time\n",__FUNCTION__, to_sta_key(sta->sta_mac, sta_key), ap_index);
+                    sta->rapid_reconnects++;
+                }
+            }
 
-	}
-        
-        sta->connected_time += g_monitor_module.poll_period;
-        wifi_dbg_print(1, "Polled station info for, vap:%d bssid:%s ClientMac:%s Uplink rate:%d Downlink rate:%d Packets Sent:%d Packets Recieved:%d Errors Sent:%d Retrans:%d ErrorsRx:%llu ErrorsRxPrev:%llu\n",
-             ap_index+1, bssid, to_sta_key(sta->dev_stats.cli_MACAddress, sta_key), sta->dev_stats.cli_LastDataUplinkRate, sta->dev_stats.cli_LastDataDownlinkRate,
-             sta->dev_stats.cli_PacketsSent, sta->dev_stats.cli_PacketsReceived, sta->dev_stats.cli_ErrorsSent, sta->dev_stats.cli_RetransCount, sta->cli_rx_retries, sta->prev_cli_rx_retries);
+            sta->dev_stats.cli_Active = true;
+            sta->dev_stats.cli_SignalStrength = hal_sta->cli_SignalStrength;  //zqiu: use cli_SignalStrength as normalized rssi
+            if (sta->dev_stats.cli_SignalStrength >= g_monitor_module.sta_health_rssi_threshold) {
+                sta->good_rssi_time += g_monitor_module.poll_period;
+            } else {
+                sta->bad_rssi_time += g_monitor_module.poll_period;
+            }
+
+            sta->connected_time += g_monitor_module.poll_period;
+            wifi_dbg_print(1, "Polled station info for, vap:%d bssid:%s ClientMac:%s Uplink rate:%d Downlink rate:%d Packets Sent:%d Packets Recieved:%d Errors Sent:%d Retrans:%d ErrorsRx:%llu ErrorsRxPrev:%llu\n",
+                ap_index+1, bssid, to_sta_key(sta->dev_stats.cli_MACAddress, sta_key), sta->dev_stats.cli_LastDataUplinkRate, sta->dev_stats.cli_LastDataDownlinkRate,
+                sta->dev_stats.cli_PacketsSent, sta->dev_stats.cli_PacketsReceived, sta->dev_stats.cli_ErrorsSent, sta->dev_stats.cli_RetransCount, sta->cli_rx_retries, sta->prev_cli_rx_retries);
 #ifdef WIFI_HAL_VERSION_3
-        wifi_dbg_print(1, "Polled radio NF %d \n",g_monitor_module.radio_data[getRadioIndexFromAp(ap_index)].NoiseFloor);
-        wifi_dbg_print(1, "Polled channel info for radio %d : channel util:%d, channel interference:%d \n",
+            wifi_dbg_print(1, "Polled radio NF %d \n",g_monitor_module.radio_data[getRadioIndexFromAp(ap_index)].NoiseFloor);
+            wifi_dbg_print(1, "Polled channel info for radio %d : channel util:%d, channel interference:%d \n",
                 getRadioIndexFromAp(ap_index), g_monitor_module.radio_data[getRadioIndexFromAp(ap_index)].channelUtil, g_monitor_module.radio_data[getRadioIndexFromAp(ap_index)].channelInterference);
 #else
-        wifi_dbg_print(1, "Polled radio NF %d \n",g_monitor_module.radio_data[ap_index % 2].NoiseFloor);
-        wifi_dbg_print(1, "Polled channel info for radio 2.4 : channel util:%d, channel interference:%d \n",
-                g_monitor_module.radio_data[0].channelUtil, g_monitor_module.radio_data[0].channelInterference);
-        wifi_dbg_print(1, "Polled channel info for radio 5 : channel util:%d, channel interference:%d \n",
-                g_monitor_module.radio_data[1].channelUtil, g_monitor_module.radio_data[1].channelInterference);
+            wifi_dbg_print(1, "Polled radio NF %d \n",g_monitor_module.radio_data[ap_index % 2].NoiseFloor);
+            wifi_dbg_print(1, "Polled channel info for radio 2.4 : channel util:%d, channel interference:%d \n", g_monitor_module.radio_data[0].channelUtil, g_monitor_module.radio_data[0].channelInterference);
+            wifi_dbg_print(1, "Polled channel info for radio 5 : channel util:%d, channel interference:%d \n", g_monitor_module.radio_data[1].channelUtil, g_monitor_module.radio_data[1].channelInterference);
 #endif
+            hal_sta++;
+        }
+    } else {
+        CcspTraceError(( "[%s:%d]Wi-Fi associated device map is NULL for vap_index:%d number of device:%d\r\n", __func__, __LINE__, ap_index, num_devs));
+    }
+    // now update all sta(s) in cache that were not updated
+    sta = hash_map_get_first(sta_map);
+    while (sta != NULL) {
 
-        hal_sta++;
+        if (sta->updated == true) {
+            sta->updated = false;
+        } else {
+            // this was not present in hal record
+            sta->disconnected_time += g_monitor_module.poll_period;
+            sta->dev_stats.cli_Active = false;
+            wifi_dbg_print(1, "Device:%s is disassociated from ap:%d, for %d amount of time, assoc status:%d\n", to_sta_key(sta->sta_mac, sta_key), ap_index, sta->disconnected_time, sta->dev_stats.cli_Active);
+            if ((sta->disconnected_time > 4*g_monitor_module.poll_period) && (sta->dev_stats.cli_Active == false)) {
+                tmp_sta = sta;
+            }
+        }
 
-	}
+        sta = hash_map_get_next(sta_map, sta);
 
-	// now update all sta(s) in cache that were not updated
-	sta = hash_map_get_first(sta_map);
-	while (sta != NULL) {
-		
-		if (sta->updated == true) {
-			sta->updated = false;
-		} else {
-			// this was not present in hal record
-                        sta->disconnected_time += g_monitor_module.poll_period;
-                        sta->dev_stats.cli_Active = false;          
-		        wifi_dbg_print(1, "Device:%s is disassociated from ap:%d, for %d amount of time, assoc status:%d\n",
-                                to_sta_key(sta->sta_mac, sta_key), ap_index, sta->disconnected_time, sta->dev_stats.cli_Active);
-			if ((sta->disconnected_time > 4*g_monitor_module.poll_period) && (sta->dev_stats.cli_Active == false)) {
-				tmp_sta = sta;
-			}
-		}
-        
-		sta = hash_map_get_next(sta_map, sta);
-
-		if (tmp_sta != NULL) {
-                        wifi_dbg_print(1, "Device:%s being removed from map of ap:%d, and being deleted\n", to_sta_key(tmp_sta->sta_mac, sta_key), ap_index);
-			hash_map_remove(sta_map, to_sta_key(tmp_sta->sta_mac, sta_key));
-			free(tmp_sta);
-			tmp_sta = NULL;
-		}        
-	}
-
+        if (tmp_sta != NULL) {
+            wifi_dbg_print(1, "Device:%s being removed from map of ap:%d, and being deleted\n", to_sta_key(tmp_sta->sta_mac, sta_key), ap_index);
+            hash_map_remove(sta_map, to_sta_key(tmp_sta->sta_mac, sta_key));
+            free(tmp_sta);
+            tmp_sta = NULL;
+        }
+    }
 }
 
 void process_deauthenticate	(unsigned int ap_index, auth_deauth_dev_t *dev)
@@ -5793,6 +5789,7 @@ int associated_devices_diagnostics(void *arg)
         if (dev_array == NULL) {
             num_devs = 0;
             if (wifi_getApAssociatedDeviceDiagnosticResult3(vap_index, &dev_array, &num_devs) != RETURN_OK) {
+                CcspTraceError(( "[%s:%d]Wi-Fi hal get Associated Device failure dev_array:[%p] for vap_index:%d number of device:%d\r\n", __func__, __LINE__, dev_array,vap_index, num_devs));
                 if (dev_array) {
                     free(dev_array);
                     dev_array = NULL;
