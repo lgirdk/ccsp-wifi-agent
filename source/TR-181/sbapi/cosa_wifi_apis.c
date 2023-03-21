@@ -4444,7 +4444,7 @@ CosaDmlWiFiSetDefaultApSecCfg
                 return ANSC_STATUS_FAILURE;
             }
 
-            security.mode = wifi_security_mode_wpa3_transition;
+            security.mode = wifi_security_mode_wpa2_personal;
             security.mfp = wifi_mfp_cfg_optional;
             security.u.key.type = wifi_security_key_type_psk_sae;
         }
