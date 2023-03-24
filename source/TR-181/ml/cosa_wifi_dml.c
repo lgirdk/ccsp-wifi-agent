@@ -9102,23 +9102,11 @@ AccessPoint_GetParamBoolValue
     /* check the parameter name and return the corresponding value */
     if (strcmp(ParamName, "IsolationEnable") == 0)
     {
-#ifdef WIFI_HAL_VERSION_3
-        if(wifi_getApIsolationEnable(apIndex, &boolOutput) != 0)
-        {
-            return FALSE;
-        }
-        pWifiAp->AP.Cfg.IsolationEnable = boolOutput;
-        if (!pWifiAp->AP.isApChanged) {
-                  vapInfo->u.bss_info.isolation = boolOutput;
-        }
-        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s for apIndex vapInfo_isolation : %d dml_IsolationEnable : %d\n", 
-                __FUNCTION__, apIndex, vapInfo->u.bss_info.isolation, pWifiAp->AP.Cfg.IsolationEnable);
-#endif
-
-        /* collect value */
+	
+		/* collect value */
         *pBool = pWifiAp->AP.Cfg.IsolationEnable;
-        
-        return TRUE;
+	
+		return TRUE;
     }
 
     if (strcmp(ParamName, "Enable") == 0)
@@ -9937,7 +9925,8 @@ AccessPoint_SetParamBoolValue
         }
         
         /* save update to backup */
-        vapInfo->u.bss_info.isolation = bValue;
+		vapInfo->u.bss_info.isolation = bValue;	
+		pWifiAp->AP.Cfg.IsolationEnable = bValue;
         pWifiAp->AP.isApChanged = TRUE;
 #else
         if ( pWifiAp->AP.Cfg.IsolationEnable == bValue )
