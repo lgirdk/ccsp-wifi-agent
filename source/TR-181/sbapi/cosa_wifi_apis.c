@@ -9732,7 +9732,9 @@ CosaDmlWiFi_SetPreferPrivatePsmData(BOOL value,BOOL init_flag)
 #endif
     char recName[256];
     errno_t rc = -1;
+#if !defined(_PLATFORM_RASPBERRYPI_) && !defined(_PLATFORM_TURRIS_)
     BOOL pRadius_greylist_Enabled = FALSE;
+#endif
     rc = sprintf_s(strValue, sizeof(strValue) , "%d",value);
     if(rc < EOK)
     {
