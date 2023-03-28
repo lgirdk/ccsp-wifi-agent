@@ -13198,6 +13198,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
     pCfg->isRadioConfigChanged = FALSE;
     pCfg->ApplySetting = FALSE;
 
+    CosaDmlWiFiDeAllocBridgeVlan();
     CcspWifiTrace(("RDK_LOG_INFO, %s Completed Successfully for RadioIndex %d \n", __FUNCTION__, radioIndex));
 
     return ANSC_STATUS_SUCCESS;
@@ -13216,6 +13217,7 @@ ValidationFailed:
     //Perform the VAP Rollback
     vapGetCfgUpdateFromDmlToHal(rdkWifiVap);
 
+    CosaDmlWiFiDeAllocBridgeVlan();
     CcspWifiTrace(("RDK_LOG_INFO, %s %d Rollback Done  for RadioIndex %d \n", __FUNCTION__, __LINE__, radioIndex));
 
     return ANSC_STATUS_FAILURE;
