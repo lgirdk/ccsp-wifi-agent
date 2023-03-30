@@ -1601,7 +1601,9 @@ CosaDmlWiFiSetTxOverflowSelfheal
         BOOLEAN     bValue
     );
 
+#if !defined(_LG_OFW_)
 ANSC_STATUS CosaDmlWiFiDeAllocBridgeVlan(void);
+#endif
 ANSC_STATUS CosaDmlWiFiSetForceDisableWiFiRadio(BOOLEAN bValue);
 ANSC_STATUS CosaDmlWiFiGetForceDisableWiFiRadio(BOOLEAN *pbValue);
 ANSC_STATUS CosaDmlWiFiGetCurrForceDisableWiFiRadio(BOOLEAN *pbValue);
