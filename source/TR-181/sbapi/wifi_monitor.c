@@ -3457,7 +3457,10 @@ void process_diagnostics (unsigned int ap_index, wifi_associated_dev3_t *dev, un
             hal_sta++;
         }
     } else {
-        CcspTraceError(( "[%s:%d]Wi-Fi associated device map is NULL for vap_index:%d number of device:%d\r\n", __func__, __LINE__, ap_index, num_devs));
+        /* Log Error message only when the incoming dev structure is NULL due to some error conditions */
+        if (num_devs > 0) {
+            CcspTraceError(( "[%s:%d]Wi-Fi associated device map is NULL for vap_index:%d number of device:%d\r\n", __func__, __LINE__, ap_index, num_devs));
+        }
     }
     // now update all sta(s) in cache that were not updated
     sta = hash_map_get_first(sta_map);
