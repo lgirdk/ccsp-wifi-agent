@@ -1741,7 +1741,9 @@ QUEUE_HEADER *sWiFiDmlApMfQueue[WIFI_INDEX_MAX];
 static BOOLEAN sWiFiDmlWepChg[WIFI_INDEX_MAX] ;
 static BOOLEAN sWiFiDmlAffectedVap[WIFI_INDEX_MAX] = {0};
 static BOOLEAN sWiFiDmlPushWepKeys[WIFI_INDEX_MAX] = {0};
+#if !defined(_LG_OFW_)
 static BOOLEAN sWiFiDmlUpdateVlanCfg[WIFI_INDEX_MAX] = {0};
+#endif
 static BOOLEAN sWiFiDmlUpdatedAdvertisement[WIFI_INDEX_MAX] = {0};
 //static ULONG sWiFiDmlRadioLastStatPoll[WIFI_INDEX_MAX] = { 0, 0 };
 static ULONG sWiFiDmlSsidLastStatPoll[WIFI_INDEX_MAX] = {0};
@@ -1751,7 +1753,9 @@ static COSA_DML_WIFI_BANDSTEERING_SETTINGS sWiFiDmlBandSteeringStoredSettinngs[M
 static BOOLEAN sWiFiDmlWepChg[WIFI_INDEX_MAX] = { FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE };
 static BOOLEAN sWiFiDmlAffectedVap[WIFI_INDEX_MAX] = { FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE };
 static BOOLEAN sWiFiDmlPushWepKeys[WIFI_INDEX_MAX] = { FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE };
+#if !defined(_LG_OFW_)
 static BOOLEAN sWiFiDmlUpdateVlanCfg[WIFI_INDEX_MAX] = { FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE };
+#endif
 static BOOLEAN sWiFiDmlUpdatedAdvertisement[WIFI_INDEX_MAX] = { FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE,FALSE };
 //static ULONG sWiFiDmlRadioLastStatPoll[WIFI_INDEX_MAX] = { 0, 0 };
 static ULONG sWiFiDmlSsidLastStatPoll[WIFI_INDEX_MAX] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }; 
@@ -7157,6 +7161,7 @@ CosaDmlWiFi_SetRapidReconnectIndicationEnable(BOOL bEnable )
     return ANSC_STATUS_SUCCESS;
 }
 
+#if !defined(_LG_OFW_)
 static ANSC_STATUS
 CosaDmlWiFiGetBridgePsmData
     (
@@ -7406,6 +7411,7 @@ CosaDmlWiFiDeAllocBridgeVlan (void)
     pBridgeVlanCfg = NULL;
     return ANSC_STATUS_SUCCESS;
 }
+#endif
 
 pthread_mutex_t Hotspot_MacFilt_ThreadMutex = PTHREAD_MUTEX_INITIALIZER;
 void* Delete_Hotspot_MacFilt_Entries_Thread_Func( void * arg)
@@ -8054,7 +8060,9 @@ CosaDmlWiFiFactoryReset
             CosaDmlWiFiGetSSIDFactoryResetPsmData(i, i+1);
         }
     #endif
+#if !defined(_LG_OFW_)
         CosaDmlWiFiGetBridgePsmData();
+#endif
 
         BOOLEAN newVlanCfg = FALSE;
         CosaDmlWiFiGetResetRequired(&newVlanCfg);
@@ -9095,7 +9103,9 @@ printf("%s: Reset FactoryReset to 0 \n",__FUNCTION__);
 #endif
         printf("%s: noEnableVaps = %s \n", __func__, (noEnableVaps == TRUE) ? "TRUE" : "FALSE");
 
+#if !defined(_LG_OFW_)
         CosaDmlWiFiGetBridgePsmData();
+#endif
         BOOLEAN newVlanCfg = FALSE;
         CosaDmlWiFiGetResetRequired(&newVlanCfg);
         // if new Vlan configuration is required, write the new cfg version to PSM
@@ -12730,8 +12740,10 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
         return ANSC_STATUS_FAILURE;
     }
 
+#if !defined(_LG_OFW_)
     // Need to get vlan configuration
     CosaDmlWiFiGetBridgePsmData();
+#endif
 
     ccspWifiDbgPrint(CCSP_WIFI_TRACE, " %s isRadioConfigChanged : %s ApplySetting : %s\n", __FUNCTION__, ((pCfg->isRadioConfigChanged == TRUE) ? "TRUE" : "FALSE"), ((pCfg->ApplySetting == TRUE)  ? "TRUE" : "FALSE"));
 
@@ -13166,7 +13178,9 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
     pCfg->isRadioConfigChanged = FALSE;
     pCfg->ApplySetting = FALSE;
 
+#if !defined(_LG_OFW_)
     CosaDmlWiFiDeAllocBridgeVlan();
+#endif
     CcspWifiTrace(("RDK_LOG_INFO, %s Completed Successfully for RadioIndex %d \n", __FUNCTION__, radioIndex));
 
     return ANSC_STATUS_SUCCESS;
@@ -13185,7 +13199,9 @@ ValidationFailed:
     //Perform the VAP Rollback
     vapGetCfgUpdateFromDmlToHal(rdkWifiVap);
 
+#if !defined(_LG_OFW_)
     CosaDmlWiFiDeAllocBridgeVlan();
+#endif
     CcspWifiTrace(("RDK_LOG_INFO, %s %d Rollback Done  for RadioIndex %d \n", __FUNCTION__, __LINE__, radioIndex));
 
     return ANSC_STATUS_FAILURE;
@@ -13224,8 +13240,10 @@ ValidationFailed:
 
     wifiDbgPrintf("%s[%d] wlanIndex %d\n",__FUNCTION__, __LINE__, wlanIndex);
 
+#if !defined(_LG_OFW_)
     // Need to get vlan configuration
     CosaDmlWiFiGetBridgePsmData();
+#endif
 
     if ( gRadioPowerSetting != COSA_DML_WIFI_POWER_DOWN  &&
          gRadioNextPowerSetting != COSA_DML_WIFI_POWER_DOWN )
@@ -13401,7 +13419,7 @@ fprintf(stderr, "----# %s %d 	pStoredSsidCfg->EnableOnline=%d  pStoredSsidCfg->R
                     CosaDmlWiFiApAcctApplyCfg(pStoredApAcctCfg, pStoredApCfg->InstanceNumber);
                     // push security and restart hostapd
                     CosaDmlWiFiApSecPushCfg(pStoredApSecCfg, pStoredApCfg->InstanceNumber);
-#if !defined(_INTEL_WAV_)
+#if !defined(_INTEL_WAV_) && !defined(_LG_OFW_)
                     wifi_pushBridgeInfo(i);
 #endif
                     // else if up=TRUE, but should be down
@@ -13754,11 +13772,13 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d true\n", __func__, __LINE__, i
 #endif
 #endif
                 }
+#if !defined(_LG_OFW_)
                 if (sWiFiDmlUpdateVlanCfg[i] == TRUE) {
                     // update vlan configuration
                     wifi_resetApVlanCfg(i); 
                     sWiFiDmlUpdateVlanCfg[i] = FALSE;
                 }
+#endif
                 int x=0;
                 for(x = i; x < 16; x += 2)
                 {
@@ -13777,7 +13797,9 @@ fprintf(stderr, "----# %s %d 	wifi_setApEnable %d true\n", __func__, __LINE__, i
                 sWiFiDmlRestartHostapd = FALSE;
             }
 #endif
+#if !defined(_LG_OFW_)
             CosaDmlWiFiDeAllocBridgeVlan();
+#endif
         }
 
         pCfg->ApplySetting = FALSE;
