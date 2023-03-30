@@ -824,7 +824,9 @@ int webconf_apply_wifi_ssid_params (webconf_wifi_t *pssid_entry, uint8_t wlan_in
             CosaDmlWiFiApPushCfg(pStoredApCfg);
             CosaDmlWiFiApMfPushCfg(sWiFiDmlApMfCfg[wlan_index], wlan_index);
             CosaDmlWiFiApPushMacFilter(sWiFiDmlApMfQueue[wlan_index], wlan_index);
+#if !defined(_LG_OFW_)
             wifi_pushBridgeInfo(wlan_index);
+#endif
         } else {
 #ifdef CISCO_XB3_PLATFORM_CHANGES
             wifi_ifConfigDown(wlan_index);
@@ -2880,7 +2882,9 @@ char *wifi_apply_ssid_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr_cfg
             CosaDmlWiFiApPushCfg(pStoredApCfg);
             CosaDmlWiFiApMfPushCfg(sWiFiDmlApMfCfg[wlan_index], wlan_index);
             CosaDmlWiFiApPushMacFilter(sWiFiDmlApMfQueue[wlan_index], wlan_index);
+#if !defined(_LG_OFW_)
             wifi_pushBridgeInfo(wlan_index);
+#endif
             wifi_setApEnable(wlan_index, TRUE);
         } else {
 #ifdef CISCO_XB3_PLATFORM_CHANGES
