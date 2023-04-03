@@ -4448,7 +4448,7 @@ CosaDmlWiFiSetDefaultApSecCfg
             }
 
             security.mode = wifi_security_mode_wpa2_personal;
-            security.mfp = wifi_mfp_cfg_optional;
+            security.mfp = wifi_mfp_cfg_disabled;
             security.u.key.type = wifi_security_key_type_psk_sae;
         }
     }
