@@ -3537,7 +3537,7 @@ char *wifi_apply_security_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr
             return "wifi_removeApSecVaribles failed";
         }
 
-#if !defined(_XB7_PRODUCT_REQ_) && !defined(_XB8_PRODUCT_REQ_) && !defined(_CBR2_PRODUCT_REQ_)
+#if !defined(_XB7_PRODUCT_REQ_) && !defined(_XB8_PRODUCT_REQ_) && !defined(_CBR2_PRODUCT_REQ_) && !defined(_CBR_PRODUCT_REQ_)
         retval = wifi_disableApEncryption(wlan_index);
         if (retval != RETURN_OK) {
             CcspTraceError(("%s: Failed to disable AP Encryption\n",__FUNCTION__));
