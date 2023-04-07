@@ -15208,12 +15208,9 @@ CosaDmlWiFiRadioGetCfg
         wifi_getRadioChannelWeights(wlanIndex, halWeights);
         fromHalWeightsToChannelWeights(wlanIndex, halWeights, pCfg->EnhancedACS.ChannelWeights, sizeof(pCfg->EnhancedACS.ChannelWeights));
     }
-    unsigned char* precac = NULL; // Fix Me, The Variable required as per HAL standard.
-    wifi_getZeroDFSState(wlanIndex, &pCfg->ZeroWaitDFS.Enable,precac);
-    if (precac)
-    {
-        free(precac);
-    }
+
+    BOOL precac = TRUE; //Param needed for HAL API but not needed for OFW requirement
+    wifi_getZeroDFSState(wlanIndex, &pCfg->ZeroWaitDFS.Enable, &precac);
 
     //HAL cmds for updating AutoChannelRefreshPeriodSupported status
     wifi_getRadioAutoChannelRefreshPeriodSupported(wlanIndex,&pCfg->X_COMCAST_COM_AutoChannelRefreshPeriodSupported);
