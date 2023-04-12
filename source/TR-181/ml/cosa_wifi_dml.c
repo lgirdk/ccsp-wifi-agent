@@ -6256,7 +6256,6 @@ DfsChannels_Synchronize
 
     // Activate the bellow code once the HAL API are implimented 
     int idx = 0;
-    unsigned char *Status; //HAL API wifi_getZeroDFSState need this param but is is not used in OFW requiremet. Trash param
     if (pWifiRadioCfg->InstanceNumber == 2)
     {
         wifi_zwdf_list_t* intermediat_status_list = NULL;
