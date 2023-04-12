@@ -15435,9 +15435,8 @@ CosaDmlWiFiRadioGetCfg
         fromHalWeightsToChannelWeights(wlanIndex, halWeights, pCfg->EnhancedACS.ChannelWeights, sizeof(pCfg->EnhancedACS.ChannelWeights));
     }
 #ifdef _LG_MV2_PLUS_
-    unsigned char* precac = NULL; //Param needed for HAL API but not needed for OFW requirement
-    wifi_getZeroDFSState(wlanIndex, &pCfg->ZeroWaitDFS.Enable,precac);
-    free(precac);
+    BOOL precac = TRUE; //Param needed for HAL API but not needed for OFW requirement
+    wifi_getZeroDFSState(wlanIndex, &pCfg->ZeroWaitDFS.Enable,&precac);
 #endif //_LG_MV2_PLUS_
 
 #endif
