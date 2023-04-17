@@ -18627,6 +18627,8 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     wifi_getApSecurityRadiusServer(wlanIndex, (char*)pCfg->RadiusServerIPAddr, (UINT *)pCfgRadiusServerPort, pCfg->RadiusSecret);
     pCfgSecondaryRadiusServerPort = &pCfg->SecondaryRadiusServerPort;
     wifi_getApSecuritySecondaryRadiusServer(wlanIndex, (char*)pCfg->SecondaryRadiusServerIPAddr, (UINT *)pCfgSecondaryRadiusServerPort, pCfg->SecondaryRadiusSecret);
+#endif //WIFI_HAL_VERSION_3
+
 #if defined(_LG_OFW_)
     if (wlanIndex < 8)   //For VAPs 1-8
 #else
@@ -18635,7 +18637,6 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     {
         getDefaultPassphase(wlanIndex, (char*)pCfg->DefaultKeyPassphrase);
     }
-#endif //WIFI_HAL_VERSION_3
 
 #if defined(_LG_OFW_)
     if(wlanIndex == 6 || wlanIndex == 7) /*For Guest wifi SSIDs*/
