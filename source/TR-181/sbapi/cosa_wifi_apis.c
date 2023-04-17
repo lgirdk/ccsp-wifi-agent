@@ -18661,11 +18661,14 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
         /*If KeyPassphrase is empty, set the KeyPassphrase same as DefaultKeyPassphrase for Guest wifi*/
         if(strlen(pCfg->KeyPassphrase) == 0 && strlen(pCfg->DefaultKeyPassphrase) != 0)
         {
-            wifi_setApSecurityKeyPassphrase(wlanIndex, pCfg->DefaultKeyPassphrase);
+            /*This condition hits only on factory reset and we should set the same password for both the 2.4 and 5 GHz guest passwords, if either is empty*/
+            wifi_setApSecurityKeyPassphrase(6, pCfg->DefaultKeyPassphrase);
+            wifi_setApSecurityKeyPassphrase(7, pCfg->DefaultKeyPassphrase);
 #ifdef _LG_MV2_PLUS_
             wifi_apply();
 #endif
-            wifi_getApSecurityKeyPassphrase(wlanIndex, (char*)pCfg->KeyPassphrase);
+            wifi_getApSecurityKeyPassphrase(6, (char*)pCfg->KeyPassphrase);
+            wifi_getApSecurityKeyPassphrase(7, (char*)pCfg->KeyPassphrase);
         }
     }
 #endif
