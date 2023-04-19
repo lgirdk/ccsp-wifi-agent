@@ -27663,8 +27663,8 @@ ANSC_STATUS getApPSMValues(UINT vapIndex, bool *isChanged)
     if (retPsmGet == CCSP_SUCCESS) {
           uIntValue = _ansc_atoi(strValue);
           if (uIntValue != wifiVapInfo->u.bss_info.bssMaxSta) {
-              wifiVapInfo->u.bss_info.bssMaxSta = uIntValue;
-              *isChanged = TRUE;
+              sprintf(strValue, "%d", wifiVapInfo->u.bss_info.bssMaxSta);
+              PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, strValue);
           }
           ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     }
