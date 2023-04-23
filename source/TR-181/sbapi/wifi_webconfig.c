@@ -1426,10 +1426,7 @@ int webconf_validate_wifi_ssid_params (webconf_wifi_t *pssid_entry, uint8_t wlan
 {
     char *ssid_name = NULL;
     int ssid_len = 0;
-    int i = 0, j = 0;
-    char ssid_char[COSA_DML_WIFI_MAX_SSID_NAME_LEN] = {0};
-    char ssid_lower[COSA_DML_WIFI_MAX_SSID_NAME_LEN] = {0};
-
+    int i = 0;
 
 #ifdef WIFI_HAL_VERSION_3
     ssid_name = pssid_entry->ssid[getRadioIndexFromAp(wlan_index)].ssid_name;
@@ -1450,17 +1447,6 @@ int webconf_validate_wifi_ssid_params (webconf_wifi_t *pssid_entry, uint8_t wlan
         return RETURN_ERR;
     }
 
- 
-    while (i < ssid_len) {
-        ssid_lower[i] = tolower(ssid_name[i]);
-        if (isalnum(ssid_name[i]) != 0) {
-            ssid_char[j++] = ssid_lower[i];
-        }
-        i++;
-    }
-    ssid_lower[i] = '\0';
-    ssid_char[j] = '\0';
-
     for (i = 0; i < ssid_len; i++) {
         if (!((ssid_name[i] >= ' ') && (ssid_name[i] <= '~'))) {
             CcspTraceError(("%s: Invalid character present in SSID %d\n",__FUNCTION__, wlan_index));
@@ -1470,23 +1456,9 @@ int webconf_validate_wifi_ssid_params (webconf_wifi_t *pssid_entry, uint8_t wlan
             return RETURN_ERR;
         }
     }
- 
 
-    /* SSID containing "optimumwifi", "TWCWiFi", "cablewifi" and "xfinitywifi" are reserved */
-    if ((strstr(ssid_char, "cablewifi") != NULL) || (strstr(ssid_char, "twcwifi") != NULL) || (strstr(ssid_char, "optimumwifi") != NULL) ||
-        (strstr(ssid_char, "xfinitywifi") != NULL) || (strstr(ssid_char, "xfinity") != NULL) || (strstr(ssid_char, "coxwifi") != NULL) ||
-        (strstr(ssid_char, "spectrumwifi") != NULL) || (strstr(ssid_char, "shawopen") != NULL) || (strstr(ssid_char, "shawpasspoint") != NULL) ||
-        (strstr(ssid_char, "shawguest") != NULL) || (strstr(ssid_char, "shawmobilehotspot") != NULL)) {
-
-        CcspTraceError(("%s: Reserved SSID format used for ssid %d\n",__FUNCTION__, wlan_index));
-        if (execRetVal) {
-            strncpy(execRetVal->ErrorMsg,"Reserved SSID format used",sizeof(execRetVal->ErrorMsg)-1);
-        }
-        return RETURN_ERR;
-    }
-    
     CcspTraceInfo(("%s: Validation of SSID params is Successful\n", __FUNCTION__));
- 
+
     return RETURN_OK;
 }
 
