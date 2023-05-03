@@ -117,7 +117,16 @@ if [ "x$BOX_TYPE" == "xTCCBR" ] || [ "x$BOX_TYPE" == "xXF3" ]; then
                 CHK_PARAM_LIST="$WL0_DFLT_PARAM_LIST $WL1_DFLT_PARAM_LIST"
 		for param in $CHK_PARAM_LIST
 		do
-			VAL=`nvram get $param`
+			#Attempting three times to obtain the value of the default parameters wl0 and wl1 with a 1 second delay
+			for (( i=0 ; i < 3 ; i++ ))
+			do
+				VAL=`nvram get $param`
+				if [ "x$VAL" != "x" ];then
+					break
+				fi
+				echo_t "sleeping for one second before attempting to obtain the value of $param once more"
+				sleep 1
+			done
 			if [ "x$VAL" == "x" ];then
 				echo_t "WIFI_ERROR: Unable to get value for parameter $param"
 				IS_NVRM_CORRUPT=1;
