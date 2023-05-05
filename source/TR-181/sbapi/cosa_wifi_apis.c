@@ -2525,6 +2525,15 @@ BOOL isVapPrivate(UINT apIndex)
     return FALSE;
 }
 
+BOOL isVapGuest(UINT apIndex)
+{
+    if(strcmp((CHAR *)getVAPName(apIndex), "guest_ssid") == 0)
+    {
+        return TRUE;
+    }
+    return FALSE;
+}
+
 BOOL isVapXhs(UINT apIndex)
 {
     if(strncmp((CHAR *)getVAPName(apIndex), "iot_ssid", strlen("iot_ssid")) == 0)
@@ -25343,7 +25352,7 @@ INT CosaDmlWiFi_AssociatedDevice_callback(INT apIndex, wifi_associated_dev_t *as
                 return -1;
         }
 #ifdef WIFI_HAL_VERSION_3
-    if (isVapPrivate(apIndex)) {
+    if (isVapPrivate(apIndex) || isVapGuest(apIndex)) {
 #else
 	if(apIndex==0 || apIndex==1 || apIndex==6 || apIndex==7) {	//for private network and guest network
 #endif
@@ -25428,7 +25437,7 @@ INT CosaDmlWiFi_DisAssociatedDevice_callback(INT apIndex, char *mac, int reason)
                 return -1;
         }
 #ifdef WIFI_HAL_VERSION_3
-        if (isVapPrivate(apIndex)){
+        if (isVapPrivate(apIndex) || isVapGuest(apIndex)) {
 #else
         if (apIndex==0 || apIndex==1 || apIndex==6 || apIndex==7) {  //for private network and guest network
 #endif
@@ -27945,7 +27954,7 @@ static ANSC_STATUS ccspWifiRdkVapInit(void)
         ERR_CHK(rc);
 
         gRadioCfg[0].vaps.rdk_vap_array[2].vap_index = 4;
-        rc = strcpy_s((CHAR* )gRadioCfg[0].vaps.rdk_vap_array[3].vap_name, sizeof(gRadioCfg[0].vaps.rdk_vap_array[3].vap_name) , "lnf_psk_2g");
+        rc = strcpy_s((CHAR* )gRadioCfg[0].vaps.rdk_vap_array[3].vap_name, sizeof(gRadioCfg[0].vaps.rdk_vap_array[3].vap_name) , "guest_ssid_2g");
         ERR_CHK(rc);
 
         gRadioCfg[0].vaps.rdk_vap_array[3].vap_index = 6;
@@ -27980,7 +27989,7 @@ static ANSC_STATUS ccspWifiRdkVapInit(void)
         ERR_CHK(rc);
 
         gRadioCfg[1].vaps.rdk_vap_array[2].vap_index = 5;
-        rc = strcpy_s((CHAR* )gRadioCfg[1].vaps.rdk_vap_array[3].vap_name, sizeof(gRadioCfg[1].vaps.rdk_vap_array[3].vap_name) , "lnf_psk_5g");
+        rc = strcpy_s((CHAR* )gRadioCfg[1].vaps.rdk_vap_array[3].vap_name, sizeof(gRadioCfg[1].vaps.rdk_vap_array[3].vap_name) , "guest_ssid_5g");
         ERR_CHK(rc);
 
         gRadioCfg[1].vaps.rdk_vap_array[3].vap_index = 7;
