@@ -17249,6 +17249,7 @@ MacFilter_SetParamBoolValue
             vapInfo->u.bss_info.mac_filter_enable = bValue;
             pWifiAp->AP.isApChanged = TRUE;
         }
+        pWifiAp->MF.bEnabled = bValue;
 #else
         pWifiApMf->bEnabled = bValue;
 #endif
@@ -17263,6 +17264,7 @@ MacFilter_SetParamBoolValue
             vapInfo->u.bss_info.mac_filter_mode = !bValue;
             pWifiAp->AP.isApChanged = TRUE;
         }
+        pWifiAp->MF.FilterAsBlackList = bValue;
 #else
 	     pWifiApMf->FilterAsBlackList = bValue;
 #endif
