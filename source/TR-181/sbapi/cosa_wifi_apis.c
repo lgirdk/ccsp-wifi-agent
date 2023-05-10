@@ -12982,11 +12982,10 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
 
             OldModeEnabled = pWifiAp->SEC.Cfg.ModeEnabled;
             memcpy(OldKeyPassphrase,pWifiAp->SEC.Cfg.KeyPassphrase,65);
-
+            char secMode[256] = {0};
             if( pWifiAp->SEC.isSecChanged ||
                     (strncmp(tmpWifiVapInfoMap.vap_array[vapCount].u.bss_info.security.u.key.key,
                     (char *)OldKeyPassphrase, strlen((char *)OldKeyPassphrase))!=0) ){
-                            char secMode[256] = {0};
                             char encryptMode[256] = {0};
                             int rc = -1 ;
                             CcspWifiTrace(("RDK_LOG_INFO,WIFI %s: Notify Mesh of password phrase changes index:%d\n",__FUNCTION__,vapIndex));
@@ -13134,6 +13133,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
 
             if (OldModeEnabled != pWifiAp->SEC.Cfg.ModeEnabled)
             {
+                wifi_setApSecurityModeEnabled(vapIndex, secMode);
                 for (i = 0 ; i < ARRAY_SZ(wifiSecMap) ; ++i)
                 {
                     if (pWifiAp->SEC.Cfg.ModeEnabled == wifiSecMap[i].cosaSecCfgMethod) {
