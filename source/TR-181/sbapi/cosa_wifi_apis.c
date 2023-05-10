@@ -18569,17 +18569,26 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     if(wlanIndex == 6 || wlanIndex == 7) /*For Guest wifi SSIDs*/
     {
         /*If KeyPassphrase is empty, set the KeyPassphrase same as DefaultKeyPassphrase for Guest wifi*/
-        if(strlen(pCfg->KeyPassphrase) == 0 && strlen(pCfg->DefaultKeyPassphrase) != 0)
+        if(strlen(pCfg->KeyPassphrase) == 0)
         {
-            /*This condition hits only on factory reset and we should set the same password for both the 2.4 and 5 GHz guest passwords, if either is empty*/
-            wifi_setApSecurityKeyPassphrase(6, pCfg->DefaultKeyPassphrase);
-            wifi_setApSecurityKeyPassphrase(7, pCfg->DefaultKeyPassphrase);
-#ifdef _LG_MV2_PLUS_
-            wifi_apply();
-#endif
-            wifi_getApSecurityKeyPassphrase(6, (char*)pCfg->KeyPassphrase);
-            wifi_getApSecurityKeyPassphrase(7, (char*)pCfg->KeyPassphrase);
+            wifi_getApSecurityKeyPassphrase(6, pCfg->KeyPassphrase);
+            if ( pCfg->KeyPassphrase[0] == 0 )
+            {
+                wifi_getApSecurityKeyPassphrase(7, pCfg->KeyPassphrase);
+                if ( pCfg->KeyPassphrase[0] == 0 && pCfg->DefaultKeyPassphrase[0] != 0)
+                {
+                    strcpy(pCfg->KeyPassphrase,pCfg->DefaultKeyPassphrase);
+                }
+            }
         }
+        if( pCfg->KeyPassphrase[0] != 0 )
+        {
+            wifi_setApSecurityKeyPassphrase(6, (char*)pCfg->KeyPassphrase);
+            wifi_setApSecurityKeyPassphrase(7, (char*)pCfg->KeyPassphrase);
+        }
+        #ifdef LG_MV2_PLUS
+        wifi_apply();
+        #endif
     }
 #endif
 
