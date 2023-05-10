@@ -7826,6 +7826,13 @@ SSID_SetParamStringValue
         if(!bForceDisableFlag) {
             /* save update to backup */
 #ifdef WIFI_HAL_VERSION_3
+	        //Check if the SSID name is in the list of reserved SSID names
+	        PCOSA_DATAMODEL_WIFI pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
+            if (isReservedSSID(pMyObject->ReservedSSIDNames,pString))
+            {
+                CcspWifiTrace(("RDK_LOG_ERROR, WIFI_ATTEMPT_TO_CHANGE_SSID_TO_RESERVED_SSID_NAME\n" ));
+                return FALSE;
+            }
             rc = strcpy_s( vapInfo->u.bss_info.ssid, sizeof(vapInfo->u.bss_info.ssid), pString );
             ERR_CHK(rc);
             pWifiSsid->SSID.Cfg.isSsidChanged = TRUE;
