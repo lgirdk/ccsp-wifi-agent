@@ -4277,6 +4277,10 @@ Radio_SetParamUlongValue
             }
         }
 #endif
+        if (!(CosaUtilChannelValidate(pWifiRadioFull->Cfg.OperatingFrequencyBand,uValue,pWifiRadioFull->StaticInfo.PossibleChannels)))
+        {
+            return FALSE;
+        }
 
         wifiRadioOperParam->channel = uValue;
         wifiRadioOperParam->autoChannelEnabled = FALSE;
