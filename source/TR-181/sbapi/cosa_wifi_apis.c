@@ -13006,6 +13006,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
                 memset(multinet_instance, '\0', sizeof(multinet_instance));
                 snprintf(multinet_instance, sizeof(multinet_instance), "RDK|%d|%s",
                         vapIndex, tmpWifiVapInfoMap.vap_array[vapCount].u.bss_info.showSsid ? "true":"false");
+                wifi_setApSsidAdvertisementEnable(vapIndex, tmpWifiVapInfoMap.vap_array[vapCount].u.bss_info.showSsid);
                 if ( (gWrite_sysevent_fd || !initGSyseventVar()) &&
                     (sysevent_set(gWrite_sysevent_fd, gWrite_sysEtoken, "wifi_SSIDAdvertisementEnable", multinet_instance, 0)) )
                 {
