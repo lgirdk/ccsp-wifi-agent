@@ -28,7 +28,7 @@
 #include "collection.h"
 #include <math.h>
 #include "webpa_interface.h"
-#include "base64.h"
+#include <trower-base64/base64.h>
 #include "cosa_dbus_api.h"
 #include "safec_lib_common.h"
 
