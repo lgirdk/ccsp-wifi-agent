@@ -4882,6 +4882,9 @@ Radio_SetParamStringValue
     if (strcmp(ParamName, "OperatingFrequencyBand") == 0)
     {
 #ifdef WIFI_HAL_VERSION_3
+      if(( strcmp(pString, "2.4GHz") == 0) && (1 == pWifiRadioFull->Cfg.InstanceNumber) ||
+         ( strcmp(pString, "5GHz") == 0) && (2 == pWifiRadioFull->Cfg.InstanceNumber))
+      {
         if (freqBandStrToEnum(pString, &tmpHalFreqBand) != ANSC_STATUS_SUCCESS)
         {
             return FALSE;
@@ -4894,6 +4897,11 @@ Radio_SetParamStringValue
 
         wifiRadioOperParam->band = tmpHalFreqBand;
         pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
+      }
+      else
+      {
+        return FALSE; /* Radio can only support these two frequency bands and can not change dynamically */
+      }
 #else //WIFI_HAL_VERSION_3
         COSA_DML_WIFI_FREQ_BAND     TmpFreq;
         /* save update to backup */
