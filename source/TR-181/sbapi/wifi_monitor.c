@@ -3382,8 +3382,12 @@ void process_diagnostics (unsigned int ap_index, wifi_associated_dev3_t *dev, un
             sta = (sta_data_t *)hash_map_get(sta_map, to_sta_key(hal_sta->cli_MACAddress, sta_key));
             if (sta == NULL) {
                 sta = (sta_data_t *)malloc(sizeof(sta_data_t));
+                if (sta == NULL) {
+                    CcspTraceError(( "[%s:%d] number of [%d] sta data memroy allocation malloc failure\r\n", __func__, __LINE__, num_devs));
+                    return;
+                }
                 memset(sta, 0, sizeof(sta_data_t));
-                memcpy(sta->sta_mac, hal_sta->cli_MACAddress, sizeof(mac_addr_t));
+                memcpy(sta->sta_mac, hal_sta->cli_MACAddress, sizeof(mac_address_t));
                 hash_map_put(sta_map, strdup(to_sta_key(hal_sta->cli_MACAddress, sta_key)), sta);
             }
 
