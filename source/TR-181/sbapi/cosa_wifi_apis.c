@@ -7104,6 +7104,7 @@ CosaDmlWiFiGetBridgePsmData
     unsigned int numInstances = 0;
     unsigned int *pInstanceArray = NULL;
 
+    CosaDmlWiFiDeAllocBridgeVlan();
     pBridgeVlanCfg = NULL;
 	CcspWifiTrace(("RDK_LOG_WARN,WIFI %s \n",__FUNCTION__));
     wifiDbgPrintf("%s g_Subsytem = %s  \n",__FUNCTION__, g_Subsystem );
@@ -7172,6 +7173,10 @@ CosaDmlWiFiGetBridgePsmData
                                 if (pInstanceArray)
                                 {
                                     ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(pInstanceArray);
+                                }
+                                if (pBridge)
+                                {
+                                    AnscFreeMemory(pBridge);
                                 }
                                 return ANSC_STATUS_FAILURE;
                             }
