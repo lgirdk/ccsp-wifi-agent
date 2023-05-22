@@ -15340,6 +15340,8 @@ CosaDmlWiFiRadioGetCfg
     wifi_getRadioAMSDUEnable(wlanIndex, &pCfg->X_CISCO_COM_AggregationMSDU);
     wifi_getRadioDCSEnable(wlanIndex, &pCfg->X_COMCAST_COM_DCSEnable);
     wifi_getRadioReverseDirectionGrantSupported(wlanIndex, &pCfg->ReverseDirectionGrantSupported);
+    wifi_getRadioDfsSupport(wlanIndex,&pCfg->X_COMCAST_COM_DFSSupport);
+    wifi_getRadioDfsEnable(wlanIndex, &pCfg->X_COMCAST_COM_DFSEnable);
     CosaDmlWiFiGetRadioPsmData(pCfg);
     pCfg->ApplySetting  = FALSE;
     pCfg->ApplySettingSSID = 0;
