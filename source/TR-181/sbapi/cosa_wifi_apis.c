@@ -27493,7 +27493,12 @@ static INT Mesh_Notification(char *event, char *data)
             return -1;  //non mesh notification
         }
 
-        CcspTraceInfo(("%s Received event %s with data = %s\n",__FUNCTION__,event,data));
+        if(strcmp(event, "wifi_ApSecurity")==0) {
+            // Do not display security data in logs
+            CcspTraceInfo(("%s Received event %s \n",__FUNCTION__,event));
+        } else {
+            CcspTraceInfo(("%s Received event %s with data = %s\n",__FUNCTION__,event,data));
+        }
 
         if(strcmp(event, "wifi_SSIDName")==0) {
                 //MESH|apIndex|ssidName
