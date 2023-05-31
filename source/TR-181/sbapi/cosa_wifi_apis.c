@@ -6876,8 +6876,8 @@ CosaDmlWiFi_setStatus(ULONG status, PANSC_HANDLE phContext)
            }
 #if defined (_XB7_PRODUCT_REQ_)
            /* reload apps */
-           if ( v_secure_system("wifi_setup.sh start_security_apps") != 0 ) {
-               CcspWifiTrace(("RDK_LOG_INFO, %s:%d wifi_setup.sh start_security_apps failed\n", __FUNCTION__, __LINE__));
+           if ( v_secure_system("wifi_setup.sh start_wifi_apps") != 0 ) {
+               CcspWifiTrace(("RDK_LOG_INFO, %s:%d wifi_setup.sh start_wifi_apps failed\n", __FUNCTION__, __LINE__));
                return FALSE;
            }
 #endif
@@ -10670,8 +10670,8 @@ BOOL CosaDmlWiFiSetHostapdAuthenticatorEnable(PANSC_HANDLE phContext, BOOLEAN bV
 #endif
 #if defined (_XB7_PRODUCT_REQ_)
         /* reload apps */
-        if ( v_secure_system("wifi_setup.sh start_security_apps") != 0 ) {
-            CcspWifiTrace(("RDK_LOG_INFO, %s:%d wifi_setup.sh start_security_apps failed\n", __FUNCTION__, __LINE__));
+        if ( v_secure_system("wifi_setup.sh start_wifi_apps") != 0 ) {
+            CcspWifiTrace(("RDK_LOG_INFO, %s:%d wifi_setup.sh start_wifi_apps failed\n", __FUNCTION__, __LINE__));
             return FALSE;
         }
 #endif
