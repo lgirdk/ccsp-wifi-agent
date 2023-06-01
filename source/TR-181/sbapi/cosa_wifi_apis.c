@@ -2532,7 +2532,7 @@ BOOL isVapPrivate(UINT apIndex)
 
 BOOL isVapGuest(UINT apIndex)
 {
-    if(strcmp((CHAR *)getVAPName(apIndex), "guest_ssid") == 0)
+    if(strncmp((CHAR *)getVAPName(apIndex), "guest_ssid", strlen("guest_ssid")) == 0)
     {
         return TRUE;
     }
