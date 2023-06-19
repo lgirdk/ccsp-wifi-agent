@@ -6469,7 +6469,13 @@ EnhancedACS_SetParamBoolValue
         return ANSC_STATUS_FAILURE;
     }
     if (strcmp(ParamName, "DFSMoveBack") == 0) {
-        pWifiRadioEnhancedACS->DFSMoveBack = bValue;
+        if(pWifiRadioEnhancedACS->DFSMoveBack != bValue)
+        {
+            pWifiRadioEnhancedACS->DFSMoveBack = bValue;
+#ifdef WIFI_HAL_VERSION_3
+            pWifiRadioCfg->isRadioConfigChanged = TRUE;
+#endif
+        }
         return TRUE;
     }
     if (strcmp(ParamName, "ExcludeDFS") == 0) {
@@ -6479,6 +6485,9 @@ EnhancedACS_SetParamBoolValue
                 return FALSE;
             }
             pWifiRadioEnhancedACS->ExcludeDFS = bValue;
+#ifdef WIFI_HAL_VERSION_3
+            pWifiRadioCfg->isRadioConfigChanged = TRUE;
+#endif
         }
         return TRUE;
     }
@@ -6600,7 +6609,7 @@ static BOOL isWeatherChannel(ULONG channel) {
     }
 }
 
-static ANSC_STATUS GetInsNumsByWifiChannelWeight( ULONG* pWeight, ULONG *channel, BOOL *excludeDFS, COSA_DML_WIFI_CHAN_BW *bandwidth)
+static ANSC_STATUS GetInsNumsByWifiChannelWeight( ULONG* pWeight, ULONG *channel, BOOL *excludeDFS, COSA_DML_WIFI_CHAN_BW *bandwidth,bool isOperSPV, ULONG uValue)
 {
     PCOSA_DATAMODEL_WIFI        pWiFi       = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
     PCOSA_DML_WIFI_RADIO            pWifiRadio      = NULL;
@@ -6625,6 +6634,12 @@ static ANSC_STATUS GetInsNumsByWifiChannelWeight( ULONG* pWeight, ULONG *channel
                 *channel = (wlanIndex == 0)? channels24G[i]: channels5G[i];
                 *excludeDFS = pWifiRadioEnhancedACS->ExcludeDFS;
                 *bandwidth = pWifiRadioCfg->OperatingChannelBandwidth;
+#ifdef WIFI_HAL_VERSION_3
+                if(isOperSPV && (uValue != *pWeight))
+                {
+                    pWifiRadioCfg->isRadioConfigChanged = TRUE;
+                }
+#endif
                 return ANSC_STATUS_SUCCESS;
             }
         }
@@ -6649,7 +6664,7 @@ Channel_GetParamUlongValue
 
     if (strcmp(ParamName, "ChannelWeight") == 0)
     {
-        GetInsNumsByWifiChannelWeight(pWeight, &channel, &excludeDFS, &bandwidth);
+        GetInsNumsByWifiChannelWeight(pWeight, &channel, &excludeDFS, &bandwidth, false, 0);
         if (excludeDFS && isDFSChannel(channel)) {
             *puLong = 0;
         } else {
@@ -6675,7 +6690,7 @@ Channel_SetParamUlongValue
 
     if (strcmp(ParamName, "ChannelWeight") == 0)
     {
-        GetInsNumsByWifiChannelWeight(pWeight, &channel, &excludeDFS, &bandwidth);
+        GetInsNumsByWifiChannelWeight(pWeight, &channel, &excludeDFS, &bandwidth, true, uValue);
         if ((channel >= 36 && channel <= 140 && !isWeatherChannel(channel)) || channel == 1 || channel == 6 || channel == 11) {
             *pWeight = uValue;
         }
