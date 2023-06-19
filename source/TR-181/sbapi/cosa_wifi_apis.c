@@ -12727,6 +12727,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
     PCOSA_DML_WIFI_SSID             pWifiSsid           = (PCOSA_DML_WIFI_SSID      )NULL;
     PCOSA_DML_WIFI_AP               pWifiAp             = (PCOSA_DML_WIFI_AP        )NULL;
     PCOSA_CONTEXT_LINK_OBJECT       pLinkObj            = (PCOSA_CONTEXT_LINK_OBJECT)NULL;
+    PCOSA_DML_WIFI_RADIO_CFG        pStoredCfg          = (PCOSA_DML_WIFI_RADIO_CFG)NULL;
 
     UNREFERENCED_PARAMETER(sWiFiDmlRadioRunningCfg);
     UNREFERENCED_PARAMETER(sWiFiDmlWepChg);
@@ -12737,6 +12738,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
         return ANSC_STATUS_FAILURE;
     }
 
+    pStoredCfg = &sWiFiDmlRadioStoredCfg[pCfg->InstanceNumber-1];
     instanceNumber = pCfg->InstanceNumber;
     if ((instanceNumber == 0) || (instanceNumber > getNumberRadios()))
     {
@@ -12843,6 +12845,23 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
             tmpWifiVapInfoMap.num_vaps = vapArrayIndex;
         }
         isVapApply = FALSE;
+    }
+
+    if (pStoredCfg->EnhancedACS.DFSMoveBack != pCfg->EnhancedACS.DFSMoveBack)
+    {
+        wifi_setRadioDfsMoveBackEnable(radioIndex, pCfg->EnhancedACS.DFSMoveBack);
+    }
+
+    if (pStoredCfg->EnhancedACS.ExcludeDFS != pCfg->EnhancedACS.ExcludeDFS)
+    {
+        wifi_setRadioExcludeDfs(radioIndex, pCfg->EnhancedACS.ExcludeDFS);
+    }
+
+    if (memcmp(pStoredCfg->EnhancedACS.ChannelWeights, pCfg->EnhancedACS.ChannelWeights, sizeof(pCfg->EnhancedACS.ChannelWeights)))
+    {
+        ULONG halWeights[sizeof(pCfg->EnhancedACS.ChannelWeights)] = {0};
+        fromChannelWeightsToHalWeights(radioIndex, pCfg->EnhancedACS.ChannelWeights, halWeights, sizeof(pCfg->EnhancedACS.ChannelWeights));
+        wifi_setRadioChannelWeights(radioIndex, halWeights);
     }
 
     //If Validation is successful, apply the radio and VAP settings
