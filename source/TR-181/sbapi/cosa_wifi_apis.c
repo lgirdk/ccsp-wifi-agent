@@ -160,6 +160,45 @@
 #if defined(_COSA_BCM_ARM_)
 #define LGI_SUBNET3_INSTANCE   "6"
 #endif
+
+#define MAX_POW_COUNT 7
+/*P(dBm) P(mW) % 21 dBm - max 5G power
+  8     6        5%
+  11    12       10%
+  12    15       12%
+  15    31       25%
+  18    63       50%
+  20    100      75%
+  21    125      100%
+*/
+static int perc_to_pow_5g[MAX_POW_COUNT][2] = {
+    {5, 8},
+    {10, 11},
+    {12, 12},
+    {25, 15},
+    {50, 18},
+    {75, 20},
+    {100, 21}
+};
+
+/*P(dBm) P(mW) % 17 dBm - max 2.4G power
+  5     3        5%
+  7     5        10%
+  8     6        12%
+  11    12       25%
+  14    25       50%
+  16    39       75%
+  17    50       100%
+*/
+static int perc_to_pow_2g[MAX_POW_COUNT][2] = {
+    {5, 5},
+    {10, 7},
+    {12, 8},
+    {25, 11},
+    {50, 14},
+    {75, 16},
+    {100, 17}
+};
 /**************************************************************************
 *
 *	Function Declarations
@@ -251,6 +290,7 @@ static void checkforbiddenSSID(int index);
 static void MeshNotifySecurityChange(INT apIndex, PCOSA_DML_WIFI_APSEC_CFG pStoredApSecCfg);
 static ANSC_STATUS getPMKCaching (int index, BOOLEAN *pmkEnable);
 static ANSC_STATUS setPmkCachingintoPSM (int index, BOOLEAN pmkEnable);
+static ULONG Convert_dBm2Percent(INT radioIndex, ULONG *curTransmitPower);
 
 #if defined(_COSA_BCM_ARM_)
 void Guest_Interface_Status(BOOL isEnable)
@@ -11960,7 +12000,13 @@ static void * CosaDmlWifi_RadioPowerThread(void *arg)
 #else
         ULONG ath0Power = 0, ath1Power = 0;
         wifi_getRadioTransmitPower(0,&ath0Power);
+#if defined(_LG_MV1_QCA_)
+        ath0Power = Convert_dBm2Percent(0, ath0Power);
+#endif
         wifi_getRadioTransmitPower(1, &ath1Power);
+#if defined(_LG_MV1_QCA_)
+        ath1Power = Convert_dBm2Percent(1, ath1Power);
+#endif
         if ( ( power == COSA_DML_WIFI_POWER_UP ) &&
              ( (ath0Power == 5 ) || (ath1Power == 5) ) ) {
             // Power may have been lowered with interrupt, but PSM didn't send power down
@@ -30912,4 +30958,30 @@ const char *wifi_sec_type_from_value(COSA_DML_WIFI_SECURITY value)
       }
   }
   return NULL;
+}
+
+static ULONG Convert_dBm2Percent(INT radioIndex, ULONG *curTransmitPower)
+{
+   INT (*pow_arr)[2] = NULL, index;
+   ULONG TransmitPowerPercent = 0;
+
+   pow_arr = (radioIndex == 0 ? perc_to_pow_2g : perc_to_pow_5g);
+
+   for (index = 0; index < MAX_POW_COUNT; index++) {
+       if (pow_arr[index][1] == *curTransmitPower) {
+           TransmitPowerPercent  = pow_arr[index][0];
+       }
+   }
+   return TransmitPowerPercent;
+}
+
+ULONG CosaDmlWiFiRadioGetTrasmitPowerPercent(INT wlanIndex)
+{
+    ULONG curTransmitPower = 0;
+
+    wifi_getRadioTransmitPower(wlanIndex, &curTransmitPower);
+
+    curTransmitPower = Convert_dBm2Percent(wlanIndex, &curTransmitPower);
+
+    return curTransmitPower;
 }
