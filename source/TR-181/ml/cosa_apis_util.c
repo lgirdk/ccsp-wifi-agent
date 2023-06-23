@@ -912,16 +912,3 @@ int CosaDmlV6PrefIsEqual(char * p_pref1, char * p_pref2)
 
     return !__v6pref_mismatches(p_pref1, p_pref2);
 }
-
-int _write_sysctl_file(char * fn, int val)
-{
-    FILE * fp = fopen(fn, "w+");
-
-    if (fp)
-    {
-        fprintf(fp, "%d", val);
-        fclose(fp);
-    }
-    
-    return 0;
-}
