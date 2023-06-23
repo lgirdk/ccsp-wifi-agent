@@ -2485,6 +2485,9 @@ Radio_GetParamIntValue
     if (strcmp(ParamName, "TransmitPower") == 0)
     {
         /* collect value */
+#if defined(_LG_MV1_QCA_)
+        pWifiRadioFull->Cfg.TransmitPower = CosaDmlWiFiRadioGetTrasmitPowerPercent(pWifiRadioFull->Cfg.InstanceNumber-1);
+#endif
         *pInt = pWifiRadioFull->Cfg.TransmitPower;
         
         return TRUE;
