@@ -168,6 +168,5 @@ int  __v6addr_mismatches_v6pre(char * v6addr,char * v6pre);
 int  __v6pref_mismatches(char * v6pref1,char * v6pref2);
 int CosaDmlV6AddrIsEqual(char * p_addr1, char * p_addr2);
 int CosaDmlV6PrefIsEqual(char * p_pref1, char * p_pref2);
-int _write_sysctl_file(char * fn, int val);
 ANSC_STATUS CosaUtilStringToHex(char *str, unsigned char *hex_str, int hex_sz);
 #endif
