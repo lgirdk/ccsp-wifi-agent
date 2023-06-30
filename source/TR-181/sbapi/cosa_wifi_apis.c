@@ -7858,6 +7858,7 @@ void *wait_for_brlan1_up()
     {
         apIndex = getPrivateApFromRadioIndex(i);
         wifi_getSSIDName(apIndex,SSID_CUR[i]);
+        wifi_getApSsidAdvertisementEnable(apIndex, &AdvEnable[i]);
         wifi_pushSsidAdvertisementEnable(apIndex, AdvEnable[i]);
         CcspTraceInfo(("\n"));
         get_uptime(&uptime);
