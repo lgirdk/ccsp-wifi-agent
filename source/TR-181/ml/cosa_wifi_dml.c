@@ -9185,19 +9185,6 @@ AccessPoint_GetParamBoolValue
 
     if (strcmp(ParamName, "SSIDAdvertisementEnabled") == 0)
     {
-#ifdef WIFI_HAL_VERSION_3
-        if(wifi_getApSsidAdvertisementEnable(apIndex, &boolOutput) != 0)
-        {
-            return FALSE;
-        }
-        pWifiAp->AP.Cfg.SSIDAdvertisementEnabled = boolOutput;
-        if (!pWifiAp->AP.isApChanged) {
-                  vapInfo->u.bss_info.showSsid = boolOutput;
-        }
-        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s for apIndex : %d vapInfo_showSsid : %d dml_SSIDAdvertisementEnabled : %d\n",
-                __FUNCTION__, apIndex, vapInfo->u.bss_info.showSsid, pWifiAp->AP.Cfg.SSIDAdvertisementEnabled);
-#endif
-
         /* collect value */
         *pBool = pWifiAp->AP.Cfg.SSIDAdvertisementEnabled;
         return TRUE;
