@@ -81,6 +81,28 @@ else
 	}
 fi
 
+modelnum=$(dmcli eRT retv Device.DeviceInfo.ModelName)
+
+if [ "$modelnum" = "CH7465LG" ]; then
+	iface_24="cei00"
+	iface_5="wdev0ap0"
+	apenable_24="AP_ENABLE:=1"
+	apenable_5="AP_ENABLE_17:=1"
+	secmode_24="AP_SECMODE:=WPA"
+	secmode_5="AP_SECMODE_17:=WPA"
+	wpsenable_24="AP_WPS_BTN_2DOT4Gv2:=1"
+	wpsenable_5="AP_WPS_BTN_5Gv2:=1"
+else
+	iface_24="ath0"
+	iface_5="ath8"
+	apenable_24="AP_ENABLE:=1"
+	apenable_5="AP_ENABLE_9:=1"
+	secmode_24="AP_SECMODE:=WPA"
+	secmode_5="AP_SECMODE_9:=WPA"
+	wpsenable_24="WPS_ENABLE:=2"
+	wpsenable_5="WPS_ENABLE_9:=2"
+fi
+
 restart_wifi()
 {
 	touch /tmp/process_monitor_restartwifi
@@ -260,6 +282,7 @@ interface=1
 		echo_t "RDKB_PROCESS_CRASHED : WiFiAgent_process is not running, need restart"
 		t2CountNotify "WIFI_SH_WIFIAGENT_Restart"
 		t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error,WiFiAgent process is not running"
+		echo "`date +"%Y-%m-%d %H:%M:%S"` [3][WI] Wi-Fi system or subsystem restart due to error,WiFiAgent process is not running" >> /tmp/channel_event_1.log
 		restart_wifi
 	else
 	  radioenable=`dmcli eRT getv Device.WiFi.Radio.1.Enable`
@@ -271,6 +294,7 @@ interface=1
 		if [ "$wifi_name_error" != "" ]; then
 		  echo_t "WiFi process is not responding. Restarting it"
 		  t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error, WiFi process is not responding"
+		  echo "`date +"%Y-%m-%d %H:%M:%S"` [3][WI] Wi-Fi system or subsystem restart due to error, WiFi process is not responding" >> /tmp/channel_event_1.log
 		  kill -9 $WiFi_PID
 		  restart_wifi
 		fi
@@ -376,7 +400,7 @@ interface=1
                     else
 			   check_interface_ath1=`dmcli eRT getv Device.WiFi.SSID.2.Enable | grep true`
                            if [ "$check_interface_ath1" != "" ]; then
-	                      beacon_swba_intr=`apstats -v -i ath1 | grep "Total beacons sent to fw in SWBA intr" | awk '{print $10}'`
+	                      beacon_swba_intr=`apstats -v -i $iface_5 | grep "Total beacons sent to fw in SWBA intr" | awk '{print $10}'`
                               if [ "$beacon_swba_intr" == "$prev_beacon_swba_intr" ] && [ "$beacon_swba_intr" != "0" ]; then
                                  echo_t "5G_FW_UNRESPONSIVE"
                                  if [ "$MODEL_NUM" == "TG1682G" ] || [ "$MODEL_NUM" == "DPC3941" ] || [ "$MODEL_NUM" == "DPC3941B" ] || [ "$MODEL_NUM" == "DPC3939B" ]; then
@@ -481,21 +505,21 @@ interface=1
                         			echo_t "TKIP has backslash"
                                                 continue      
                 			fi  
-					check_ap_enable5=`grep AP_ENABLE_2:=1 /tmp/cfg_list.txt | cut -d"=" -f2`
-					check_interface_up5=`ifconfig | grep -v ath1[0-9] | grep ath1`
-					check_ap_enable2=`grep AP_ENABLE:=1 /tmp/cfg_list.txt | cut -d"=" -f2`
+					check_ap_enable5=`grep $apenable_5 /tmp/cfg_list.txt | cut -d"=" -f2`
+					check_interface_up5=`ifconfig | grep -v $iface_5[0-9] | grep $iface_5`
+					check_ap_enable2=`grep $apenable_24 /tmp/cfg_list.txt | cut -d"=" -f2`
 					check_ap_enable_ath2=`grep AP_ENABLE_3:=1 /tmp/cfg_list.txt | cut -d"=" -f2`
-					check_interface_up2=`ifconfig | grep ath0`
+					check_interface_up2=`ifconfig | grep $iface_24`
 					check_interface_up_ath2=`ifconfig | grep ath2`
-					check_interface_iw2=`iwconfig ath0 | grep Access | awk '{print $6}'`
-					check_interface_iw5=`iwconfig ath1 | grep Access | awk '{print $6}'`
+					check_interface_iw2=`iwconfig $iface_24 | grep Access | awk '{print $6}'`
+					check_interface_iw5=`iwconfig $iface_5 | grep Access | awk '{print $6}'`
 					check_interface_iw_ath2=`iwconfig ath2 | grep Access | awk '{print $6}'`
-					check_hostapd_ath0=`grep ath0 /proc/$(pidof hostapd)/cmdline`
-					check_hostapd_ath1=`grep -v ath1[0-9] /proc/$(pidof hostapd)/cmdline | grep ath1`
-					check_wps_ath0=`grep WPS_ENABLE:=2 /tmp/cfg_list.txt`
-					check_wps_ath1=`grep WPS_ENABLE_2:=2 /tmp/cfg_list.txt`
-					check_ap_sec_mode_2=`grep AP_SECMODE:=WPA /tmp/cfg_list.txt`
-					check_ap_sec_mode_5=`grep AP_SECMODE_2:=WPA /tmp/cfg_list.txt`
+					check_hostapd_ath0=`grep $iface_24 /proc/$(pidof hostapd)/cmdline`
+					check_hostapd_ath1=`grep -v $iface_5[0-9] /proc/$(pidof hostapd)/cmdline | grep $iface_5`
+					check_wps_ath0=`grep $wpsenable_24 /tmp/cfg_list.txt`
+					check_wps_ath1=`grep $wpsenable_5 /tmp/cfg_list.txt`
+					check_ap_sec_mode_2=`grep $secmode_24 /tmp/cfg_list.txt`
+					check_ap_sec_mode_5=`grep $secmode_5 /tmp/cfg_list.txt`
 					if [ "$isNativeHostapdDisabled" != "1" ] && [ "$check_radio_enable2" == "1" ] && [ "$check_ap_enable2" == "1" ] && [ "$check_ap_sec_mode_2" != "" ] && [ "$check_hostapd_ath0" == "" ]; then
 						echo_t "Hostapd incorrect config"
 						incorrect_hostapd_config=1
@@ -507,30 +531,30 @@ interface=1
 					
 
 					if [ "$check_ap_enable2" == "1" ] && [ "$check_radio_enable2" == "1" ] && [ "$check_interface_iw2" == "Not-Associated" ]; then
-						echo_t "ath0 is Not-Associated, flapping ath0 interface"
-						ifconfig ath0 down
-						ifconfig ath0 up
-                                                check_interface_iw2=`iwconfig ath0 | grep Access | awk '{print $6}'`
+						echo_t "$iface_24 is Not-Associated, flapping $iface_24 interface"
+						ifconfig $iface_24 down
+						ifconfig $iface_24 up
+                                                check_interface_iw2=`iwconfig $iface_24 | grep Access | awk '{print $6}'`
 
 						#RDKB-30035 MOD START
 						if [ "$check_interface_iw2" == "Not-Associated" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
-								echo_t "ath0 is Not-Associated, restarting radios"
-								WIFI_REBOOT_REASON="ath0 is Not-Associated"
+								echo_t "$iface_24 is Not-Associated, restarting radios"
+								WIFI_REBOOT_REASON="$iface_24 is Not-Associated"
 								WIFI_RESTART=1
 						fi
 					fi
 
 					if [ "$check_ap_enable5" == "1" ] && [ "$check_radio_enable5" == "1" ] && [ "$check_interface_iw5" == "Not-Associated" ]; then
-						echo_t "ath1 is Not-Associated, flapping ath1 interface"
-						ifconfig ath1 down
-						ifconfig ath1 up
-                                                check_interface_iw5=`iwconfig ath1 | grep Access | awk '{print $6}'`
+						echo_t "$iface_5 is Not-Associated, flapping $iface_5 interface"
+						ifconfig $iface_5 down
+						ifconfig $iface_5 up
+                                                check_interface_iw5=`iwconfig $iface_5 | grep Access | awk '{print $6}'`
 
 						#RDKB-30035 START
 						if [ "$check_interface_iw5" == "Not-Associated" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
 						#RDKB-30035 END
-								echo_t "ath1 is Not-Associated, restarting radios"
-								WIFI_REBOOT_REASON="ath1 is Not-Associated"
+								echo_t "$iface_5 is Not-Associated, restarting radios"
+								WIFI_REBOOT_REASON="$iface_5 is Not-Associated"
 								WIFI_RESTART=1
 						fi
 					fi
@@ -551,23 +575,23 @@ interface=1
 
 
 					if [ "$check_ap_enable5" == "1" ] && [ "$check_radio_enable5" == "1" ] && [ "$check_interface_up5" == "" ] && [ "$(pidof hostapd)" != "" ]; then
-						check_interface_up5=`ifconfig | grep -v ath1[0-9] | grep ath1`
+						check_interface_up5=`ifconfig | grep -v $iface_5[0-9] | grep $iface_5`
 
 						#RDKB-30035 START
 						if [ "$check_interface_up5" == "" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
-							echo_t "ath1 is down, restarting radios"
-							WIFI_REBOOT_REASON="ath1 is down"
+							echo_t "$iface_5 is down, restarting radios"
+							WIFI_REBOOT_REASON="$iface_5 is down"
 							WIFI_RESTART=1
 						fi
 					fi
 				
 					if [ "$check_ap_enable2" == "1" ] && [ "$check_radio_enable2" == "1" ] && [ "$check_interface_up2" == "" ] && [ "$(pidof hostapd)" != "" ]; then
-						check_interface_up2=`ifconfig | grep ath0`
+						check_interface_up2=`ifconfig | grep $iface_24`
 
 						#RDKB-30035 START
 						if [ "$check_interface_up2" == "" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
-							echo_t "ath0 is down, restarting radios"
-							WIFI_REBOOT_REASON="ath0 is down"
+							echo_t "$iface_24 is down, restarting radios"
+							WIFI_REBOOT_REASON="$iface_24 is down"
 							WIFI_RESTART=1
 						fi
 					fi
@@ -575,14 +599,14 @@ interface=1
                                         if [ $time -eq 600 ] || [  $time -eq 1200 ] || [  $time -eq 1800 ]; then
 						if [ "$check_ap_enable2" == "1" ]; then
 
-						check_apstats_iw2_p_req=`apstats -v -i ath0 | grep "Rx Probe request" | awk '{print $5}'`
-						check_apstats_iw2_p_res=`apstats -v -i ath0 | grep "Tx Probe response" | awk '{print $5}'`
-						check_apstats_iw2_au_req=`apstats -v -i ath0 | grep "Rx auth request" | awk '{print $5}'`
-						check_apstats_iw2_au_resp=`apstats -v -i ath0 | grep "Tx auth response" | awk '{print $5}'`
-						check_apstats_iw2_tx_pkts=`apstats -v -i ath0 | grep "Tx Data Packets" | awk '{print $5}'`
-						check_apstats_iw2_tx_bytes=`apstats -v -i ath0 | grep "Tx Data Bytes" | awk '{print $5}'`
-						check_apstats_iw2_rx_pkts=`apstats -v -i ath0 | grep "Rx Data Packets" | awk '{print $5}'`
-						check_apstats_iw2_rx_bytes=`apstats -v -i ath0 | grep "Rx Data Bytes" | awk '{print $5}'`
+						check_apstats_iw2_p_req=`apstats -v -i $iface_24 | grep "Rx Probe request" | awk '{print $5}'`
+						check_apstats_iw2_p_res=`apstats -v -i $iface_24 | grep "Tx Probe response" | awk '{print $5}'`
+						check_apstats_iw2_au_req=`apstats -v -i $iface_24 | grep "Rx auth request" | awk '{print $5}'`
+						check_apstats_iw2_au_resp=`apstats -v -i $iface_24 | grep "Tx auth response" | awk '{print $5}'`
+						check_apstats_iw2_tx_pkts=`apstats -v -i $iface_24 | grep "Tx Data Packets" | awk '{print $5}'`
+						check_apstats_iw2_tx_bytes=`apstats -v -i $iface_24 | grep "Tx Data Bytes" | awk '{print $5}'`
+						check_apstats_iw2_rx_pkts=`apstats -v -i $iface_24 | grep "Rx Data Packets" | awk '{print $5}'`
+						check_apstats_iw2_rx_bytes=`apstats -v -i $iface_24 | grep "Rx Data Bytes" | awk '{print $5}'`
 
 						echo_t "2G_ProbeRequest:$check_apstats_iw2_p_req" >> /rdklogs/logs/wifihealth.txt
 						echo_t "2G_ProbeResponse:$check_apstats_iw2_p_res" >> /rdklogs/logs/wifihealth.txt
@@ -599,19 +623,19 @@ interface=1
 						echo_t "2G_Rx_Packet_Delta:`expr $check_apstats_iw2_rx_pkts - $prev_apstats_iw2_rx_pkts`" >> /rdklogs/logs/wifihealth.txt
 						prev_apstats_iw2_rx_pkts=$check_apstats_iw2_rx_pkts
 
-						iwpriv ath0 get_dl_fa_stats						 
+						iwpriv $iface_24 get_dl_fa_stats						 
 						fi
 
 						if [ "$check_ap_enable5" == "1" ]; then
 
-						check_apstats_iw5_p_req=`apstats -v -i ath1 | grep "Rx Probe request" | awk '{print $5}'`
-						check_apstats_iw5_p_res=`apstats -v -i ath1 | grep "Tx Probe response" | awk '{print $5}'`
-						check_apstats_iw5_au_req=`apstats -v -i ath1 | grep "Rx auth request" | awk '{print $5}'`
-						check_apstats_iw5_au_resp=`apstats -v -i ath1 | grep "Tx auth response" | awk '{print $5}'`
-						check_apstats_iw5_tx_pkts=`apstats -v -i ath1 | grep "Tx Data Packets" | awk '{print $5}'`
-						check_apstats_iw5_tx_bytes=`apstats -v -i ath1 | grep "Tx Data Bytes" | awk '{print $5}'`
-						check_apstats_iw5_rx_pkts=`apstats -v -i ath1 | grep "Rx Data Packets" | awk '{print $5}'`
-						check_apstats_iw5_rx_bytes=`apstats -v -i ath1 | grep "Rx Data Bytes" | awk '{print $5}'`
+						check_apstats_iw5_p_req=`apstats -v -i $iface_5 | grep "Rx Probe request" | awk '{print $5}'`
+						check_apstats_iw5_p_res=`apstats -v -i $iface_5 | grep "Tx Probe response" | awk '{print $5}'`
+						check_apstats_iw5_au_req=`apstats -v -i $iface_5 | grep "Rx auth request" | awk '{print $5}'`
+						check_apstats_iw5_au_resp=`apstats -v -i $iface_5 | grep "Tx auth response" | awk '{print $5}'`
+						check_apstats_iw5_tx_pkts=`apstats -v -i $iface_5 | grep "Tx Data Packets" | awk '{print $5}'`
+						check_apstats_iw5_tx_bytes=`apstats -v -i $iface_5 | grep "Tx Data Bytes" | awk '{print $5}'`
+						check_apstats_iw5_rx_pkts=`apstats -v -i $iface_5 | grep "Rx Data Packets" | awk '{print $5}'`
+						check_apstats_iw5_rx_bytes=`apstats -v -i $iface_5 | grep "Rx Data Bytes" | awk '{print $5}'`
 
 						echo_t "5G_ProbeRequest:$check_apstats_iw5_p_req" >> /rdklogs/logs/wifihealth.txt
 						echo_t "5G_ProbeResponse:$check_apstats_iw5_p_res" >> /rdklogs/logs/wifihealth.txt
@@ -626,7 +650,7 @@ interface=1
 						echo_t "5G_Rx_Packet_Delta:`expr $check_apstats_iw5_rx_pkts - $prev_apstats_iw5_rx_pkts`" >> /rdklogs/logs/wifihealth.txt
 						prev_apstats_iw5_rx_pkts=$check_apstats_iw5_rx_pkts
 
-						iwpriv ath1 get_dl_fa_stats
+						iwpriv $iface_5 get_dl_fa_stats
 						fi
 						vap_activity=`dmesg | grep VAP_ACTIVITY_ath0 | tail -1`
 						if [ "$vap_activity" != "" ] ; then
@@ -695,9 +719,9 @@ interface=1
 							echo_t "Duplicate AID issue seen"
 						fi
 						check_dmesg_duplicate_aid="$tmp"
-                                                wlanconfig ath0 list sta | grep -v "AID" > /tmp/aid
+                                                wlanconfig $iface_24 list sta | grep -v "AID" > /tmp/aid
 						awk 'x[$2]++ == 1 { print  "WLAN_CONFIG_AID_2G is duplicated"}' /tmp/aid >> /rdklogs/logs/AtomConsolelog.txt.0
-                                                wlanconfig ath1 list sta | grep -v "AID" > /tmp/aid
+                                                wlanconfig $iface_5 list sta | grep -v "AID" > /tmp/aid
 						awk 'x[$2]++ == 1 { print  "WLAN_CONFIG_AID_5G is duplicated"}' /tmp/aid >> /rdklogs/logs/AtomConsolelog.txt.0
 
                                                 tmp=`dmesg | grep "ath_bstuck_tasklet: stuck beacon"`
@@ -803,6 +827,7 @@ interface=1
                                         FASTDOWN_COUNTER=0
 					kill -9 $APUP_PID
 					t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error, APUP stuck"
+					echo "`date +"%Y-%m-%d %H:%M:%S"` [3][WI] Wi-Fi system or subsystem restart due to error, APUP stuck" >> /tmp/channel_event_1.log
                                         restart_wifi
 					#WIFI_RESTART=1
 				fi
@@ -841,6 +866,7 @@ interface=1
 						echo_t "resetting radios"
 						dmcli eRT setv Device.X_CISCO_COM_DeviceControl.RebootDevice string Wifi
 						t2ValNotify "EVT_WIFI_RESTART_split" "Wi-Fi system or subsystem restart due to error, $WIFI_REBOOT_REASON"
+						echo "`date +"%Y-%m-%d %H:%M:%S"` [3][WI] Wi-Fi system or subsystem restart due to error,$WIFI_REBOOT_REASON" >> /tmp/channel_event_1.log
 						HOSTAPD_RESTART_COUNTER=$(($HOSTAPD_RESTART_COUNTER + 1))
                                                 sleep 120
                                                 break
@@ -852,8 +878,8 @@ interface=1
 				done
 				#RDKB-30035 START
 				if [ "$isNativeHostapdDisabled" != "1" ] && [ "$(pidof hostapd)" == "" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ]; then
-                                	ifconfig ath0 up
-					ifconfig ath1 up
+                                	ifconfig $iface_24 up
+					ifconfig $iface_5 up
 					HOSTAPD_RESTART_COUNTER=$(($HOSTAPD_RESTART_COUNTER + 1))
                                         if [ "`syscfg get mesh_ovs_enable`" == "true" ]; then ifconfig eth_udma0 down; fi
 					killall hostapd; rm /var/run/hostapd/*; sleep 2; hostapd `cat /tmp/conf_filename` -e /tmp/entropy -P /tmp/hostapd.pid 2>&1
