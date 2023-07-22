@@ -507,7 +507,7 @@ Accounting_SetParamStringValue
 
     if (strcmp(ParamName, "Secret") == 0)
     {
-        if ( AnscEqualString(pString, pWifiApAcct->Cfg.AcctSecret, TRUE) )
+        if (strcmp(pString, pWifiApAcct->Cfg.AcctSecret) == 0)
             return TRUE;
 
         /* save update to backup */
@@ -518,7 +518,7 @@ Accounting_SetParamStringValue
 
     if (strcmp(ParamName, "SecondarySecret") == 0)
     {
-        if ( AnscEqualString(pString, pWifiApAcct->Cfg.SecondaryAcctSecret, TRUE) )
+        if (strcmp(pString, pWifiApAcct->Cfg.SecondaryAcctSecret) == 0)
             return TRUE;
 
         /* save update to backup */
@@ -529,7 +529,7 @@ Accounting_SetParamStringValue
 
     if (strcmp(ParamName, "ServerIPAddr") == 0)
     {
-        if ( AnscEqualString(pString, pWifiApAcct->Cfg.AcctServerIPAddr, TRUE) )
+        if (strcmp(pString, pWifiApAcct->Cfg.AcctServerIPAddr) == 0)
             return TRUE;
 
         /* save update to backup */
@@ -540,7 +540,7 @@ Accounting_SetParamStringValue
 
     if (strcmp(ParamName, "SecondaryServerIPAddr") == 0)
     {
-        if ( AnscEqualString(pString, pWifiApAcct->Cfg.SecondaryAcctServerIPAddr, TRUE) )
+        if (strcmp(pString, pWifiApAcct->Cfg.SecondaryAcctServerIPAddr) == 0)
             return TRUE;
 
         /* save update to backup */
@@ -649,7 +649,7 @@ Accounting_Commit
 
         sprintf(PathName, "Device.WiFi.SSID.%lu.", pSSIDLinkObj->InstanceNumber);
 
-        if ( AnscEqualString(pWifiAp->AP.Cfg.SSID, PathName, TRUE) )
+        if (strcmp(pWifiAp->AP.Cfg.SSID, PathName) == 0)
         {
             break;
         }
@@ -711,7 +711,7 @@ Accounting_Rollback
 
         sprintf(PathName, "Device.WiFi.SSID.%lu.", pLinkObjSsid->InstanceNumber);
 
-        if ( AnscEqualString(pWifiAp->AP.Cfg.SSID, PathName, TRUE) )
+        if (strcmp(pWifiAp->AP.Cfg.SSID, PathName) == 0)
         {
             break;
         }
