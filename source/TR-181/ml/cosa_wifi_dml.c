@@ -8796,7 +8796,7 @@ WifiSupportedRates_SetParamStringValue
             }
         }
 
-        if(AnscEqualString(pWifiSsidSupRate->disableBasicRates, pValue, TRUE))
+        if (strcmp(pWifiSsidSupRate->disableBasicRates, pValue) == 0)
         {
             return  TRUE;
         }
@@ -8850,7 +8850,7 @@ WifiSupportedRates_SetParamStringValue
             }
         }
 
-        if(AnscEqualString(pWifiSsidSupRate->disableSupportedRates, pValue, TRUE))
+        if (strcmp(pWifiSsidSupRate->disableSupportedRates, pValue) == 0)
         {
             return  TRUE;
         }
@@ -20951,7 +20951,7 @@ RadiusSettings_GetParamUlongValue
         pSSIDLinkObj = ACCESS_COSA_CONTEXT_LINK_OBJECT(pSLinkEntry);
 
         sprintf(PathName, "Device.WiFi.SSID.%lu.", pSSIDLinkObj->InstanceNumber);
-        if ( AnscEqualString(pWifiAp->AP.Cfg.SSID, PathName, TRUE) )
+        if (strcmp(pWifiAp->AP.Cfg.SSID, PathName) == 0)
         {
             break;
         }
