@@ -20160,12 +20160,12 @@ CosaDmlWiFiApRadiusCfg
        CcspTraceInfo(("%s pStoredCfg is NULL \n", __FUNCTION__));
        return ANSC_STATUS_FAILURE;
     }
-    if (AnscEqualString(pCfg->cOperatorName, pStoredCfg->cOperatorName, FALSE)) {
+    if (strcasecmp(pCfg->cOperatorName, pStoredCfg->cOperatorName) == 0) {
         AnscCopyString(sWiFiDmlApSecurityStored[wlanIndex].Cfg.cOperatorName, pCfg->cOperatorName);
         enable_reset_radio_flag(wlanIndex);
     }
 
-    if (AnscEqualString(pCfg->cLocationData, pStoredCfg->cLocationData, FALSE)) {
+    if (strcasecmp(pCfg->cLocationData, pStoredCfg->cLocationData) == 0) {
         AnscCopyString(sWiFiDmlApSecurityStored[wlanIndex].Cfg.cLocationData, pCfg->cLocationData);
         enable_reset_radio_flag(wlanIndex);
     }
