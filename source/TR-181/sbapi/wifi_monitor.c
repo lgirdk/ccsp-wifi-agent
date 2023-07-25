@@ -1218,7 +1218,7 @@ int upload_client_telemetry_data(void *arg)
             }
         }else if (isVapXhs(i))
         {
-            snprintf(eventName, sizeof(eventName), "xh_cnt_%u_split", convertRadioIndexToFrequencyNum(getRadioIndexFromAp(i)));
+            snprintf(eventName, sizeof(eventName), "xh_cnt_%u_split", getRadioIndexFromAp(i)+1);
             t2_event_d(eventName, num_devs);
 
         }else if (isVapMesh(i))
