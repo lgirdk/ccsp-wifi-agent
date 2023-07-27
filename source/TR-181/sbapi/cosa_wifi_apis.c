@@ -10148,7 +10148,7 @@ ANSC_STATUS CosaDmlWiFiSetDFS(BOOLEAN bValue)
     }
 
     wifi_setRadioDfsEnable(RADIO_5G, bValue);
-#if defined(_COSA_BCM_ARM_) && defined(_XB7_PRODUCT_REQ_)
+#if defined(_COSA_BCM_ARM_) && (defined(_XB7_PRODUCT_REQ_) || defined(_CBR2_PRODUCT_REQ_))
     wifi_apply();
 #endif
 #endif
@@ -10206,7 +10206,7 @@ ANSC_STATUS CosaDmlWiFiGetDFS(BOOLEAN *pbValue)
         if(*pbValue != dfsEnable) {
             CcspWifiTrace(("RDK_LOG_INFO,WIFI %s: mismatch in rfc:%d and driver:%d values\n",__FUNCTION__, *pbValue, dfsEnable));
             wifi_setRadioDfsEnable(RADIO_5G, *pbValue);
-#if defined(_COSA_BCM_ARM_) && defined(_XB7_PRODUCT_REQ_)
+#if defined(_COSA_BCM_ARM_) && (defined(_XB7_PRODUCT_REQ_) || defined(_CBR2_PRODUCT_REQ_))
             wifi_apply();
 #endif
         }
