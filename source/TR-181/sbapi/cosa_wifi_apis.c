@@ -18758,6 +18758,9 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
         {
             wifi_setApSecurityKeyPassphrase(6, (char*)pCfg->KeyPassphrase);
             wifi_setApSecurityKeyPassphrase(7, (char*)pCfg->KeyPassphrase);
+#ifdef WIFI_HAL_VERSION_3
+            snprintf(wifiVapInfo->u.bss_info.security.u.key.key, sizeof(wifiVapInfo->u.bss_info.security.u.key.key), "%s", (char *) pCfg->KeyPassphrase);
+#endif
         }
         #ifdef LG_MV2_PLUS
         wifi_apply();
