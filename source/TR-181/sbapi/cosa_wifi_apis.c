@@ -12888,7 +12888,21 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
 #if defined(_COSA_BCM_ARM_)
             if (vapIndex == 6 || vapIndex == 7)
             {
-                Guest_Interface_Status(wifiVapInfo->u.bss_info.enabled);
+                BOOL bssEnable = wifiVapInfo->u.bss_info.enabled;
+                wifi_vap_info_t *wifiVapInfo_Idx = NULL;
+                // Disable the guest network interface if both the radios are disabled.
+                if (vapIndex == 6)
+                {
+                    wifiVapInfo_Idx = getVapInfo(7);
+                }
+                if (vapIndex == 7)
+                {
+                    wifiVapInfo_Idx = getVapInfo(6);
+                }
+                if (wifiVapInfo_Idx) {
+                    bssEnable = (wifiVapInfo_Idx->u.bss_info.enabled != true && bssEnable != true) ? false : true;
+                }
+                Guest_Interface_Status(bssEnable);
             }
 #endif
             memcpy(&tmpWifiVapInfoMap.vap_array[vapArrayIndex], wifiVapInfo, sizeof(wifi_vap_info_t));
