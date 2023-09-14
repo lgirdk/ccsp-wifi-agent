@@ -1872,7 +1872,9 @@ int webconf_apply_wifi_param_handler (webconf_wifi_t *pssid_entry, pErr execRetV
 
     for (i = 0; i < getTotalNumberVAPs(); i++)
     {
-        if ( (ssid == WIFI_WEBCONFIG_PRIVATESSID && isVapPrivate(i)) || (ssid == WIFI_WEBCONFIG_HOMESSID && isVapXhs(i)) )
+        //Support for 6GHz is not available for XHS vap
+        if ( (ssid == WIFI_WEBCONFIG_PRIVATESSID && isVapPrivate(i)) || (ssid == WIFI_WEBCONFIG_HOMESSID && isVapXhs(i) &&
+               (strncmp((CHAR *)getVAPName(i), "iot_ssid_6g", strlen("iot_ssid_6g")) != 0 )) )
         {
 			radioIndex = getRadioIndexFromAp(i);
 			ccspWifiDbgPrint(CCSP_WIFI_TRACE, " %s For radioIndex %d vapIndex : %d \n", __FUNCTION__, radioIndex, i);
@@ -1989,7 +1991,9 @@ int webconf_validate_wifi_param_handler (webconf_wifi_t *pssid_entry, pErr execR
     for (i = 0; i < getTotalNumberVAPs(); i++) 
     {
         if (pssid_entry->ssid[getRadioIndexFromAp(i)].configured) {
-            if ( (ssid == WIFI_WEBCONFIG_PRIVATESSID && isVapPrivate(i)) || (ssid == WIFI_WEBCONFIG_HOMESSID && isVapXhs(i)) )
+            //Support for 6GHz is not available for XHS vap
+            if ( (ssid == WIFI_WEBCONFIG_PRIVATESSID && isVapPrivate(i)) || (ssid == WIFI_WEBCONFIG_HOMESSID && isVapXhs(i) &&
+               (strncmp((CHAR *)getVAPName(i), "iot_ssid_6g", strlen("iot_ssid_6g")) != 0 )) )
             {
 #else
     if (ssid == WIFI_WEBCONFIG_PRIVATESSID) {
@@ -2441,11 +2445,17 @@ int wifi_WebConfigSet(const void *buf, size_t len,uint8_t ssid)
 #endif
     } else if (ssid == WIFI_WEBCONFIG_HOMESSID) {
 #ifdef WIFI_HAL_VERSION_3
+        //Support for 6GHz is not available for XHS vap
         for (UINT radioIndex = 0; radioIndex < getNumberRadios(); ++radioIndex)
         {
+            wifi_radio_operationParam_t *radioOperation = getRadioOperationParam(radioIndex);
             UINT band = convertRadioIndexToFrequencyNum(radioIndex);
-            snprintf(ssid_str[radioIndex],sizeof(ssid_str[radioIndex]),"home_ssid_%ug",band);
-            snprintf(sec_str[radioIndex],sizeof(sec_str[radioIndex]),"home_security_%ug", band);
+            if(radioOperation->band != WIFI_FREQUENCY_6_BAND) {
+                snprintf(ssid_str[radioIndex],sizeof(ssid_str[radioIndex]),"home_ssid_%ug",band);
+                snprintf(sec_str[radioIndex],sizeof(sec_str[radioIndex]),"home_security_%ug", band);
+                CcspTraceError(("%s: ssid_str[%d]:%s sec_str[%d]:%s \n", __FUNCTION__, radioIndex, ssid_str[radioIndex],
+                        radioIndex, sec_str[radioIndex]));
+            }
         }
 #else
         snprintf(ssid_2g_str,sizeof(ssid_2g_str),"home_ssid_2g");
