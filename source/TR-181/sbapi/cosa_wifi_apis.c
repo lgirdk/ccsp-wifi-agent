@@ -14412,7 +14412,12 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
          pCfg->OperatingChannelBandwidth != pStoredCfg->OperatingChannelBandwidth ||
 #if !defined(_INTEL_BUG_FIXES_)
          pCfg->ExtensionChannel != pStoredCfg->ExtensionChannel ||
+#if defined(_LG_MV1_QCA_)
+         pCfg->Channel != pStoredCfg->Channel ||
+         pCfg->AutoChannelEnable != pStoredCfg->AutoChannelEnable ) // Change from ACS to mannual or vise versa, but without changing the channel
+#else
          pCfg->Channel != pStoredCfg->Channel )
+#endif
 #else
          pCfg->ExtensionChannel != pStoredCfg->ExtensionChannel ||
          pCfg->Channel != pStoredCfg->Channel || // Update pCfg->ExtensionChannel to VHT40+ or VHT40- when change channel in the same BW, like 40MHz
@@ -14650,6 +14655,10 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
                     {
                         chnMode = "11NGHT40MINUS";
                     }
+#if defined(_LG_MV1_QCA_)
+                    if (pCfg->AutoChannelEnable == TRUE)
+                        chnMode = "11NGHT40";
+#endif
                 } else // else 5GHz
                 {
                     if (pCfg->ExtensionChannel == COSA_DML_WIFI_EXT_CHAN_Above )
@@ -14659,6 +14668,10 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
                     {
                         chnMode = "11NAHT40MINUS";
                     }
+#if defined(_LG_MV1_QCA_)
+                    if (pCfg->AutoChannelEnable == TRUE)
+                        chnMode = "11NAHT40";
+#endif
                 }
             }
         } else if (pCfg->OperatingStandards&COSA_DML_WIFI_STD_ac
@@ -14679,6 +14692,10 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
                 {
                     chnMode = "11ACVHT40MINUS";
                 }
+#if defined(_LG_MV1_QCA_)
+                if (pCfg->AutoChannelEnable == TRUE)
+                    chnMode = "11ACVHT40";
+#endif
             } else if (pCfg->OperatingChannelBandwidth == COSA_DML_WIFI_CHAN_BW_80M)
             {
                 chnMode = "11ACVHT80";
@@ -14704,6 +14721,11 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
                 {
                     chnMode = "11AXHE40MINUS";
                 }
+                /* Atheros AR9300 driver doesn't support AX mode, but you need to take this into account when working with other platforms */
+#if defined(_LG_MV1_QCA_)
+                if (pCfg->AutoChannelEnable == TRUE)
+                    chnMode = "11AXHE40";
+#endif
             }
             else if (pCfg->OperatingChannelBandwidth == COSA_DML_WIFI_CHAN_BW_80M)
             {
