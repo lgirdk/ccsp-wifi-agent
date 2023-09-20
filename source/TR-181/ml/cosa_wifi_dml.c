@@ -5576,7 +5576,7 @@ Radio_Commit
             pthread_attr_destroy( attrp );
 	isHotspotSSIDIpdated = FALSE;
     }
-#ifdef _COSA_BCM_ARM_
+#ifdef _COSA_BCM_ARM_ && !defined(WIFI_HAL_VERSION_3)
     static BOOL guest_enable = FALSE;
     if (!guest_enable)
     {
