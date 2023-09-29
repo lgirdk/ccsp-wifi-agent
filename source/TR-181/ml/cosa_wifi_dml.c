@@ -10792,67 +10792,60 @@ AccessPoint_SetParamStringValue
 	
     if (strcmp(ParamName, "X_LGI-COM_ActiveTimeout") == 0)
     {
-        char strName[100];
+        char strCmd[512];
+        int indx = pLinkObj->InstanceNumber;
 
-        AnscCopyString(pWifiAp->ActiveTimeout, pString);
+#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
+        const char* strAddCronTask = "rpcclient2 'echo \"%d %d %d %d * "
+            " dmcli eRT setv Device.WiFi.SSID.%d.Enable bool false;"
+            " dmcli eRT setv Device.WiFi.AccessPoint.%d.X_LGI-COM_ActiveTimeout string \\\"\\\";"
+            " dmcli eRT setv Device.WiFi.Radio.%d.X_CISCO_COM_ApplySetting bool true;\""
+            " >> /var/spool/cron/crontabs/root'";
+#else
+        const char* strAddCronTask = "echo '%d %d %d %d * "
+            " dmcli eRT setv Device.WiFi.SSID.%d.Enable bool false;"
+            " dmcli eRT setv Device.WiFi.AccessPoint.%d.X_LGI-COM_ActiveTimeout string \"\";"
+            " dmcli eRT setv Device.WiFi.Radio.%d.X_CISCO_COM_ApplySetting bool true;'"
+            " >> /var/spool/cron/crontabs/root";
+#endif
 
-        if( Validate_SSID_Timeout(pString) == false )
+        if ((*pString != '\0') && (Validate_SSID_Timeout(pString) == false))
         {
-            fprintf(stderr, "Invalid SSID Timeout value: %s\n", pString);
+            CcspTraceError(("Invalid [%d].[%s] value: %s\n", indx, ParamName, pString));
             return FALSE;
         }
 
-        snprintf(strName, sizeof(strName), PATH_X_LGI_COM_ACTIVETIMEOUT, pLinkObj->InstanceNumber);
+        snprintf(strCmd, sizeof(strCmd), PATH_X_LGI_COM_ACTIVETIMEOUT, indx);
 
-        if( CCSP_SUCCESS != PSM_Set_Record_Value2(bus_handle, g_Subsystem, strName, ccsp_string, pWifiAp->ActiveTimeout) )
+        if (CCSP_SUCCESS != PSM_Set_Record_Value2(bus_handle, g_Subsystem, strCmd, ccsp_string, pString))
         {
-            fprintf(stderr, "PSM_Set_Record_Value2 failed to set %s\n", strName);
+            CcspTraceError(("PSM_Set_Record_Value2 failed to set %s\n", strCmd));
             return FALSE;
         }
         else
         {
-            int    iGnIndex24 = 7, iGnIndex50 = 8;
+            AnscCopyString(pWifiAp->ActiveTimeout, pString);
+
+            CcspTraceInfo(("Set [%d].[%s] Value[%s]\n", indx, ParamName, pWifiAp->ActiveTimeout));
 
             //remove the current entry from crontab, if any
 #if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
-            system("rpcclient2 'sed -i \'/Device.WiFi.SSID./d\' /var/spool/cron/crontabs/root'");
-            system("rpcclient2 'sed -i \'/Device.WiFi.Radio./d\' /var/spool/cron/crontabs/root'");
+            snprintf(strCmd, sizeof(strCmd), "rpcclient2 'sed -i \'/%d.X_LGI-COM_ActiveTimeout/d\' /var/spool/cron/crontabs/root'", indx);
 #else
-            system("sed -i '/Device.WiFi.SSID./d' /var/spool/cron/crontabs/root");
-            system("sed -i '/Device.WiFi.Radio./d' /var/spool/cron/crontabs/root");
+            snprintf(strCmd, sizeof(strCmd), "sed -i '/%d.X_LGI-COM_ActiveTimeout/d' /var/spool/cron/crontabs/root", indx);
 #endif
+            system(strCmd);
 
             if (pString[0] != '\0')
             {
                 int iMin, iHour, iDay, iMonth, iYear;
-                char strCronCmd[256];
 
                 //parse the time date values
                 sscanf(pString,"%d/%d/%d-%d:%d", &iDay, &iMonth, &iYear, &iHour, &iMin);
 
-                //prepare the crontab entry
-#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
-                snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient2 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
-                    iMin, iHour, iDay, iMonth, iGnIndex24);
-#else
-                sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.1.X_CISCO_COM_ApplySetting bool true' >> /var/spool/cron/crontabs/root",
-                    iMin, iHour, iDay, iMonth, iGnIndex24);
-#endif
+                snprintf(strCmd, sizeof(strCmd), strAddCronTask, iMin, iHour, iDay, iMonth, indx, indx, (indx % 2) == 0 ? 2 : 1);
 
-                //add the crontab entry
-                system(strCronCmd);
-
-                //prepare the next crontab entry
-#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
-                snprintf (strCronCmd, sizeof(strCronCmd), "rpcclient2 'echo \"%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting bool true\" >> /var/spool/cron/crontabs/root'",
-                    iMin, iHour, iDay, iMonth, iGnIndex50);
-#else
-                sprintf (strCronCmd, "echo '%d %d %d %d * dmcli eRT setvalue Device.WiFi.SSID.%d.Enable bool false; dmcli eRT setvalue Device.WiFi.Radio.2.X_CISCO_COM_ApplySetting bool true' >> /var/spool/cron/crontabs/root",
-                    iMin, iHour, iDay, iMonth, iGnIndex50);
-#endif
-
-                //add the next crontab entry
-                system(strCronCmd);
+                system(strCmd);
             }
         }
 
