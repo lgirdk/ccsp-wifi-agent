@@ -86,10 +86,12 @@ typedef struct {
     wifi_associated_dev_t  devs[MAX_ASSOCIATED_WIFI_DEVS];
 #endif
 } associated_devs_t;
+
 typedef struct {
-    mac_addr_t  sta_mac;
-	int 	reason;
+    mac_addr_t sta_mac;
+    int reason;
     unsigned int cli_CapableNumSpatialStreams;
+    int cli_RSSI;
 } auth_deauth_dev_t;
 
 typedef struct {

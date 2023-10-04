@@ -3585,6 +3585,7 @@ void process_connect	(unsigned int ap_index, auth_deauth_dev_t *dev)
 	sta->prev_cli_rx_retries = 0;
   
 	sta->dev_stats.cli_Active = true;
+	sta->dev_stats.cli_RSSI = dev->cli_RSSI;
         /*To avoid duplicate entries in hash map of different vAPs eg:RDKB-21582
           Also when clients moved away from a vAP and connect back to other vAP this will be usefull*/
 #ifdef WIFI_HAL_VERSION_3
@@ -5933,6 +5934,7 @@ int device_associated(int ap_index, wifi_associated_dev_t *associated_dev)
 		data->u.dev.sta_mac[3], data->u.dev.sta_mac[4], data->u.dev.sta_mac[5]);
 
 	data->u.dev.cli_CapableNumSpatialStreams = associated_dev->cli_CapableNumSpatialStreams;
+	data->u.dev.cli_RSSI = associated_dev->cli_RSSI;
 
 #if defined (FEATURE_CSI)
     csi_update_client_mac_status(data->u.dev.sta_mac, TRUE, ap_index); 
@@ -7930,7 +7932,8 @@ void process_active_msmt_diagnostics (int ap_index)
         pthread_mutex_lock(&g_monitor_module.lock);
         memcpy(sta->sta_mac, g_active_msmt.curStepData.DestMac, sizeof(mac_addr_t));
         sta->updated = true;
-        sta->dev_stats.cli_Active = true;
+        //Set cli_Active to false for offline clients. or remove the line as it will be updated to false by process_diagnostics function
+        sta->dev_stats.cli_Active = false;
         hash_map_put(sta_map, strdup(to_sta_key(g_active_msmt.curStepData.DestMac, sta_key)), sta);
         memcpy(&sta->dev_stats.cli_MACAddress, g_active_msmt.curStepData.DestMac, sizeof(mac_addr_t));
         pthread_mutex_unlock(&g_monitor_module.lock);
