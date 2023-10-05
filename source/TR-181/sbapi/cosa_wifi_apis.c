@@ -10274,7 +10274,21 @@ ANSC_STATUS CosaDmlWiFiSetDFS(BOOLEAN bValue)
         }
         ((CCSP_MESSAGE_BUS_INFO *)bus_handle)->freefunc(strValue);
     }
-
+    if (bValue == false) {
+        ULONG channel = 0;
+        wifi_getRadioChannel(RADIO_5G, &channel);
+        char channelBW[64] = {'\0'};
+        wifi_getRadioOperatingChannelBandwidth(RADIO_5G, channelBW);
+        if(!strcmp(channelBW, "160MHz")) {
+            wifi_setRadioOperatingChannelBandwidth(RADIO_5G, "80MHz");
+            CcspWifiTrace(("RDK_LOG_INFO, %s DFS feature is disabled. So changing 160MHz BW to 80 MHz BW\n",__FUNCTION__));
+        }
+        if ((channel >= 52) && (channel < 149)) {
+            CcspWifiTrace(("RDK_LOG_INFO, %s DFS feature is disabled. So changing current DFS %d channel to default\n",__FUNCTION__, channel));
+            channel = 36;
+            wifi_setRadioChannel(RADIO_5G, channel);
+        }
+    }
     wifi_setRadioDfsEnable(RADIO_5G, bValue);
 #if defined(_COSA_BCM_ARM_) && (defined(_XB7_PRODUCT_REQ_) || defined(_CBR2_PRODUCT_REQ_))
     wifi_apply();
