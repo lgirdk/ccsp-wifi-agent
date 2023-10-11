@@ -3418,6 +3418,125 @@ void *RegisterWiFiConfigureCallBack(void *par)
 }
 
 #if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
+typedef struct emctl_notification_s {
+    int comp_cnt;
+    componentStruct_t **comps;
+    parameterValStruct_t val;
+} emctl_notification_t;
+
+static void *notification_handler(void *farg)
+{
+    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+    emctl_notification_t *notification = (emctl_notification_t *)farg;
+    char *fault = NULL;
+    int rc;
+
+    CcspTraceError(("RDK_LOG_ERROR,WIFI-%s: ENTER\n", __FUNCTION__));
+    rc = CcspBaseIf_setParameterValues(
+        bus_handle,
+        notification->comps[0]->componentName,
+        notification->comps[0]->dbusPath,
+        0, 0,
+        &notification->val,
+        1, TRUE,
+        &fault);
+    if (rc != CCSP_SUCCESS) {
+        CcspTraceError(("RDK_LOG_ERROR,WIFI-%s: Set parameter values failed (%d), %s\n",
+            __FUNCTION__, rc, fault ? fault :  "unknown"));
+    }
+
+    if (fault) {
+        bus_info->freefunc(fault);
+    }
+    if (notification->val.parameterName) {
+        free(notification->val.parameterName);
+    }
+    if (notification->val.parameterValue) {
+        free(notification->val.parameterValue);
+    }
+    if (notification->comps != NULL) {
+        free_componentStruct_t(bus_handle, notification->comp_cnt, notification->comps);
+    }
+    free(notification);
+    CcspTraceError(("RDK_LOG_ERROR,WIFI-%s: LEAVE\n", __FUNCTION__));
+
+    return NULL;
+}
+
+int SendConfigChangeNotification(const char *type, int index, const char *val1, const char *val2)
+{
+    char name[64] = "Device.EasyMeshController.ProfileConfigChanged";
+    char value[128] = { 0 };
+    emctl_notification_t *notification;
+    char dst_pathname_cr[64] = { 0 };
+    pthread_attr_t attr;
+    pthread_attr_t *attrp = NULL;
+    pthread_t thread;
+    size_t len;
+    int rc;
+
+    if (!type || !val1) {
+        CcspTraceError(("RDK_LOG_ERROR,WIFI-%s: Invalid parameters\n", __FUNCTION__));
+        return CCSP_FAILURE;
+    }
+
+    len = strlen(type) + strlen(val1);
+    if (val2) {
+        len += strlen(val2) + 1;
+    }
+    if (len > sizeof(value) - 8) {
+        CcspTraceError(("RDK_LOG_ERROR,WIFI-%s: Invalid parameters\n", __FUNCTION__));
+        return CCSP_FAILURE;
+    }
+    if (val2) {
+        snprintf(value, sizeof(value) - 1, "%s,%d,%s;%s", type, index, val1, val2);
+    } else {
+        snprintf(value, sizeof(value) - 1, "%s,%d,%s", type, index, val1);
+    }
+
+    notification = malloc(sizeof(emctl_notification_t));
+    if (!notification) {
+        CcspTraceError(("RDK_LOG_ERROR,WIFI-%s: Memory allocation failed\n", __FUNCTION__));
+        return CCSP_FAILURE;
+    }
+
+    snprintf(dst_pathname_cr, sizeof(dst_pathname_cr) - 1, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
+    rc = CcspBaseIf_discComponentSupportingNamespace(
+        bus_handle,
+        dst_pathname_cr,
+        name,
+        g_Subsystem,
+        &notification->comps,
+        &notification->comp_cnt);
+    if (rc != CCSP_SUCCESS) {
+        CcspTraceError(("RDK_LOG_ERROR,WIFI-%s: Unable to find component\n", __FUNCTION__));
+        free(notification);
+        return CCSP_FAILURE;
+    }
+    if (notification->comp_cnt != 1) {
+        CcspTraceError(("RDK_LOG_ERROR,WIFI-%s: Invalid search result\n", __FUNCTION__));
+        if (notification->comps != NULL) {
+            free_componentStruct_t(bus_handle, notification->comp_cnt, notification->comps);
+        }
+        free(notification);
+        return CCSP_FAILURE;
+    }
+
+    notification->val.type = ccsp_string;
+    notification->val.parameterName = strdup(name);
+    notification->val.parameterValue = strdup(value);
+
+    pthread_attr_init(&attr);
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
+    attrp = &attr;
+    pthread_create(&thread, attrp, &notification_handler, notification);
+    if (attrp != NULL) {
+        pthread_attr_destroy(attrp);
+    }
+
+    return CCSP_SUCCESS;
+}
+
 void WiFiEMControllerApplyChanges(char *val)
 {
     int i = 0;
@@ -3425,7 +3544,6 @@ void WiFiEMControllerApplyChanges(char *val)
     char *st = NULL;
     char *p_tok = NULL;
     char *p_type = NULL;
-    char *p_extra = NULL;
 
     /* type: SSIDEnable, index: int, value: char[]
      * type: SSID, index: int, value: char[]
@@ -3444,6 +3562,15 @@ void WiFiEMControllerApplyChanges(char *val)
                 if (p_type == NULL) {
                     break;
                 }
+
+#ifdef WIFI_HAL_VERSION_3
+                if (strcmp(p_type, "SSIDEnable")    == 0 ||
+                    strcmp(p_type, "SSID")          == 0 ||
+                    strcmp(p_type, "SecMode")       == 0 ||
+                    strcmp(p_type, "KeyPassphrase") == 0) {
+                    CcspWifiTrace(("RDK_LOG_INFO, %s: Easymesh proceed for index(%d) arrived\n", __FUNCTION__, index));
+                }
+#else //WIFI_HAL_VERSION_3
                 if (strcmp(p_type, "SSIDEnable") == 0) {
                     /* Skip enable, it is already done */
                     if (atoi(p_tok) == 0) {
@@ -3452,7 +3579,7 @@ void WiFiEMControllerApplyChanges(char *val)
                 } else if (strcmp(p_type, "SSID") == 0) {
                     wifi_setSSIDName(index, p_tok);
                 } else if (strcmp(p_type, "SecMode") == 0) {
-                    p_extra = strchr(p_tok, ';');
+                    char *p_extra = strchr(p_tok, ';');
                     if (p_extra != NULL) {
                         *(p_extra++) = 0;
                         wifi_setApBeaconType(index, p_tok);
@@ -3462,6 +3589,7 @@ void WiFiEMControllerApplyChanges(char *val)
                     wifi_setApSecurityKeyPassphrase(index, p_tok);
                     wifi_setApSecurityPreSharedKey(index, p_tok);
                 }
+#endif //WIFI_HAL_VERSION_3
                 break;
         }
         i++;
@@ -12359,68 +12487,6 @@ CosaDmlWiFiRadioPushCfg
     return ANSC_STATUS_SUCCESS;
 }
 
-#if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
-static int SendConfigChangeNotification(const char *type, int index, const char *val1, const char *val2)
-{
-    int ret;
-    char objName[256] = "Device.EasyMeshController.ProfileConfigChanged";
-    char objValue[256] = { 0 };
-    char dst_pathname_cr[64] = { 0 };
-    parameterValStruct_t paramVal[1] = {{objName, objValue, ccsp_string}};
-    componentStruct_t **ppComponents = NULL;
-    CCSP_MESSAGE_BUS_INFO *bus_info = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
-    char *faultParam = NULL;
-    int size = 0;
-    size_t len;
-
-    if (!type || !val1) {
-        CcspTraceError(("Error: invalid parameters\n"));
-        return CCSP_FAILURE;
-    }
-    len = strlen(type) + strlen(val1);
-    if (val2) {
-        len += strlen(val2) + 1;
-    }
-    if (len > sizeof(objValue) - 8) {
-        CcspTraceError(("Error: invalid parameters\n"));
-        return CCSP_FAILURE;
-    }    
-    if (val2) {
-        snprintf(objValue, sizeof(objValue) - 1, "%s,%d,%s;%s", type, index, val1, val2);
-    } else {
-        snprintf(objValue, sizeof(objValue) - 1, "%s,%d,%s", type, index, val1);
-    }
-    snprintf(dst_pathname_cr, sizeof(dst_pathname_cr) - 1, "%s%s", g_Subsystem, CCSP_DBUS_INTERFACE_CR);
-    ret = CcspBaseIf_discComponentSupportingNamespace(
-            bus_handle,
-            dst_pathname_cr,
-            objName,
-            g_Subsystem,
-            &ppComponents,
-            &size);
-    if (ret != CCSP_SUCCESS) {
-        CcspTraceError(("Error: %s does not exist\n", objName));
-        return ret;
-    }
-    ret = CcspBaseIf_setParameterValues(
-            bus_handle,
-            ppComponents[0]->componentName,
-            ppComponents[0]->dbusPath,
-            0, 0x0,
-            paramVal,
-            1,
-            TRUE,
-            &faultParam);
-    if (ret != CCSP_SUCCESS && faultParam) {
-        CcspTraceError(("RDK_LOG_ERROR,WIFI %s Failed to SetValue for param '%s' and ret val is %d\n", __FUNCTION__, faultParam, ret));
-        bus_info->freefunc(faultParam);
-    }
-    free_componentStruct_t(bus_handle, 1, ppComponents);
-
-    return ret;
-}
-#endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER
-
 ANSC_STATUS
 CosaDmlWiFiRadioApplyCfg
 (
@@ -17624,9 +17690,10 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
     }
 #endif
 #if defined(FEATURE_SUPPORT_EASYMESH_CONTROLLER)
-    pEntry->Info.ModesSupported &= (COSA_DML_WIFI_SECURITY_None |
-				    COSA_DML_WIFI_SECURITY_WPA2_Personal | 
-				    COSA_DML_WIFI_SECURITY_WPA_WPA2_Personal |
+    pEntry->Info.ModesSupported &= (COSA_DML_WIFI_SECURITY_None                     |
+                                    COSA_DML_WIFI_SECURITY_WPA2_Personal            |
+                                    COSA_DML_WIFI_SECURITY_WPA_WPA2_Personal        |
+                                    COSA_DML_WIFI_SECURITY_WPA3_Personal_Transition |
                                     COSA_DML_WIFI_SECURITY_WPA3_Personal);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
     CosaDmlWiFiApSecGetCfg((ANSC_HANDLE)hContext, pSsid, &pEntry->Cfg);
