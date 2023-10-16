@@ -1701,6 +1701,7 @@ int wifi_apply_webconfig_security_params (webconf_security_t *wlan_security, wif
             {
                 PASSPHRASE_UPDATED[getRadioIndexFromAp(wlan_index)] = TRUE;
             }
+            curr_cfg->u.bss_info.sec_changed = true;
         }
         else
         {
@@ -3164,6 +3165,7 @@ char *wifi_apply_security_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr
         {
             curr_cfg->u.bss_info.security.mode = vap_cfg->u.bss_info.security.mode;
             ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex : %d Updated SecurityMode : %d\n", __FUNCTION__, wlan_index, curr_cfg->u.bss_info.security.mode);
+            curr_cfg->u.bss_info.sec_changed = true;
         }
         else
         {
@@ -3190,6 +3192,7 @@ char *wifi_apply_security_config(wifi_vap_info_t *vap_cfg, wifi_vap_info_t *curr
             {
                 PASSPHRASE_UPDATED[getRadioIndexFromAp(wlan_index)] = TRUE;
             }
+            curr_cfg->u.bss_info.sec_changed = true;
         }
         else
         {
@@ -4597,7 +4600,7 @@ ANSC_STATUS notifyMeshEvents(wifi_vap_info_t *vap_cfg)
         CcspWifiTrace(("RDK_LOG_INFO,WIFI %s : Notify Mesh of Security changes\n",__FUNCTION__));
         memset(multinet_instance, '\0', sizeof(multinet_instance));
         snprintf(multinet_instance, sizeof(multinet_instance), "RDK|%d|%s|%s|%s",
-               wlan_index, vap_cfg->u.bss_info.security.u.key.key, authMode, method);
+               wlan_index, vap_cfg->u.bss_info.security.u.key.key, mode, method);
         if ( (gWrite_sysevent_fd || !initGSyseventVar()) &&
             (sysevent_set(gWrite_sysevent_fd, gWrite_sysEtoken, "wifi_ApSecurity", multinet_instance, 0)) )
         {
