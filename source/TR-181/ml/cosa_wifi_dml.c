@@ -7980,6 +7980,19 @@ SSID_SetParamStringValue
 #ifdef WIFI_HAL_VERSION_3
 	        //Check if the SSID name is in the list of reserved SSID names
 	        PCOSA_DATAMODEL_WIFI pMyObject = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
+            //Check if the SSID is empty or not
+            if (strlen(pString) == 0)
+            {
+                CcspWifiTrace(("RDK_LOG_ERROR, SSID is empty\n" ));
+                return FALSE;
+            }
+            //Check if the SSID starts with the leading space
+            if(pString[0] == ' ')
+            {
+                CcspWifiTrace(("RDK_LOG_ERROR, SSID starts with a leading space\n" ));
+                return FALSE;
+            }
+
             //Community WiFi SSID can be set with the reserved SSID names
             if (!IsSsidHotspot(pWifiSsid->SSID.Cfg.InstanceNumber) )
             {
