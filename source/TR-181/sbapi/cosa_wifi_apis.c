@@ -21568,8 +21568,8 @@ static int                          g_macFiltCnt[MAX_VAP] = { 0 };
 //static COSA_DML_WIFI_AP_MAC_FILTER  g_macFiltTab[MAX_MAC_FILT]; // = { { 1, "MacFilterTable1", "00:1a:2b:aa:bb:cc" }, };
 pthread_mutex_t MacFilt_CountMutex = PTHREAD_MUTEX_INITIALIZER;
 
-#if defined(_LG_MV1_CELENO_)
-ANSC_STATUS cbnCosaDmlMacFilt_PSMSync(ULONG apIns, ULONG count)
+#if defined(_PUMA6_ATOM_)
+ANSC_STATUS CosaDmlMacFilt_PSMSync(ULONG apIns, ULONG count)
 {
     int i;
     int retVal = RETURN_ERR;
@@ -21657,34 +21657,38 @@ wifiDbgPrintf("%s apIns = %lu\n",__FUNCTION__, apIns);
         ERR_CHK(rc);
     }
 
-#if defined(_LG_MV1_CELENO_)
-    char macInstance[8];
-    int i;
-    if (access("/tmp/cbn_mv1_to_mng", F_OK) == 0){
+#if defined(_PUMA6_ATOM_)
+    if ((access("/tmp/migration_to_mng", F_OK) == 0) ||
+        (access("/tmp/cbn_mv1_to_mng", F_OK) == 0))
+    {
+        char macFilterList[512];
+        char macInstance[12];
+        int i;
 
-         wifi_getApAclDeviceNum(apIns-1, &count);
-         g_macFiltCnt[apIns-1] = count;
-         char macFilterList [512];
+        wifi_getApAclDeviceNum(apIns - 1, &count);
+        g_macFiltCnt[apIns - 1] = count;
 
-         sprintf(macFilterList,"%u:",count);
+        sprintf(macFilterList, "%u:", count);
 
-         for (i=1; i <= count; i++)
-         {
-              sprintf(macInstance,"%u,",i);
-              strcat(macFilterList,macInstance);
-         }
+        for (i = 1; i <= count; i++)
+        {
+            sprintf(macInstance, "%u,", i);
+            strcat(macFilterList, macInstance);
+        }
 
-         macFilterList[strlen(macFilterList)-1] = '\0';
-         retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, macFilterList);
-         if (retPsmSet != CCSP_SUCCESS) {
-               count = 0;
-               wifiDbgPrintf("%s PSM_Set_Record_Value2 returned error %d while setting recName %s\n",__FUNCTION__, retPsmSet, recName);
-         } 
-               
+        macFilterList[strlen(macFilterList) - 1] = '\0';
+
+        retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, macFilterList);
+
+        if (retPsmSet != CCSP_SUCCESS)
+        {
+            count = 0;
+            wifiDbgPrintf("%s PSM_Set_Record_Value2 returned error %d while setting recName %s\n",__FUNCTION__, retPsmSet, recName);
+        }
     }
     else
-    {
 #endif
+    {
          retPsmGet = PSM_Get_Record_Value2(bus_handle,g_Subsystem, recName, NULL, &strValue);
          if (retPsmGet == CCSP_SUCCESS) {
 
@@ -21715,9 +21719,8 @@ wifiDbgPrintf("%s apIns = %lu\n",__FUNCTION__, apIns);
             }
         }
         count = g_macFiltCnt[apIns-1];
-#if defined(_LG_MV1_CELENO_)
     }
-#endif
+
 pthread_mutex_unlock(&MacFilt_CountMutex);
 wifiDbgPrintf("%s apIns = %lu count = %d\n",__FUNCTION__, apIns, count);
     return count;
