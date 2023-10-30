@@ -2336,7 +2336,7 @@ CosaDmlMacFilt_GetEntryByIndex
 
 #if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
 ANSC_STATUS
-cbnCosaDmlMacFilt_PSMSync
+CosaDmlMacFilt_PSMSync
     (
         ULONG apIns, 
         ULONG count

@@ -588,11 +588,14 @@ int main(int argc, char* argv[])
         fclose(fd);
     }
 
-#if defined(_LG_MV1_CELENO_)
-    if (access("/tmp/cbn_mv1_to_mng", F_OK) == 0)
+#if defined(_PUMA6_ATOM_)
+    if (access("/tmp/migration_to_mng", F_OK) == 0) {
+        unlink("/tmp/migration_to_mng");
+    }
+    else if (access("/tmp/cbn_mv1_to_mng", F_OK) == 0) {
         unlink("/tmp/cbn_mv1_to_mng");
-#endif
-#if defined(_LG_MV1_CELENO_) || defined(_LG_MV1_QCA_)
+    }
+
     //Passing wifi initialized status
     system("rpcclient2 'touch /tmp/wifi_initialized'");
 
