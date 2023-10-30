@@ -977,11 +977,15 @@ CosaWifiInitialize
 
         uMacFiltCount = CosaDmlMacFilt_GetNumberOfEntries( pWifiAp->AP.Cfg.InstanceNumber);
 
-#if defined(_LG_MV1_CELENO_)
-        if (uMacFiltCount > 0 && (access("/tmp/cbn_mv1_to_mng", F_OK) == 0))
+#if defined(_PUMA6_ATOM_)
+        if ((uMacFiltCount > 0) &&
+            ((access("/tmp/migration_to_mng", F_OK) == 0) ||
+             (access("/tmp/cbn_mv1_to_mng", F_OK) == 0)))
         {
-            if (cbnCosaDmlMacFilt_PSMSync(pWifiAp->AP.Cfg.InstanceNumber, uMacFiltCount) == ANSC_STATUS_SUCCESS)
-                    CcspTraceWarning((" Wifi MAC filtering DB Migration success \n"));
+            if (CosaDmlMacFilt_PSMSync(pWifiAp->AP.Cfg.InstanceNumber, uMacFiltCount) == ANSC_STATUS_SUCCESS)
+            {
+                CcspTraceWarning(("Wifi MAC filtering DB Migration success\n"));
+            }
         }
 #endif
 
