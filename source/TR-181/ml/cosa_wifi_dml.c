@@ -4181,6 +4181,10 @@ Radio_SetParamUlongValue
 #ifdef WIFI_HAL_VERSION_3
         if (wifiRadioOperParam->channel == uValue)
         {
+            if(wifiRadioOperParam->autoChannelEnabled) {
+                wifiRadioOperParam->autoChannelEnabled = FALSE;
+                pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
+            }
             return  TRUE;
         }
 
