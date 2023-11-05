@@ -251,6 +251,10 @@ static BOOL updateBootTimeRunning = FALSE;
 int wifi_sync_legacy_fw_cfg_default (void);
 #endif
 
+#if defined(_PUMA6_ATOM_)
+extern bool migration_to_mng;
+#endif
+
 extern ovsdb_table_t table_Wifi_Global_Config;
 extern ovsdb_table_t table_Wifi_Radio_Config;
 extern ovsdb_table_t table_Wifi_VAP_Config;
@@ -10736,6 +10740,13 @@ ANSC_STATUS CosaDmlWiFiSetForceDisableWiFiRadio(BOOLEAN bValue)
                 radioStatus = radioStatus | (1<<radioIndex);
             }
         }
+#if defined(_PUMA6_ATOM_)
+        if (migration_to_mng && (0 != access( "/tmp/erouter_mode_change" , F_OK ) ))
+        {
+            radioStatus=3;
+            unlink("/tmp/erouter_mode_change");
+        }
+#endif
         snprintf(PreValue, sizeof(PreValue), "%d",radioStatus);
         if (CCSP_SUCCESS != PSM_Set_Record_Value2(bus_handle,
                 g_Subsystem, WiFiForceDisableRadioStatus, ccsp_string, PreValue))
