@@ -67,6 +67,10 @@
 static cap_user appcaps;
 #endif
 
+#if defined(_PUMA6_ATOM_)
+bool migration_to_mng = FALSE;
+#endif
+
 PDSLH_CPE_CONTROLLER_OBJECT     pDslhCpeController      = NULL;
 PCOMPONENT_COMMON_DM            g_pComponent_Common_Dm  = NULL;
 char                            g_Subsystem[32]         = {0};
@@ -591,9 +595,11 @@ int main(int argc, char* argv[])
 #if defined(_PUMA6_ATOM_)
     if (access("/tmp/migration_to_mng", F_OK) == 0) {
         unlink("/tmp/migration_to_mng");
+        migration_to_mng=TRUE;
     }
     else if (access("/tmp/cbn_mv1_to_mng", F_OK) == 0) {
         unlink("/tmp/cbn_mv1_to_mng");
+        migration_to_mng=TRUE;
     }
 
     //Passing wifi initialized status
