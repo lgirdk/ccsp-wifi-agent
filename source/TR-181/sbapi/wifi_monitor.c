@@ -2877,6 +2877,8 @@ int  update_Off_Channel_5g_Scan_Params()
 /*                  5G off channel scan feature into WiFiLog.txt                 */
 /*                                                                               */
 /* INPUT         : Neighbor report array and its size                            */
+/*                 For XB6, channel list and number of channels is passed        */
+/*                 additionally                                                  */
 /*                                                                               */
 /* OUTPUT        : Logs into  WiFiLog.txt                                        */
 /*                                                                               */
@@ -2884,6 +2886,40 @@ int  update_Off_Channel_5g_Scan_Params()
 /*                                                                               */
 /*********************************************************************************/
 
+#if (defined(FEATURE_OFF_CHANNEL_SCAN_5G_XB6))
+static void
+Off_Channel_5g_print_data(wifi_neighbor_ap2_t *neighbor_ap_array, int array_size, UINT *cur_channel_list, int channel_num)
+{
+    int i = 0, j = 0;
+    wifi_neighbor_ap2_t *pt = NULL, *channel = NULL;
+    CcspTraceDebug(("Off_channel_scan Total channels: %d \n", channel_num));
+    for (i = 0; i < channel_num; i++) {
+        int count = 0;
+        for (j = 0, channel = neighbor_ap_array; j < array_size; j++, channel++) {
+            if (channel->ap_Channel > *(cur_channel_list + i)) {
+                break;
+            } else if (channel->ap_Channel < *(cur_channel_list + i)) {
+                continue;
+            }
+            count++;
+        }
+        CcspTraceInfo(("Off_channel_scan Total Scan Results:%d for channel %d \n", count, *(cur_channel_list + i)));
+        int neighbor = 0;
+        if (count > 0) {
+            for (j = 0, pt = neighbor_ap_array; j < array_size; j++, pt++)
+            {
+                if (pt->ap_Channel > *(cur_channel_list + i)) {
+                    break;
+                } else if (pt->ap_Channel < *(cur_channel_list + i)) {
+                    continue;
+                }
+                neighbor++;
+                CcspTraceInfo(("Off_channel_scan Neighbor:%d ap_BSSID:%s ap_SignalStrength: %d\n", neighbor, pt->ap_BSSID, pt->ap_SignalStrength));
+            }
+        }
+    }
+}
+#else /* (defined(FEATURE_OFF_CHANNEL_SCAN_5G_XB6)) */
 static void
 Off_Channel_5g_print_data(wifi_neighbor_ap2_t *neighbor_ap_array, int array_size)
 {
@@ -2897,6 +2933,7 @@ Off_Channel_5g_print_data(wifi_neighbor_ap2_t *neighbor_ap_array, int array_size
 
 }
 
+#endif /* (defined(FEATURE_OFF_CHANNEL_SCAN_5G_XB6)) */
 
 /*********************************************************************************/
 /*                                                                               */
@@ -2936,7 +2973,6 @@ Off_Channel_5g_scanner(void *arg)
 
    char tmp[256] = {0},  tempBuf[32] = {0};
    int new_off_channel_scan_period = 0;
-
 
     if( (Radio_Off_Channel_current[0] == 0) || (Radio_Off_Channel_current[1] == 0) || (Radio_Off_Channel_current[2] == 0) || Radio_Off_Channel_current[3] == 0)
     {
@@ -3022,6 +3058,60 @@ Off_Channel_5g_scanner(void *arg)
     ULONG cur_channel = 36;
     wifi_getRadioChannel(1, &cur_channel);
 
+#if (defined(FEATURE_OFF_CHANNEL_SCAN_5G_XB6))
+    UINT cur_chan_list[MAX_5G_CHANNELS] = {'\0'};
+    int channel_num = 0;
+    retry = 20;
+    for (i = 0; i < len; i++)
+    {
+        if ((isDFSenabled == 0) && (chan_list[i] >= DFS_CH_START) && (chan_list[i] <= DFS_CH_END)) {
+            continue;
+        }
+
+        if (chan_list[i] == cur_channel) {
+            CcspTraceInfo(("Off_channel_scan off channel number is same as current channel, skipping the off chan scan for %d\n", chan_list[i]));
+            continue;
+        }
+
+        cur_chan_list[channel_num] = chan_list[i];
+        ++channel_num;
+    }
+    CcspTraceInfo(("Off_channel_scan start scan, number of channels %d \n", channel_num));
+    for (j = 0; j < retry; j++)
+    {
+        wifi_startNeighborScan(1, 3, Radio_Off_Channel_current[1], channel_num, cur_chan_list);
+        ret = wifi_getNeighboringWiFiStatus(1, &neighbor_ap_array, &array_size);
+        if (ret == RETURN_OK)
+        {
+            CcspTraceDebug(("Off_channel_scan Return success, Total APs: %d \n", array_size));
+            if (array_size > 0)
+            {
+                Off_Channel_5g_print_data(neighbor_ap_array, array_size, cur_chan_list, channel_num);
+            } else {
+                for (i = 0; i < channel_num; i++)
+                {
+                    CcspTraceInfo(("Off_channel_scan Total Scan Results:0 for channel %d \n", *(cur_chan_list + i)));
+                }
+            }
+
+            if (neighbor_ap_array)
+            {
+                free(neighbor_ap_array);
+                neighbor_ap_array = NULL;
+            }
+
+            break;
+
+        } else {
+            CcspTraceDebug(("Off_channel_scan neighbor scan data was not fetched. Sleeping for 250msec, retry number: %d, max retry limit: %d \n", j+1, retry));
+            usleep(250000);
+        }
+
+        if ((ret != RETURN_OK) && ((j + 1) == retry)) {
+            CcspTraceError(("Off_channel_scan Neighborscan failed even after 20 retries, no data of neighbors was fetched \n"));
+        }
+    }
+#else /* (defined(FEATURE_OFF_CHANNEL_SCAN_5G_XB6)) */
     for (i = 0; i < len; i ++)
     {
         if((UINT)(cur_channel) == chan_list[i])
@@ -3056,12 +3146,14 @@ Off_Channel_5g_scanner(void *arg)
                 }
                 else
                 {
-                    // sleep for one more second and retry if we can get the scan results
+                    /* sleep for one more second and retry if we can get the scan results */
                     sleep(1);
                 }
             }
         }
     }
+#endif /* (defined(FEATURE_OFF_CHANNEL_SCAN_5G_XB6)) */
+
 
     wifi_channelMetrics_t * ptr,  channelMetrics_array_1[MAX_5G_CHANNELS];
     int num_channels = 0;
@@ -5982,6 +6074,7 @@ static void scheduler_telemetry_tasks(void)
         }
 #if defined (FEATURE_OFF_CHANNEL_SCAN_5G)
         if (g_monitor_module.off_channel_scan_id == 0) {
+            CcspTraceInfo(("Off_channel_scan offchannel scan starting...\n"));
             scheduler_add_timer_task(g_monitor_module.sched, FALSE, &g_monitor_module.off_channel_scan_id, Off_Channel_5g_scanner,
                     NULL, (Off_Channel_5g_upload_period + Radio_Off_Channel_current[3])*SEC_TO_MILLISEC, 0);
         }
