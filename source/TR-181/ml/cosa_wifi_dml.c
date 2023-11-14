@@ -3998,6 +3998,17 @@ Radio_SetParamIntValue
     }
     if (strcmp(ParamName, "X_CISCO_COM_ObssCoex") == 0)
     {
+#ifdef WIFI_HAL_VERSION_3
+        if ((wifiRadioOperParam->obssCoex == (BOOL)iValue) ||
+            (wifiRadioOperParam->band != WIFI_FREQUENCY_2_4_BAND))
+        {
+             return TRUE;
+        }
+
+        wifiRadioOperParam->obssCoex = (BOOL)iValue;
+        pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
+        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s OBSSCoex : %d\n", __FUNCTION__, wifiRadioOperParam->obssCoex);
+#else
         if ( pWifiRadioFull->Cfg.ObssCoex == iValue )
         {
             return  TRUE;
@@ -4006,6 +4017,7 @@ Radio_SetParamIntValue
         /* save update to backup */
         pWifiRadioFull->Cfg.ObssCoex = iValue;
         pWifiRadio->bRadioChanged = TRUE;
+#endif
         
         return TRUE;
     }
@@ -4209,7 +4221,16 @@ Radio_SetParamUlongValue
             return  FALSE;
         }
 #endif
+#ifdef WIFI_HAL_VERSION_3
+        if (wifiRadioOperParam->autoChanRefreshPeriod == (UINT) uValue)
+        {
+            return TRUE;
+        }
 
+        wifiRadioOperParam->autoChanRefreshPeriod = (UINT) uValue;
+        pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
+        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s AutoChannelRefreshPeriod : %d\n", __FUNCTION__, wifiRadioOperParam->autoChanRefreshPeriod);
+#else
         if ( pWifiRadioFull->Cfg.AutoChannelRefreshPeriod == uValue )
         {
             return  TRUE;
@@ -4218,7 +4239,8 @@ Radio_SetParamUlongValue
         /* save update to backup */
         pWifiRadioFull->Cfg.AutoChannelRefreshPeriod = uValue;
         pWifiRadio->bRadioChanged = TRUE;
-        
+#endif
+
         return TRUE;
     }
 
@@ -4482,14 +4504,24 @@ Radio_SetParamUlongValue
 
     if (strcmp(ParamName, "BeaconPeriod") == 0)
     {
+#ifdef WIFI_HAL_VERSION_3
+        if(wifiRadioOperParam->beaconInterval == uValue)
+#else //WIFI_HAL_VERSION_3
         if ( pWifiRadioFull->Cfg.BeaconInterval == uValue )
+#endif
         {
             return  TRUE;
         }
         
+#ifdef WIFI_HAL_VERSION_3
+        wifiRadioOperParam->beaconInterval = uValue;
+        pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
+        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s beaconInterval : %d\n", __FUNCTION__, wifiRadioOperParam->beaconInterval);
+#else
         /* save update to backup */
         pWifiRadioFull->Cfg.BeaconInterval = uValue;
 	CosaDmlWiFi_setRadioBeaconPeriod((pWifiRadio->Radio.Cfg.InstanceNumber - 1),uValue);
+#endif
         return TRUE;
     }
 
@@ -4523,15 +4555,25 @@ Radio_SetParamUlongValue
 	
     if (strcmp(ParamName, "X_CISCO_COM_CTSProtectionMode") == 0)
     {
+#ifdef WIFI_HAL_VERSION_3
+        if (wifiRadioOperParam->ctsProtection == (0 != uValue))
+#else
         if ( pWifiRadioFull->Cfg.CTSProtectionMode == (0 != uValue) )
+#endif
         {
             return  TRUE;
         }
-        
+
+#ifdef WIFI_HAL_VERSION_3
+        wifiRadioOperParam->ctsProtection = (0 == uValue) ? FALSE : TRUE;
+        pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
+        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s CTSProtection : %d\n", __FUNCTION__, wifiRadioOperParam->ctsProtection);
+#else
         /* save update to backup */
         pWifiRadioFull->Cfg.CTSProtectionMode = (0 == uValue) ? FALSE : TRUE;
         pWifiRadio->bRadioChanged = TRUE;
-        
+#endif
+
         return TRUE;
     }
 

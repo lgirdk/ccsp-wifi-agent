@@ -4952,10 +4952,23 @@ CosaDmlWiFiSetRadioPsmData
     }
 
     /*guardInterval*/
+    /* TCH fix: set guard interval in DML format, because getRadioPSMValues converts it,
+       also to be backward compatible with HALv2 */
+    unsigned int seqCounter  = 0;
+    COSA_DML_WIFI_GUARD_INTVL cosaGuardInterval = COSA_DML_WIFI_GUARD_INTVL_Auto; //Auto is default.
+
+    for (seqCounter = 0; seqCounter < ARRAY_SZ(wifiGuardIntervalMap); seqCounter++)
+    {
+        if (wifiRadioOperParam->guardInterval == wifiGuardIntervalMap[seqCounter].halGuardInterval)
+        {
+            cosaGuardInterval = wifiGuardIntervalMap[seqCounter].cosaGuardInterval;
+            break;
+        }
+    }
     memset(recName, '\0', sizeof(recName));
     memset(strValue, '\0', sizeof(strValue));
     snprintf(recName, sizeof(recName), GuardInterval, ulInstance);
-    snprintf(strValue, sizeof(strValue), "%d", wifiRadioOperParam->guardInterval);
+    snprintf(strValue, sizeof(strValue), "%d", cosaGuardInterval);
     retPsmSet = PSM_Set_Record_Value2(bus_handle,g_Subsystem, recName, ccsp_string, strValue);
     if (retPsmSet != CCSP_SUCCESS) {
           wifiDbgPrintf("%s PSM_Set_Record_Value2 returned error %d while setting Guard Interval \n",__FUNCTION__, retPsmSet);
@@ -25105,19 +25118,22 @@ ANSC_STATUS  radioGetCfgUpdateFromDmlToHal(UINT  radioIndex, PCOSA_DML_WIFI_RADI
 
     //Update pWifiRadioOperParam from pCfg
     pWifiRadioOperParam->enable = pCfg->bEnabled;
+    pWifiRadioOperParam->DfsEnabled = pCfg->X_COMCAST_COM_DFSEnable;
     pWifiRadioOperParam->DCSEnabled = pCfg->X_COMCAST_COM_DCSEnable;
     pWifiRadioOperParam->guardInterval = guardInterval;
     pWifiRadioOperParam->countryCode = countryCode;
     pWifiRadioOperParam->basicDataTransmitRates = basicDataTransmitRates;
     pWifiRadioOperParam->operationalDataTransmitRates = operationalDataTransmitRates;
     pWifiRadioOperParam->autoChannelEnabled = pCfg->AutoChannelEnable;
+    pWifiRadioOperParam->mcs = pCfg->MCS;
+    pWifiRadioOperParam->autoChanRefreshPeriod = pCfg->AutoChannelRefreshPeriod;
+    pWifiRadioOperParam->amsduEnable = pCfg->X_CISCO_COM_AggregationMSDU;
 
-
-    ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s enable : %d DCSEnabled : %d guardInterval : %d \n", __FUNCTION__, pWifiRadioOperParam->enable,
-            pWifiRadioOperParam->DCSEnabled, pWifiRadioOperParam->guardInterval);
+    ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s enable : %d DFSEnabled : %d DCSEnabled : %d guardInterval : %d mcs : %d \n", __FUNCTION__, pWifiRadioOperParam->enable,
+            pWifiRadioOperParam->DfsEnabled, pWifiRadioOperParam->DCSEnabled, pWifiRadioOperParam->guardInterval, pWifiRadioOperParam->mcs);
     ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s countryCode : %d \n", __FUNCTION__, pWifiRadioOperParam->countryCode);
-    ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s basicDataTransmitRates : %d operationalDataTransmitRates : %d autoChannelEnabled : %d\n", __FUNCTION__,
-            pWifiRadioOperParam->basicDataTransmitRates, pWifiRadioOperParam->operationalDataTransmitRates, pWifiRadioOperParam->autoChannelEnabled);
+    ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s basicDataTransmitRates : %d operationalDataTransmitRates : %d autoChannelEnabled : %d autoChanRefreshPeriod : %u\n", __FUNCTION__,
+            pWifiRadioOperParam->basicDataTransmitRates, pWifiRadioOperParam->operationalDataTransmitRates, pWifiRadioOperParam->autoChannelEnabled, pWifiRadioOperParam->autoChanRefreshPeriod);
 
     if (pWifiRadioOperParam->autoChannelEnabled == TRUE)
     {
@@ -26214,9 +26230,24 @@ ANSC_STATUS radioGetCfgUpdateFromHalToDml(UINT wlanIndex, PCOSA_DML_WIFI_RADIO_C
     pCfg->FragmentationThreshold = pWifiRadioOperParam->fragmentationThreshold;
     pCfg->TransmitPower = pWifiRadioOperParam->transmitPower;
     pCfg->RTSThreshold = pWifiRadioOperParam->rtsThreshold;
+    pCfg->CTSProtectionMode = pWifiRadioOperParam->ctsProtection;
+    pCfg->ObssCoex = pWifiRadioOperParam->obssCoex;
+    pCfg->X_CISCO_COM_STBCEnable = pWifiRadioOperParam->stbcEnable;
+    pCfg->X_CISCO_COM_11nGreenfieldEnabled = pWifiRadioOperParam->greenFieldEnable;
+    pCfg->MCS = pWifiRadioOperParam->mcs;
+    pCfg->X_CISCO_COM_AggregationMSDU = pWifiRadioOperParam->amsduEnable;
+    pCfg->AutoChannelRefreshPeriod = pWifiRadioOperParam->autoChanRefreshPeriod;
+    pCfg->X_COMCAST_COM_DFSEnable = pWifiRadioOperParam->DfsEnabled;
+    pCfg->X_COMCAST_COM_DCSEnable = pWifiRadioOperParam->DCSEnabled;
 
-    ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s DTIMInterval : %d BeaconInterval : %d FragmentationThreshold : %d \n", __FUNCTION__, pCfg->DTIMInterval, pCfg->BeaconInterval, pCfg->FragmentationThreshold);
-    ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s GuardInterval : %d TransmitPower : %d RTSThreshold : %d\n", __FUNCTION__, pCfg->GuardInterval, pCfg->TransmitPower, pCfg->RTSThreshold );
+    ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s DTIMInterval : %d BeaconInterval : %d FragmentationThreshold : %d CTSProtection : %d \n",
+         __FUNCTION__, pCfg->DTIMInterval, pCfg->BeaconInterval, pCfg->FragmentationThreshold, pCfg->CTSProtectionMode);
+    ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s GuardInterval : %d TransmitPower : %d RTSThreshold : %d\n",
+        __FUNCTION__, pCfg->GuardInterval, pCfg->TransmitPower, pCfg->RTSThreshold );
+    ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s wlanIndex: %d ObssCoex  : %d stbcEnable: %d greenFieldEnable :%d"
+         "MCS: %d AMSDU: %d DFS : %d RefreshPeriod: %d DCS: %d\n",
+         __FUNCTION__, wlanIndex, pCfg->ObssCoex, pCfg->X_CISCO_COM_STBCEnable, pCfg->X_CISCO_COM_11nGreenfieldEnabled,
+         pCfg->MCS, pCfg->X_CISCO_COM_AggregationMSDU, pCfg->X_COMCAST_COM_DFSEnable,  pCfg->AutoChannelRefreshPeriod, pCfg->X_COMCAST_COM_DCSEnable);
 
     return ANSC_STATUS_SUCCESS;
 }
