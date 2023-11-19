@@ -18748,6 +18748,25 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
                 }
             }
         }
+#if defined(_LG_MV1_QCA_)
+        else
+        {
+            UCHAR KeyPassphrase[64+1];
+            wifi_getApSecurityKeyPassphrase(6, pCfg->KeyPassphrase);
+            wifi_getApSecurityKeyPassphrase(0, KeyPassphrase);
+            if(strcmp(KeyPassphrase, pCfg->KeyPassphrase) == 0)
+            {
+                 strcpy(pCfg->KeyPassphrase,pCfg->DefaultKeyPassphrase);
+            }
+
+            wifi_getApSecurityKeyPassphrase(7, pCfg->KeyPassphrase);
+            wifi_getApSecurityKeyPassphrase(1, KeyPassphrase);
+            if(strcmp(KeyPassphrase, pCfg->KeyPassphrase) == 0)
+            {
+                 strcpy(pCfg->KeyPassphrase,pCfg->DefaultKeyPassphrase);
+            }
+        }
+#endif
         if( pCfg->KeyPassphrase[0] != 0 )
         {
             wifi_setApSecurityKeyPassphrase(6, (char*)pCfg->KeyPassphrase);
