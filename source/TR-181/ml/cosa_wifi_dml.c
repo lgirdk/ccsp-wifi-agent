@@ -5580,27 +5580,6 @@ Radio_Commit
             pthread_attr_destroy( attrp );
 	isHotspotSSIDIpdated = FALSE;
     }
-#ifdef _COSA_BCM_ARM_ && !defined(WIFI_HAL_VERSION_3)
-    static BOOL guest_enable = FALSE;
-    if (!guest_enable)
-    {
-        BOOL enable;
-        wifi_getApEnable(WI03_WIFI_SSID_INDEX, &enable);
-        if (!enable)
-        {
-            wifi_getApEnable(WI13_WIFI_SSID_INDEX, &enable);
-        }
-        if (enable)
-        {
-            int wifiDml_sysevent_fd = 0;
-            token_t wifiDml_sysEtoken = TOKEN_NULL;
-            CcspTraceWarning(("Enable guest network interface brlan7 \n"));
-            wifiDml_sysevent_fd = sysevent_open("127.0.0.1", SE_SERVER_WELL_KNOWN_PORT, SE_VERSION, "ccsp_wifi_agent_dml", &wifiDml_sysEtoken);
-            sysevent_set(wifiDml_sysevent_fd, wifiDml_sysEtoken, "ipv4-up", LGI_SUBNET3_INSTANCE, 0);
-            guest_enable = TRUE;
-        }
-    }
-#endif  /* _COSA_BCM_ARM_ */
     return returnStatus; 
 }
 
@@ -7665,7 +7644,12 @@ SSID_SetParamBoolValue
             {
                 return  TRUE;
             }
-
+#if defined(_COSA_BCM_ARM_) && !defined(WIFI_HAL_VERSION_3)
+            if ((pLinkObj->InstanceNumber-1 == WI03_WIFI_SSID_INDEX) || (pLinkObj->InstanceNumber-1 == WI13_WIFI_SSID_INDEX))
+            {
+                Guest_Interface_Status(pWifiSsid->SSID.Cfg.bEnabled);
+            }
+#endif  /* _COSA_BCM_ARM_ */
             pWifiSsid->bSsidChanged = TRUE;
 #endif
         } else {
