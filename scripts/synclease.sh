@@ -12,7 +12,7 @@ if [ -n "$ARM_IP" ]; then
     fi
     scp -i /tmp/login.swr root@$ARM_IP:/nvram/dnsmasq.leases /tmp/dnsmasq.leases
 else
-    tmpfile=$(mktemp --tmpdir=/tmp)
+    tmpfile=$(mktemp /tmp/dnsmasq.leases.XXXXXX)
     flock /tmp/.dnsmasq_leases_lock cp /nvram/dnsmasq.leases $tmpfile
     mv $tmpfile /tmp/dnsmasq.leases
 fi
