@@ -910,24 +910,40 @@ int validate_interworking(const cJSON *interworking, wifi_vap_info_t *vap_info, 
 
 int validate_radius_settings(const cJSON *radius, wifi_vap_info_t *vap_info, pErr execRetVal)
 {
-	const cJSON *param;
+    const cJSON *param, *radius_param;
     errno_t rc = -1;
+    char *default_ip = "0.0.0.0";
 
         if(!radius || !vap_info || !execRetVal){
             wifi_passpoint_dbg_print("Radius entry is NULL\n");
             return RETURN_ERR;
         }
 
-	validate_param_string(radius, "RadiusServerIPAddr", param);
-	if (validate_ipv4_address(param->valuestring) != RETURN_OK) {
-            wifi_passpoint_dbg_print("%s:%d: Validation failed for RadiusServerIPAddr\n", __func__, __LINE__);	
-            snprintf(execRetVal->ErrorMsg, sizeof(execRetVal->ErrorMsg)-1, "%s", "Invalid Radius server IP");
-		return RETURN_ERR;
-	}
 #ifndef WIFI_HAL_VERSION_3_PHASE2
-	rc = strcpy_s((char *)vap_info->u.bss_info.security.u.radius.ip, sizeof(vap_info->u.bss_info.security.u.radius.ip), param->valuestring);
-    ERR_CHK(rc);
+    /*Setting RadiusIP as 0.0.0.0 if value is NULL or empty*/
+    radius_param = cJSON_GetObjectItem(radius, "RadiusServerIPAddr");
+    if ((radius_param != NULL) && ((radius_param->valuestring == NULL) || (strcmp(radius_param->valuestring, "") == 0))) {
+        wifi_passpoint_dbg_print("%s:%d: Setting default RadiusIP: %s\n", __func__, __LINE__, default_ip);
+        rc = strcpy_s((char *)vap_info->u.bss_info.security.u.radius.ip, sizeof(vap_info->u.bss_info.security.u.radius.ip), default_ip);
+        ERR_CHK(rc);
+    } else {
+        validate_param_string(radius, "RadiusServerIPAddr", param);
+        if (validate_ipv4_address(param->valuestring) != RETURN_OK) {
+            wifi_passpoint_dbg_print("%s:%d: Validation failed for RadiusServerIPAddr\n", __func__, __LINE__);
+            snprintf(execRetVal->ErrorMsg, sizeof(execRetVal->ErrorMsg) - 1, "%s", "Invalid Radius server IP");
+            return RETURN_ERR;
+        }
+        rc = strcpy_s((char *)vap_info->u.bss_info.security.u.radius.ip, sizeof(vap_info->u.bss_info.security.u.radius.ip), param->valuestring);
+        ERR_CHK(rc);
+    }
+    wifi_passpoint_dbg_print("%s:%d: RadiusServerIP is %s\n", __func__, __LINE__, vap_info->u.bss_info.security.u.radius.ip);
 #else
+    validate_param_string(radius, "RadiusServerIPAddr", param);
+    if (validate_ipv4_address(param->valuestring) != RETURN_OK) {
+        wifi_passpoint_dbg_print("%s:%d: Validation failed for RadiusServerIPAddr\n", __func__, __LINE__);
+        snprintf(execRetVal->ErrorMsg, sizeof(execRetVal->ErrorMsg) - 1, "%s", "Invalid Radius server IP");
+        return RETURN_ERR;
+    }
     /* check the INET family and update the radius ip address */
     if(inet_pton(AF_INET, param->valuestring, &(vap_info->u.bss_info.security.u.radius.ip.u.IPv4addr)) > 0) {
        vap_info->u.bss_info.security.u.radius.ip.family = wifi_ip_family_ipv4;
@@ -938,42 +954,56 @@ int validate_radius_settings(const cJSON *radius, wifi_vap_info_t *vap_info, pEr
        return RETURN_ERR;
     }
 #endif
+    validate_param_integer(radius, "RadiusServerPort", param);
+    vap_info->u.bss_info.security.u.radius.port = param->valuedouble;
 
-	validate_param_integer(radius, "RadiusServerPort", param);
-	vap_info->u.bss_info.security.u.radius.port = param->valuedouble;
-
-	validate_param_string(radius, "RadiusSecret", param);
-	rc = strcpy_s(vap_info->u.bss_info.security.u.radius.key, sizeof(vap_info->u.bss_info.security.u.radius.key), param->valuestring);
+    validate_param_string(radius, "RadiusSecret", param);
+    rc = strcpy_s(vap_info->u.bss_info.security.u.radius.key, sizeof(vap_info->u.bss_info.security.u.radius.key), param->valuestring);
     ERR_CHK(rc);
 
-	validate_param_string(radius, "SecondaryRadiusServerIPAddr", param);
-	if (validate_ipv4_address(param->valuestring) != RETURN_OK) {
-            wifi_passpoint_dbg_print("%s:%d: Validation failed for SecondaryRadiusServerIPAddr\n", __func__, __LINE__);
-            snprintf(execRetVal->ErrorMsg, sizeof(execRetVal->ErrorMsg)-1, "%s", "Invalid Secondary Radius server IP");
-		return RETURN_ERR;
-	}
 #ifndef WIFI_HAL_VERSION_3_PHASE2
+    /*Setting SecondaryRadiusIP as 0.0.0.0 if value is NULL or empty*/
+    radius_param = cJSON_GetObjectItem(radius, "SecondaryRadiusServerIPAddr");
+    if ((radius_param != NULL) && ((radius_param->valuestring == NULL) || (strcmp(radius_param->valuestring, "") == 0))) {
+        wifi_passpoint_dbg_print("%s:%d: Setting default SecondaryRadiusIP: %s\n", __func__, __LINE__, default_ip);
+        rc = strcpy_s((char *)vap_info->u.bss_info.security.u.radius.s_ip, sizeof(vap_info->u.bss_info.security.u.radius.s_ip), default_ip);
+        ERR_CHK(rc);
+    } else {
+        validate_param_string(radius, "SecondaryRadiusServerIPAddr", param);
+        if (validate_ipv4_address(param->valuestring) != RETURN_OK) {
+            wifi_passpoint_dbg_print("%s:%d: Validation failed for SecondaryRadiusServerIPAddr\n", __func__, __LINE__);
+            snprintf(execRetVal->ErrorMsg, sizeof(execRetVal->ErrorMsg) - 1, "%s", "Invalid Secondary Radius server IP");
+            return RETURN_ERR;
+        }
         rc = strcpy_s((char *)vap_info->u.bss_info.security.u.radius.s_ip, sizeof(vap_info->u.bss_info.security.u.radius.s_ip), param->valuestring);
         ERR_CHK(rc);
+    }
+    wifi_passpoint_dbg_print("%s:%d: SecondaryRadiusServerIP is %s\n", __func__, __LINE__, vap_info->u.bss_info.security.u.radius.s_ip);
 #else
-        /* check the INET family and update the radius ip address */
-        if(inet_pton(AF_INET, param->valuestring, &(vap_info->u.bss_info.security.u.radius.s_ip.u.IPv4addr)) > 0) {
-           vap_info->u.bss_info.security.u.radius.s_ip.family = wifi_ip_family_ipv4;
-        } else if(inet_pton(AF_INET6, param->valuestring, &(vap_info->u.bss_info.security.u.radius.s_ip.u.IPv6addr)) > 0) {
-           vap_info->u.bss_info.security.u.radius.s_ip.family = wifi_ip_family_ipv6;
-        } else {
-          CcspTraceError(("<%s> <%d> : inet_pton falied for primary radius IP\n", __FUNCTION__, __LINE__));
-          return RETURN_ERR;
-        }
+    validate_param_string(radius, "SecondaryRadiusServerIPAddr", param);
+    if (validate_ipv4_address(param->valuestring) != RETURN_OK) {
+        wifi_passpoint_dbg_print("%s:%d: Validation failed for SecondaryRadiusServerIPAddr\n", __func__, __LINE__);
+        snprintf(execRetVal->ErrorMsg, sizeof(execRetVal->ErrorMsg)-1, "%s", "Invalid Secondary Radius server IP");
+        return RETURN_ERR;
+    }
+    /* check the INET family and update the radius ip address */
+    if(inet_pton(AF_INET, param->valuestring, &(vap_info->u.bss_info.security.u.radius.s_ip.u.IPv4addr)) > 0) {
+        vap_info->u.bss_info.security.u.radius.s_ip.family = wifi_ip_family_ipv4;
+    } else if(inet_pton(AF_INET6, param->valuestring, &(vap_info->u.bss_info.security.u.radius.s_ip.u.IPv6addr)) > 0) {
+        vap_info->u.bss_info.security.u.radius.s_ip.family = wifi_ip_family_ipv6;
+    } else {
+       CcspTraceError(("<%s> <%d> : inet_pton falied for primary radius IP\n", __FUNCTION__, __LINE__));
+       return RETURN_ERR;
+    }
 #endif
 
-	validate_param_integer(radius, "SecondaryRadiusServerPort", param);
-	vap_info->u.bss_info.security.u.radius.s_port = param->valuedouble;
-	validate_param_string(radius, "SecondaryRadiusSecret", param);
-	rc = strcpy_s(vap_info->u.bss_info.security.u.radius.s_key, sizeof(vap_info->u.bss_info.security.u.radius.s_key), param->valuestring);
+    validate_param_integer(radius, "SecondaryRadiusServerPort", param);
+    vap_info->u.bss_info.security.u.radius.s_port = param->valuedouble;
+    validate_param_string(radius, "SecondaryRadiusSecret", param);
+    rc = strcpy_s(vap_info->u.bss_info.security.u.radius.s_key, sizeof(vap_info->u.bss_info.security.u.radius.s_key), param->valuestring);
     ERR_CHK(rc);
-	
-	return RETURN_OK;
+
+    return RETURN_OK;
 
 }
 
