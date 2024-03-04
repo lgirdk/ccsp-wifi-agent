@@ -28782,7 +28782,7 @@ static INT Mesh_Notification(char *event, char *data)
         PSINGLE_LINK_ENTRY pSLinkEntry = NULL;
         PCOSA_DML_WIFI_SSID  pWifiSsid = NULL;
         PCOSA_DML_WIFI_AP      pWifiAp = NULL;
-
+        PCOSA_DML_WIFI_RADIO pWifiRadio = NULL;
  
         if(!pMyObject) {
             CcspTraceError(("%s Data Model object is NULL!\n",__FUNCTION__));
@@ -28865,6 +28865,13 @@ static INT Mesh_Notification(char *event, char *data)
                 if(channel<0 || channel>233) {
                         CcspTraceError(("channel error:%d\n", channel));
                         return -1;
+                }
+                //When OpenSync changed the channel, we need to save it to data model and nvram.
+                pWifiRadio = pMyObject->pRadio+radioIndex;
+                if ( pWifiRadio && pWifiRadio->Radio.Cfg.Channel != channel )
+                {
+                    pWifiRadio->Radio.Cfg.Channel = channel;
+                    wifi_setRadioChannel(radioIndex, channel);
                 }
  
                 return 0;
