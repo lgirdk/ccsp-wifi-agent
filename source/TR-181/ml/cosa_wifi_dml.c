@@ -1304,7 +1304,7 @@ WiFi_SetParamStringValue
         PCOSA_DATAMODEL_WIFI    pMyObject               = ( PCOSA_DATAMODEL_WIFI )g_pCosaBEManager->hWifi;
 #if defined (FEATURE_SUPPORT_WEBCONFIG)
        unsigned char *webConf = NULL;
-        int webSize = 0;
+        size_t webSize = 0;
 #endif
         errno_t rc = -1;
         int ind = -1;
@@ -1594,7 +1594,7 @@ WiFi_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind)){
 #if defined (FEATURE_SUPPORT_WEBCONFIG)
-        webConf = AnscBase64Decode((PUCHAR)pString, (ULONG*)&webSize);
+        webConf = AnscBase64Decode((PUCHAR)pString, &webSize);
         if (CosaDmlWiFi_setWebConfig((char*)webConf,webSize,WIFI_WEBCONFIG_PRIVATESSID) == ANSC_STATUS_SUCCESS) {
             CcspTraceWarning(("Success in parsing privatessid web config blob\n"));
             if (webConf != NULL) {
@@ -1619,7 +1619,7 @@ WiFi_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind)) {
 #if defined (FEATURE_SUPPORT_WEBCONFIG)
-    webConf = AnscBase64Decode((PUCHAR)pString, (ULONG*)&webSize);
+    webConf = AnscBase64Decode((PUCHAR)pString, &webSize);
     if (CosaDmlWiFi_setWebConfig((char*)webConf,webSize,WIFI_WEBCONFIG_HOMESSID) == ANSC_STATUS_SUCCESS) {
         CcspTraceWarning(("Success in parsing homessid web config blob\n"));
         if (webConf != NULL) {
@@ -1644,7 +1644,7 @@ WiFi_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind)) {
 #if defined (FEATURE_SUPPORT_WEBCONFIG)
-//    webConf = AnscBase64Decode((PUCHAR)pString, (ULONG*)&webSize);
+//    webConf = AnscBase64Decode((PUCHAR)pString, &webSize);
 //    CcspTraceWarning(("Decoded SSID Data blob %s of size %d\n", webConf,webSize));
     if (CosaDmlWiFi_setWebConfig(pString,strlen(pString), WIFI_SSID_CONFIG) == ANSC_STATUS_SUCCESS) {
         CcspTraceWarning(("Success in parsing SSID Config\n"));
