@@ -5001,7 +5001,7 @@ int wifi_vapConfigSet(const char *buf, size_t len, pErr execRetVal)
 pErr wifi_multicomp_subdoc_handler(void *data)
 {
     unsigned char *msg = NULL; 
-    unsigned long msg_size = 0;
+    size_t msg_size = 0;
     pErr execRetVal = NULL;
 
     if (data == NULL) {
@@ -5165,7 +5165,7 @@ void webconfig_update_subdoc_name(execData *execData)
 int wifi_vapBlobSet(void *data)
 {
     char *decoded_data = NULL; 
-    unsigned long msg_size = 0;
+    size_t msg_size = 0;
     size_t offset = 0;
     msgpack_unpacked msg;
     msgpack_unpack_return mp_rv;
@@ -5572,7 +5572,7 @@ void wifi_radio_cfg_free_resources(void *arg)
 int wifi_radioBlobSet(void *data)
 {
     char *decoded_data = NULL;
-    unsigned long msg_size = 0;
+    size_t msg_size = 0;
     size_t offset = 0;
     msgpack_unpacked msg;
     msgpack_unpack_return mp_rv;
