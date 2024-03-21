@@ -2804,11 +2804,14 @@ CosaDmlWiFiNeighbouringGetEntry
         PCOSA_DML_NEIGHTBOURING_WIFI_DIAG_CFG   pEntry
     )
 {
+    errno_t rc = -1;
     UNREFERENCED_PARAMETER(hContext);
     if (!pEntry) return ANSC_STATUS_FAILURE;
-	wifiDbgPrintf("%s\n",__FUNCTION__);
-	CosaDmlGetNeighbouringDiagnosticEnable(&pEntry->bEnable);
-	return ANSC_STATUS_SUCCESS;
+    wifiDbgPrintf("%s\n",__FUNCTION__);
+    rc = strcpy_s(pEntry->DiagnosticsState, sizeof(pEntry->DiagnosticsState) , "None");
+    ERR_CHK(rc);
+    CosaDmlGetNeighbouringDiagnosticEnable(&pEntry->bEnable);
+    return ANSC_STATUS_SUCCESS;
 }
 
 // Function reads NeighbouringDiagnosticEnable value from PSM
@@ -22002,7 +22005,15 @@ fprintf(stderr, "-- %s %d count_2=%d count_5=%d\n", __func__, __LINE__,  count_2
     rc = strcpy_s(pNeighScan->DiagnosticsState, sizeof(pNeighScan->DiagnosticsState) , "Completed");
     ERR_CHK(rc);
 
-	printf("%s Calling pthread_mutex_unlock for sNeighborScanThreadMutex  %d \n",__FUNCTION__ , __LINE__ ); 
+    if ( g_MessageBusHandle )
+    {
+       if ( CcspBaseIf_SenddiagCompleteSignal(g_MessageBusHandle) != CCSP_SUCCESS )
+       {
+           CcspWifiTrace(("RDK_LOG_ERROR,WIFI %s Error in sending diagnostic complete event\n",__FUNCTION__));
+       }
+    }
+
+    printf("%s Calling pthread_mutex_unlock for sNeighborScanThreadMutex  %d \n",__FUNCTION__ , __LINE__ );
     pthread_mutex_unlock(&sNeighborScanThreadMutex);
     printf("%s Called pthread_mutex_unlock for sNeighborScanThreadMutex  %d \n",__FUNCTION__ , __LINE__ );  
     return NULL;

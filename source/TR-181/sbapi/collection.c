@@ -101,7 +101,7 @@ void 	*queue_remove	(queue_t *q, uint32_t index)
 		return NULL;
 	}
 
-	while (i < index) {
+	while ((i < index) && (e != NULL)) {
 		tmp = e;
 		e = e->next;	
 		i++;	
@@ -322,6 +322,12 @@ hash_map_t  *hash_map_create    ()
 	
 	memset(map, 0, sizeof(hash_map_t));
 	map->queue = queue_create();
+
+	if(map->queue == NULL)
+	{
+		free(map);
+		return NULL;
+	}
 
 	return map;
 }
