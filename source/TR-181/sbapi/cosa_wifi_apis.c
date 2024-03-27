@@ -16400,10 +16400,8 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest[%d]=true \n", __func__, __LINE
         wifi_getBandSteeringEnable_perSSID(wlanIndex/2,&bsEnabled);
         if(bsEnabled)
             enable_reset_both_radio_flag();
-#if defined (_LG_MV1_QCA_)
         else
             enable_reset_radio_flag(wlanIndex);
-#endif
 #endif
 
         cfgChange = TRUE;
