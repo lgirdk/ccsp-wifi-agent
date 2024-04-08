@@ -12664,6 +12664,8 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
     {
         char oldStandard[32]={0};
         char newStandard[32]={0};
+        ULONG oldChannel = pCfg->Channel;
+
         getOperatingStandardString(pCfg, oldStandard, sizeof(oldStandard));
         CcspWifiTrace(("RDK_LOG_DEBUG, %s For radioIndex:%d old operating standard is %s\n",
                      __FUNCTION__, radioIndex, oldStandard));
@@ -12689,6 +12691,22 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
             snprintf(multinet_instance, sizeof(multinet_instance), "RDK|%d|%s", radioIndex, newStandard);
             if ( (gWrite_sysevent_fd || !initGSyseventVar()) &&
                 (sysevent_set(gWrite_sysevent_fd, gWrite_sysEtoken, "wifi_RadioOperatingStd", multinet_instance, 0)) )
+            {
+                CcspWifiTrace(("RDK_LOG_ERROR, %s-%d Error in setting sysevent\n", __FUNCTION__, __LINE__));
+            }
+        }
+
+        ULONG newChannel = pCfg->Channel;
+
+        if (oldChannel != newChannel)
+        {
+            CcspWifiTrace(("RDK_LOG_INFO,WIFI %s:Notify Mesh of Radio channel changes index:%d %lu to %lu\n",
+                           __FUNCTION__,radioIndex,oldChannel, newChannel));
+            memset(multinet_instance, '\0', sizeof(multinet_instance));
+            snprintf(multinet_instance, sizeof(multinet_instance), "RDK|%d|%lu", radioIndex, newChannel);
+            CcspWifiTrace(("RDK_LOG_INFO, Printing the channel change Notify event RDK|%d|%lu\n",radioIndex, newChannel));
+            if ((gWrite_sysevent_fd || !initGSyseventVar()) &&
+               (sysevent_set(gWrite_sysevent_fd, gWrite_sysEtoken, "wifi_RadioChannel", multinet_instance, 0)))
             {
                 CcspWifiTrace(("RDK_LOG_ERROR, %s-%d Error in setting sysevent\n", __FUNCTION__, __LINE__));
             }
