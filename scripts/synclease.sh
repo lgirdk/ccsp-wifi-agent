@@ -10,9 +10,9 @@ if [ -n "${ARM_INTERFACE_IP}" ]; then
     if [ ! -f /tmp/login.swr ]; then
         configparamgen jx /etc/dropbear/elxrretyt.swr /tmp/login.swr
     fi
-    scp -i /tmp/login.swr root@${ARM_INTERFACE_IP}:/nvram/dnsmasq.leases /tmp/dnsmasq.leases
+    scp -i /tmp/login.swr root@${ARM_INTERFACE_IP}:/var/lib/misc/dnsmasq.leases /tmp/dnsmasq.leases
 else
     tmpfile=$(mktemp /tmp/dnsmasq.leases.XXXXXX)
-    flock /tmp/.dnsmasq_leases_lock cp /nvram/dnsmasq.leases $tmpfile
+    flock /tmp/.dnsmasq_leases_lock cp /var/lib/misc/dnsmasq.leases $tmpfile
     mv $tmpfile /tmp/dnsmasq.leases
 fi
