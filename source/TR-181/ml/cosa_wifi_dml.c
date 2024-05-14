@@ -84,7 +84,6 @@
 #if defined (FEATURE_SUPPORT_WEBCONFIG)
 #include "../sbapi/wifi_webconfig.h"
 #endif
-
 #if defined(_COSA_BCM_MIPS_) || defined(_XB6_PRODUCT_REQ_) || defined(_COSA_BCM_ARM_) || defined(_PLATFORM_TURRIS_)
 #include "ccsp_base_api.h"
 #include "messagebus_interface_helper.h"
@@ -12301,6 +12300,7 @@ Security_SetParamStringValue
     ERR_CHK(rc);
     if((rc == EOK) && (!ind))
     {
+
 #ifdef WIFI_HAL_VERSION_3
         rc = strcmp_s((char*)vapInfo->u.bss_info.security.u.radius.ip, sizeof( vapInfo->u.bss_info.security.u.radius.ip), pString, &ind);
 #else
@@ -12313,6 +12313,16 @@ Security_SetParamStringValue
 	/* save update to backup */
         if((pString == NULL) || (strlen(pString) >= sizeof(pWifiApSec->Cfg.RadiusServerIPAddr)))
              return FALSE;
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
+        if ((validate_ipv4_address(pString) != RETURN_OK) && (validate_ipv6_address(pString) != RETURN_OK)) {
+#else
+        if (validate_ipv4_address(pString) != RETURN_OK) {
+#endif
+            CcspTraceWarning(("[%s] [%d] IP Validation failed : %s\n", __func__, __LINE__, pString));
+            return FALSE;
+        }
+
+        CcspTraceDebug(("[%s] [%d] IP Address updated as %s\n", __func__, __LINE__, pString));
 #ifdef WIFI_HAL_VERSION_3
         rc = strcpy_s( (char*)vapInfo->u.bss_info.security.u.radius.ip, sizeof(vapInfo->u.bss_info.security.u.radius.ip), pString);
 #else
@@ -12352,7 +12362,7 @@ Security_SetParamStringValue
         ERR_CHK(rc);
         if((rc == EOK) && (!ind))
             return TRUE;
-        
+
 	/* save update to backup */
 #ifdef WIFI_HAL_VERSION_3
         if((pString == NULL) || (strlen(pString) >= sizeof(vapInfo->u.bss_info.security.u.radius.s_ip)))
@@ -12360,6 +12370,16 @@ Security_SetParamStringValue
         if((pString == NULL) || (strlen(pString) >= sizeof(pWifiApSec->Cfg.SecondaryRadiusServerIPAddr)))
 #endif
              return FALSE;
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
+        if ((validate_ipv4_address(pString) != RETURN_OK) && (validate_ipv6_address(pString) != RETURN_OK)) {
+#else
+        if (validate_ipv4_address(pString) != RETURN_OK) {
+#endif
+            CcspTraceWarning(("[%s] [%d] IP Validation failed : %s\n", __func__, __LINE__, pString));
+            return FALSE;
+        }
+
+        CcspTraceDebug(("[%s] [%d] IP address updated as %s\n", __func__, __LINE__, pString));
 #ifdef WIFI_HAL_VERSION_3
         rc = strcpy_s((char*)vapInfo->u.bss_info.security.u.radius.s_ip, sizeof(vapInfo->u.bss_info.security.u.radius.s_ip), pString);
 #else

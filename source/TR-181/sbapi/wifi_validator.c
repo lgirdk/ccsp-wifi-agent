@@ -121,6 +121,19 @@ int validate_ipv4_address(char *ip) {
     return RETURN_OK;
 }
 
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
+int validate_ipv6_address(char *ip) {
+    struct sockaddr_in6 sa;
+
+    if (inet_pton(AF_INET6,ip,(&sa.sin6_addr)) != 1 ) {
+        CcspTraceError(("%s: Invalid IPV6 address: %s\n",__FUNCTION__,ip));
+        return RETURN_ERR;
+    }
+    return RETURN_OK;
+
+}
+#endif
+
 int validate_anqp(const cJSON *anqp, wifi_interworking_t *vap_info, pErr execRetVal)
 {
     cJSON *mainEntry = NULL;
@@ -928,7 +941,11 @@ int validate_radius_settings(const cJSON *radius, wifi_vap_info_t *vap_info, pEr
         ERR_CHK(rc);
     } else {
         validate_param_string(radius, "RadiusServerIPAddr", param);
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
+      if ((validate_ipv4_address(param->valuestring) != RETURN_OK) && (validate_ipv6_address(param->valuestring) != RETURN_OK)) {
+#else
         if (validate_ipv4_address(param->valuestring) != RETURN_OK) {
+#endif
             wifi_passpoint_dbg_print("%s:%d: Validation failed for RadiusServerIPAddr\n", __func__, __LINE__);
             snprintf(execRetVal->ErrorMsg, sizeof(execRetVal->ErrorMsg) - 1, "%s", "Invalid Radius server IP");
             return RETURN_ERR;
@@ -970,7 +987,11 @@ int validate_radius_settings(const cJSON *radius, wifi_vap_info_t *vap_info, pEr
         ERR_CHK(rc);
     } else {
         validate_param_string(radius, "SecondaryRadiusServerIPAddr", param);
+#if defined(_XB6_PRODUCT_REQ_) && !defined(_XB7_PRODUCT_REQ_)
+        if ((validate_ipv4_address(param->valuestring) != RETURN_OK) && (validate_ipv6_address(param->valuestring) != RETURN_OK)) {
+#else 
         if (validate_ipv4_address(param->valuestring) != RETURN_OK) {
+#endif
             wifi_passpoint_dbg_print("%s:%d: Validation failed for SecondaryRadiusServerIPAddr\n", __func__, __LINE__);
             snprintf(execRetVal->ErrorMsg, sizeof(execRetVal->ErrorMsg) - 1, "%s", "Invalid Secondary Radius server IP");
             return RETURN_ERR;
