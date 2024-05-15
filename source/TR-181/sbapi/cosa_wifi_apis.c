@@ -31098,3 +31098,10 @@ ULONG CosaDmlWiFiRadioGetTrasmitPowerPercent(INT wlanIndex)
 
     return curTransmitPower;
 }
+
+BOOL CosaDmlWiFiRadioGetAutoChannelEnable(INT wlanIndex)
+{
+    BOOL enabled = 0;
+    wifi_getRadioAutoChannelEnable(wlanIndex, &enabled);
+    return enabled;
+}
