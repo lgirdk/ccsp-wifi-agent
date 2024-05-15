@@ -2253,9 +2253,13 @@ Radio_GetParamBoolValue
 
     if (strcmp(ParamName, "AutoChannelEnable") == 0)
     {
-        /* collect value */
-        *pBool = pWifiRadioFull->Cfg.AutoChannelEnable;
-        
+#if defined(_PUMA6_ATOM_)
+       *pBool = CosaDmlWiFiRadioGetAutoChannelEnable(pWifiRadioFull->Cfg.InstanceNumber-1);
+#else
+       /* collect value */
+       *pBool = pWifiRadioFull->Cfg.AutoChannelEnable;
+#endif
+
         return TRUE;
     }
 
