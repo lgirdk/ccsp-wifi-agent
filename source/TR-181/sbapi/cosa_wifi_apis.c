@@ -10882,7 +10882,7 @@ ANSC_STATUS CosaDmlWiFiSetForceDisableWiFiRadio(BOOLEAN bValue)
             }
         }
 #if defined(_PUMA6_ATOM_)
-        if (migration_to_mng && (0 != access( "/tmp/erouter_mode_change" , F_OK ) ))
+        if (((0 == access("/tmp/migration_to_mng" , F_OK )) || migration_to_mng) && (0 != access( "/tmp/erouter_mode_change" , F_OK )))
         {
             radioStatus=3;
             unlink("/tmp/erouter_mode_change");
