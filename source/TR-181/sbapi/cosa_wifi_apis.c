@@ -17458,6 +17458,9 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
 
     if (pCfg->IsolationEnable != pStoredCfg->IsolationEnable) {
             wifi_setApIsolationEnable(wlanIndex, pCfg->IsolationEnable);
+#if defined(_LG_MV1_QCA_)
+            enable_reset_radio_flag(wlanIndex);
+#endif
     }
 
     if (pCfg->SSIDAdvertisementEnabled != pStoredCfg->SSIDAdvertisementEnabled) {
