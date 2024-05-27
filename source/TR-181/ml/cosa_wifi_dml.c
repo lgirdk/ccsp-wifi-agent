@@ -3199,6 +3199,10 @@ Radio_GetParamStringValue
     if (strcmp(ParamName, "TransmitPowerSupported") == 0)
     {
         /* collect value */
+      int ret = wifi_getRadioTransmitPowerSupported(pWifiRadio->Radio.Cfg.InstanceNumber-1, pWifiRadioFull->StaticInfo.TransmitPowerSupported);
+       if (ret != RETURN_OK) {
+       return RETURN_ERR;
+      }
         if ( AnscSizeOfString(pWifiRadioFull->StaticInfo.TransmitPowerSupported) < *pUlSize)
         {
             rc = strcpy_s(pValue, *pUlSize, pWifiRadioFull->StaticInfo.TransmitPowerSupported);
