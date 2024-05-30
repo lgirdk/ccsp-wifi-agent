@@ -1149,6 +1149,18 @@ INSTMSMT_PH2 -->
                             <writable>true</writable>
                         </parameter>
                         <parameter>
+                            <name>X_RDK_ApplySetting</name>
+                            <type>boolean</type>
+                            <syntax>bool</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                            <name>X_RDK_ApplySettingSSID</name>
+                            <type>int</type>
+                            <syntax>int</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
                             <name>X_RDKCENTRAL-COM_AutoChannelRefreshPeriodSupported</name>
                             <type>boolean</type>
                             <syntax>bool</syntax>

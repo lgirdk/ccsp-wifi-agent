@@ -2313,6 +2313,15 @@ Radio_GetParamBoolValue
         *pBool = pWifiRadioFull->Cfg.ApplySetting; 
         return TRUE;
     }
+    if (strcmp(ParamName, "X_RDK_ApplySetting") == 0)
+    {
+#if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
+        *pBool = pWifiRadioFull->Cfg.ApplySetting; 
+        return TRUE;
+#else
+        return FALSE;
+#endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER
+    }
     if (strcmp(ParamName, "X_RDKCENTRAL-COM_AutoChannelRefreshPeriodSupported") == 0)
     {
         *pBool = pWifiRadioFull->Cfg.AutoChannelRefreshPeriodSupported; 
@@ -2462,6 +2471,15 @@ Radio_GetParamIntValue
     {
         *pInt = pWifiRadioFull->Cfg.ApplySettingSSID; 
         return TRUE;
+    }
+    if (strcmp(ParamName, "X_RDK_ApplySettingSSID") == 0)
+    {
+#if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
+        *pInt = pWifiRadioFull->Cfg.ApplySettingSSID; 
+        return TRUE;
+#else
+        return FALSE;
+#endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER
     }
     if (strcmp(ParamName, "X_COMCAST-COM_CarrierSenseThresholdRange") == 0)
     {
@@ -3181,6 +3199,10 @@ Radio_GetParamStringValue
     if (strcmp(ParamName, "TransmitPowerSupported") == 0)
     {
         /* collect value */
+      int ret = wifi_getRadioTransmitPowerSupported(pWifiRadio->Radio.Cfg.InstanceNumber-1, pWifiRadioFull->StaticInfo.TransmitPowerSupported);
+       if (ret != RETURN_OK) {
+       return RETURN_ERR;
+      }
         if ( AnscSizeOfString(pWifiRadioFull->StaticInfo.TransmitPowerSupported) < *pUlSize)
         {
             rc = strcpy_s(pValue, *pUlSize, pWifiRadioFull->StaticInfo.TransmitPowerSupported);
@@ -3658,11 +3680,40 @@ Radio_SetParamBoolValue
         }
         
         /* save update to backup */
+#if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
+#if defined (WIFI_HAL_VERSION_3)
+        /* Suppress ApplySettings until EasyMesh controller is notified */
+        if (SendConfigChangeNotification("ApplySetting", wlanIndex, bValue ? "1" : "0", NULL) != CCSP_SUCCESS) {
+            CcspWifiTrace(("RDK_LOG_ERROR, Unable to send ApplySetting notification to EMController\n"));
+            pWifiRadioFull->Cfg.ApplySetting = bValue;
+        }
+#else //WIFI_HAL_VERSION_3
+        /* Operate as expected */
         pWifiRadioFull->Cfg.ApplySetting = bValue;
+#endif //WIFI_HAL_VERSION_3
+#else //FEATURE_SUPPORT_EASYMESH_CONTROLLER
+        pWifiRadioFull->Cfg.ApplySetting = bValue;
+#endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER
 #if !defined (WIFI_HAL_VERSION_3) && !defined(_HUB4_PRODUCT_REQ_)
         pWifiRadio->bRadioChanged = TRUE;
-#endif	
+#endif
         return TRUE;
+    }
+
+    if (strcmp(ParamName, "X_RDK_ApplySetting") == 0)
+    {
+#if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
+        if ( pWifiRadioFull->Cfg.ApplySetting == bValue )
+        {
+            return  TRUE;
+        }
+
+        /* save update to backup */
+        pWifiRadioFull->Cfg.ApplySetting = bValue;
+        return TRUE;
+#else
+        return FALSE;
+#endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER
     }
 
     if (strcmp(ParamName, "X_CISCO_COM_ReverseDirectionGrant") == 0)
@@ -3951,6 +4002,17 @@ Radio_SetParamIntValue
     }
     if (strcmp(ParamName, "X_CISCO_COM_ObssCoex") == 0)
     {
+#ifdef WIFI_HAL_VERSION_3
+        if ((wifiRadioOperParam->obssCoex == (BOOL)iValue) ||
+            (wifiRadioOperParam->band != WIFI_FREQUENCY_2_4_BAND))
+        {
+             return TRUE;
+        }
+
+        wifiRadioOperParam->obssCoex = (BOOL)iValue;
+        pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
+        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s OBSSCoex : %d\n", __FUNCTION__, wifiRadioOperParam->obssCoex);
+#else
         if ( pWifiRadioFull->Cfg.ObssCoex == iValue )
         {
             return  TRUE;
@@ -3959,6 +4021,7 @@ Radio_SetParamIntValue
         /* save update to backup */
         pWifiRadioFull->Cfg.ObssCoex = iValue;
         pWifiRadio->bRadioChanged = TRUE;
+#endif
         
         return TRUE;
     }
@@ -3983,13 +4046,43 @@ Radio_SetParamIntValue
         }
         
         /* save update to backup */
+#if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
+#if defined (WIFI_HAL_VERSION_3)
+        /* Suppress ApplySettings until EasyMesh controller is notified */
+        if (SendConfigChangeNotification("ApplySettingSSID", wlanIndex, iValue ? "1" : "0", NULL) != CCSP_SUCCESS) {
+            CcspWifiTrace(("RDK_LOG_ERROR, Unable to send ApplySettingSSID notification to EMController\n"));
+            pWifiRadioFull->Cfg.ApplySettingSSID = iValue;
+        }
+#else //WIFI_HAL_VERSION_3
+        /* Operate as expected */
         pWifiRadioFull->Cfg.ApplySettingSSID = iValue;
+#endif //WIFI_HAL_VERSION_3
+#else //FEATURE_SUPPORT_EASYMESH_CONTROLLER
+        pWifiRadioFull->Cfg.ApplySettingSSID = iValue;
+#endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER
 #ifndef WIFI_HAL_VERSION_3
         pWifiRadio->bRadioChanged = TRUE;
 #endif
         
         return TRUE;
     }
+
+    if (strcmp(ParamName, "X_RDK_ApplySettingSSID") == 0)
+    {
+#if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
+        if ( pWifiRadioFull->Cfg.ApplySettingSSID == iValue )
+        {
+            return  TRUE;
+        }
+
+        pWifiRadioFull->Cfg.ApplySettingSSID = iValue;
+
+        return TRUE;
+#else
+        return FALSE;
+#endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER
+    }
+
     if (strcmp(ParamName, "X_COMCAST-COM_CarrierSenseThresholdInUse") == 0)
     {         
         CosaDmlWiFi_setRadioCarrierSenseThresholdInUse((pWifiRadio->Radio.Cfg.InstanceNumber - 1),iValue);
@@ -4132,7 +4225,16 @@ Radio_SetParamUlongValue
             return  FALSE;
         }
 #endif
+#ifdef WIFI_HAL_VERSION_3
+        if (wifiRadioOperParam->autoChanRefreshPeriod == (UINT) uValue)
+        {
+            return TRUE;
+        }
 
+        wifiRadioOperParam->autoChanRefreshPeriod = (UINT) uValue;
+        pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
+        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s AutoChannelRefreshPeriod : %d\n", __FUNCTION__, wifiRadioOperParam->autoChanRefreshPeriod);
+#else
         if ( pWifiRadioFull->Cfg.AutoChannelRefreshPeriod == uValue )
         {
             return  TRUE;
@@ -4141,7 +4243,8 @@ Radio_SetParamUlongValue
         /* save update to backup */
         pWifiRadioFull->Cfg.AutoChannelRefreshPeriod = uValue;
         pWifiRadio->bRadioChanged = TRUE;
-        
+#endif
+
         return TRUE;
     }
 
@@ -4405,14 +4508,24 @@ Radio_SetParamUlongValue
 
     if (strcmp(ParamName, "BeaconPeriod") == 0)
     {
+#ifdef WIFI_HAL_VERSION_3
+        if(wifiRadioOperParam->beaconInterval == uValue)
+#else //WIFI_HAL_VERSION_3
         if ( pWifiRadioFull->Cfg.BeaconInterval == uValue )
+#endif
         {
             return  TRUE;
         }
         
+#ifdef WIFI_HAL_VERSION_3
+        wifiRadioOperParam->beaconInterval = uValue;
+        pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
+        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s beaconInterval : %d\n", __FUNCTION__, wifiRadioOperParam->beaconInterval);
+#else
         /* save update to backup */
         pWifiRadioFull->Cfg.BeaconInterval = uValue;
 	CosaDmlWiFi_setRadioBeaconPeriod((pWifiRadio->Radio.Cfg.InstanceNumber - 1),uValue);
+#endif
         return TRUE;
     }
 
@@ -4446,15 +4559,25 @@ Radio_SetParamUlongValue
 	
     if (strcmp(ParamName, "X_CISCO_COM_CTSProtectionMode") == 0)
     {
+#ifdef WIFI_HAL_VERSION_3
+        if (wifiRadioOperParam->ctsProtection == (0 != uValue))
+#else
         if ( pWifiRadioFull->Cfg.CTSProtectionMode == (0 != uValue) )
+#endif
         {
             return  TRUE;
         }
-        
+
+#ifdef WIFI_HAL_VERSION_3
+        wifiRadioOperParam->ctsProtection = (0 == uValue) ? FALSE : TRUE;
+        pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
+        ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s CTSProtection : %d\n", __FUNCTION__, wifiRadioOperParam->ctsProtection);
+#else
         /* save update to backup */
         pWifiRadioFull->Cfg.CTSProtectionMode = (0 == uValue) ? FALSE : TRUE;
         pWifiRadio->bRadioChanged = TRUE;
-        
+#endif
+
         return TRUE;
     }
 
@@ -6764,6 +6887,12 @@ SSID_SetParamBoolValue
                  }
             }
 #endif //FEATURE_HOSTAP_AUTHENTICATOR
+
+#if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
+            if (SendConfigChangeNotification("SSIDEnable", apIndex, (vapInfo->u.bss_info.enabled ? "1" : "0"), NULL) != CCSP_SUCCESS) {
+                CcspWifiTrace(("RDK_LOG_ERROR, Unable to send Enable notification to EMController\n"));
+            }
+#endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER
 #else
             if ( pWifiSsid->SSID.Cfg.bEnabled == bValue )
             {
@@ -7107,6 +7236,12 @@ SSID_SetParamStringValue
                 CcspWifiTrace(("RDK_LOG_INFO, WIFI_SSID_CHANGE_PUSHED_SUCCEESSFULLY\n"));
             }
 #endif //FEATURE_HOSTAP_AUTHENTICATOR
+
+#if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER) && defined (WIFI_HAL_VERSION_3)
+            if (SendConfigChangeNotification("SSID", apIndex, vapInfo->u.bss_info.ssid, NULL) != CCSP_SUCCESS) {
+                CcspWifiTrace(("RDK_LOG_ERROR, Unable to send SSID notification to EMController\n"));
+            }
+#endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER && WIFI_HAL_VERSION_3
         } else {
             CcspWifiTrace(("RDK_LOG_ERROR, WIFI_ATTEMPT_TO_CHANGE_CONFIG_WHEN_FORCE_DISABLED\n" ));
             return FALSE;
@@ -11723,6 +11858,12 @@ Security_SetParamStringValue
                 break;
         }
         pWifiApSec->isSecChanged = TRUE;
+
+#if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
+        if (SendConfigChangeNotification("SecMode", apIndex, pString, NULL) != CCSP_SUCCESS) {
+            CcspWifiTrace(("RDK_LOG_ERROR, Unable to send SecMode notification to EMController\n"));
+        }
+#endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER
 #else
 	pWifiApSec->Cfg.ModeEnabled = TmpMode;
 	pWifiAp->bSecChanged        = TRUE;
@@ -11933,6 +12074,12 @@ Security_SetParamStringValue
                     return FALSE;
                }
                 pWifiApSec->isSecChanged = TRUE;
+
+#if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
+                if (SendConfigChangeNotification("KeyPassphrase", apIndex, (char*)vapInfo->u.bss_info.security.u.key.key, NULL) != CCSP_SUCCESS) {
+                    CcspTraceError(("Unable to send KeyPassphrase notification to EMController\n"));
+                }
+#endif //FEATURE_SUPPORT_EASYMESH_CONTROLLER
 #else
                if((pString == NULL) || (strlen(pString) >= sizeof(pWifiApSec->Cfg.KeyPassphrase)))
                     return FALSE;
