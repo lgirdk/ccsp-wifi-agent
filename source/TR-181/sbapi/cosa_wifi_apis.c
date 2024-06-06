@@ -12171,14 +12171,15 @@ static void * CosaDmlWifi_RadioPowerThread(void *arg)
             }
 #else
         ULONG ath0Power = 0, ath1Power = 0;
-        wifi_getRadioTransmitPower(0,&ath0Power);
+
 #if defined(_LG_MV1_QCA_)
-        ath0Power = Convert_dBm2Percent(0, ath0Power);
-#endif
+        wifi_getRadioPercentageTransmitPower(0, &ath0Power);
+        wifi_getRadioPercentageTransmitPower(1, &ath1Power);
+#else
+        wifi_getRadioTransmitPower(0, &ath0Power);
         wifi_getRadioTransmitPower(1, &ath1Power);
-#if defined(_LG_MV1_QCA_)
-        ath1Power = Convert_dBm2Percent(1, ath1Power);
 #endif
+
         if ( ( power == COSA_DML_WIFI_POWER_UP ) &&
              ( (ath0Power == 5 ) || (ath1Power == 5) ) ) {
             // Power may have been lowered with interrupt, but PSM didn't send power down
@@ -31201,10 +31202,12 @@ ULONG CosaDmlWiFiRadioGetTrasmitPowerPercent(INT wlanIndex)
 {
     ULONG curTransmitPower = 0;
 
+#if defined(_LG_MV1_QCA_)
+    wifi_getRadioPercentageTransmitPower(wlanIndex, &curTransmitPower);
+#else
     wifi_getRadioTransmitPower(wlanIndex, &curTransmitPower);
-
     curTransmitPower = Convert_dBm2Percent(wlanIndex, &curTransmitPower);
-
+#endif
     return curTransmitPower;
 }
 
