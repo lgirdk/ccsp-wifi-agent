@@ -109,11 +109,11 @@ restart_wifi()
 	cd /usr/ccsp/wifi
 	export LD_LIBRARY_PATH=$PWD:.:$PWD/../../lib:$PWD/../../.:/lib:/usr/lib:$LD_LIBRARY_PATH
 	if [ -f /etc/ath/fast_down.sh ];then
-		FASTDOWN_PID=`pidof fast_down.sh`
+		FASTDOWN_PID=$(busybox pidof fast_down.sh)
 	else
-		FASTDOWN_PID=`pidof apdown`
+		FASTDOWN_PID=$(busybox pidof apdown)
 	fi
-	APUP_PID=`pidof apup`
+	APUP_PID=$(busybox pidof apup)
 	if [ $FASTDOWN_COUNTER -eq 0 ] && [ "$APUP_PID" == "" ] && [ "$FASTDOWN_PID" == "" ]; then
 		if [ -f /etc/ath/fast_down.sh ];then
 			/etc/ath/fast_down.sh
@@ -130,11 +130,11 @@ restart_wifi()
 		FASTDOWN_COUNTER=0
 	fi
 	if [ -f /etc/ath/fast_down.sh ];then
-		FASTDOWN_PID=`pidof fast_down.sh`
+		FASTDOWN_PID=$(busybox pidof fast_down.sh)
 	else
-		FASTDOWN_PID=`pidof apdown`
+		FASTDOWN_PID=$(busybox pidof apdown)
 	fi
-	APUP_PID=`pidof apup`
+	APUP_PID=$(busybox pidof apup)
 	if [ "$APUP_PID" == "" ] && [ "$FASTDOWN_PID" == "" ] && [ $FASTDOWN_COUNTER -eq 0 ]; then
 		$BINPATH/CcspWifiSsp -subsys $Subsys &
 		sleep 60
@@ -240,7 +240,7 @@ interface=1
 	done
         
       if [ "$BOX_TYPE" != "MV1" ]; then
-	Dropbear_Pid=`pidof dropbear`
+	Dropbear_Pid=$(busybox pidof dropbear)
 	if [ "$Dropbear_Pid" = "" ]
 	then
 		if [ -f $TELNET_SCRIPT_PATH/dropbear-start ]
@@ -259,11 +259,11 @@ interface=1
                 if [ "$rc" == "0" ]; then
 			echo_t "[RDKB_SELFHEAL.WARNING] : WiFi config file is corrupted. Restoring from backup"
 			source /etc/ath/apcfg wifi_config_check # add here to be safe even though apup will do the same later
-			APUP_PID=`pidof apup`
+			APUP_PID=$(busybox pidof apup)
  			if [ -f /etc/ath/fast_down.sh ];then
-                		FASTDOWN_PID=`pidof fast_down.sh`
+                		FASTDOWN_PID=$(busybox pidof fast_down.sh)
 			else	
-                		FASTDOWN_PID=`pidof apdown`
+                		FASTDOWN_PID=$(busybox pidof apdown)
                 	fi
 			if [ "$APUP_PID" == "" ] && [ "$FASTDOWN_PID" == "" ]; then
                 		echo_t "resetting radios"
@@ -276,7 +276,7 @@ interface=1
 	isNativeHostapdDisabled=`psmcli get Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Control.DisableNativeHostapd` #RDKB-30035
 
 	cd /usr/ccsp/wifi
-	WiFi_PID=`pidof CcspWifiSsp`
+	WiFi_PID=$(busybox pidof CcspWifiSsp)
 	if [ "$WiFi_PID" == "" ]; then
 		echo_t "WiFi process is not running, restarting it"
 		echo_t "RDKB_PROCESS_CRASHED : WiFiAgent_process is not running, need restart"
@@ -301,11 +301,11 @@ interface=1
 	  else
         	WIFI_RESTART=0
                 HOSTAPD_RESTART=0
-		APUP_PID=`pidof apup`
+		APUP_PID=$(busybox pidof apup)
  		if [ -f /etc/ath/fast_down.sh ];then
-                	FASTDOWN_PID=`pidof fast_down.sh`
+                	FASTDOWN_PID=$(busybox pidof fast_down.sh)
 		else	
-                	FASTDOWN_PID=`pidof apdown`
+                	FASTDOWN_PID=$(busybox pidof apdown)
                 fi
 
         if [ -f /tmp/cfg_list.txt ];then
@@ -474,7 +474,7 @@ interface=1
 		if [ "$check_radio_enable5" == "1" ] || [ "$check_radio_enable2" == "1" ] && [ $MESH_LOCKED_COUNT -eq 0 ]; then
 			if [ "$APUP_PID" == "" ] && [ "$FASTDOWN_PID" == "" ] && [ $FASTDOWN_COUNTER -eq 0 ]; then
                                 AP_UP_COUNTER=0
-				HOSTAPD_PID=`pidof hostapd`
+				HOSTAPD_PID=$(busybox pidof hostapd)
 				#RDKB-30035 MOD START
 				if [ "$isNativeHostapdDisabled" != "1" ] && [ "$HOSTAPD_PID" == "" ] && [ $HOSTAPD_RESTART_COUNTER -lt 4 ]; then
 				#RDKB-30035 MOD END
@@ -514,8 +514,8 @@ interface=1
 					check_interface_iw2=`iwconfig $iface_24 | grep Access | awk '{print $6}'`
 					check_interface_iw5=`iwconfig $iface_5 | grep Access | awk '{print $6}'`
 					check_interface_iw_ath2=`iwconfig ath2 | grep Access | awk '{print $6}'`
-					check_hostapd_ath0=`grep $iface_24 /proc/$(pidof hostapd)/cmdline`
-					check_hostapd_ath1=`grep -v $iface_5[0-9] /proc/$(pidof hostapd)/cmdline | grep $iface_5`
+					check_hostapd_ath0=`grep $iface_24 /proc/$(busybox pidof hostapd)/cmdline`
+					check_hostapd_ath1=`grep -v $iface_5[0-9] /proc/$(busybox pidof hostapd)/cmdline | grep $iface_5`
 					check_wps_ath0=`grep $wpsenable_24 /tmp/cfg_list.txt`
 					check_wps_ath1=`grep $wpsenable_5 /tmp/cfg_list.txt`
 					check_ap_sec_mode_2=`grep $secmode_24 /tmp/cfg_list.txt`
@@ -537,7 +537,7 @@ interface=1
                                                 check_interface_iw2=`iwconfig $iface_24 | grep Access | awk '{print $6}'`
 
 						#RDKB-30035 MOD START
-						if [ "$check_interface_iw2" == "Not-Associated" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
+						if [ "$check_interface_iw2" == "Not-Associated" ] && [ "$(busybox pidof apup)" == "" ] && [ "$(busybox pidof fastdown)" == "" ] && [ "$(busybox pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(busybox pidof hostapd)" != "" ]]; then
 								echo_t "$iface_24 is Not-Associated, restarting radios"
 								WIFI_REBOOT_REASON="$iface_24 is Not-Associated"
 								WIFI_RESTART=1
@@ -551,7 +551,7 @@ interface=1
                                                 check_interface_iw5=`iwconfig $iface_5 | grep Access | awk '{print $6}'`
 
 						#RDKB-30035 START
-						if [ "$check_interface_iw5" == "Not-Associated" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
+						if [ "$check_interface_iw5" == "Not-Associated" ] && [ "$(busybox pidof apup)" == "" ] && [ "$(busybox pidof fastdown)" == "" ] && [ "$(busybox pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(busybox pidof hostapd)" != "" ]]; then
 						#RDKB-30035 END
 								echo_t "$iface_5 is Not-Associated, restarting radios"
 								WIFI_REBOOT_REASON="$iface_5 is Not-Associated"
@@ -566,7 +566,7 @@ interface=1
                                                 check_interface_iw_ath2=`iwconfig ath2 | grep Access | awk '{print $6}'`
 
 						#RDKB-30035 START
-						if [ "$check_interface_iw_ath2" == "Not-Associated" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
+						if [ "$check_interface_iw_ath2" == "Not-Associated" ] && [ "$(busybox pidof apup)" == "" ] && [ "$(busybox pidof fastdown)" == "" ] && [ "$(busybox pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(busybox pidof hostapd)" != "" ]]; then
 								echo_t "ath2 is Not-Associated, restarting radios"
 								WIFI_REBOOT_REASON="ath2 is Not-Associated"
 								WIFI_RESTART=1
@@ -574,22 +574,22 @@ interface=1
 					fi
 
 
-					if [ "$check_ap_enable5" == "1" ] && [ "$check_radio_enable5" == "1" ] && [ "$check_interface_up5" == "" ] && [ "$(pidof hostapd)" != "" ]; then
+					if [ "$check_ap_enable5" == "1" ] && [ "$check_radio_enable5" == "1" ] && [ "$check_interface_up5" == "" ] && [ "$(busybox pidof hostapd)" != "" ]; then
 						check_interface_up5=`ifconfig | grep -v $iface_5[0-9] | grep $iface_5`
 
 						#RDKB-30035 START
-						if [ "$check_interface_up5" == "" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
+						if [ "$check_interface_up5" == "" ] && [ "$(busybox pidof apup)" == "" ] && [ "$(busybox pidof fastdown)" == "" ] && [ "$(busybox pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(busybox pidof hostapd)" != "" ]]; then
 							echo_t "$iface_5 is down, restarting radios"
 							WIFI_REBOOT_REASON="$iface_5 is down"
 							WIFI_RESTART=1
 						fi
 					fi
 				
-					if [ "$check_ap_enable2" == "1" ] && [ "$check_radio_enable2" == "1" ] && [ "$check_interface_up2" == "" ] && [ "$(pidof hostapd)" != "" ]; then
+					if [ "$check_ap_enable2" == "1" ] && [ "$check_radio_enable2" == "1" ] && [ "$check_interface_up2" == "" ] && [ "$(busybox pidof hostapd)" != "" ]; then
 						check_interface_up2=`ifconfig | grep $iface_24`
 
 						#RDKB-30035 START
-						if [ "$check_interface_up2" == "" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(pidof hostapd)" != "" ]]; then
+						if [ "$check_interface_up2" == "" ] && [ "$(busybox pidof apup)" == "" ] && [ "$(busybox pidof fastdown)" == "" ] && [ "$(busybox pidof apdown)" == "" ] && [[ "$isNativeHostapdDisabled" == "1" || "$(busybox pidof hostapd)" != "" ]]; then
 							echo_t "$iface_24 is down, restarting radios"
 							WIFI_REBOOT_REASON="$iface_24 is down"
 							WIFI_RESTART=1
@@ -793,7 +793,7 @@ interface=1
                                         touch /tmp/process_monitor_restartwifi
                                         killall hostapd
                                         sleep 1
-                                        WiFi_PID=`pidof CcspWifiSsp`
+                                        WiFi_PID=$(busybox pidof CcspWifiSsp)
                                         kill -9 $WiFi_PID
                                         sleep 1
                                         killall lbd
@@ -820,7 +820,7 @@ interface=1
                                         sleep 1   
 					rmmod -f adf
                                         sleep 1
-                                        WiFi_PID=`pidof CcspWifiSsp`
+                                        WiFi_PID=$(busybox pidof CcspWifiSsp)
                                         kill -9 $WiFi_PID
                                         #kill -9 $HOSTAPD_PID
                                         AP_UP_COUNTER=0
@@ -854,13 +854,13 @@ interface=1
 				echo "is_at_least_one_radio_up=$is_at_least_one_radio_up"
                                 LOOP_COUNTER=0
 				while [ $LOOP_COUNTER -lt 3 ] ; do
-					if [ "$is_at_least_one_radio_up" == "1" ] && [ $uptime -gt 600 ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ]  && [ "$(pidof aphealth_log.sh)" == "" ]; then
+					if [ "$is_at_least_one_radio_up" == "1" ] && [ $uptime -gt 600 ] && [ "$(busybox pidof apup)" == "" ] && [ "$(busybox pidof fastdown)" == "" ] && [ "$(busybox pidof apdown)" == "" ]  && [ "$(busybox pidof aphealth_log.sh)" == "" ]; then
 						#RDKB-30035 START
 						if [ "$isNativeHostapdDisabled" == "1" ]; then
 							break
 						fi
 						#RDKB-30035 END
-						if [ "$(pidof hostapd)" != "" ] && [ "$HOSTAPD_RESTART" == "1" ]; then
+						if [ "$(busybox pidof hostapd)" != "" ] && [ "$HOSTAPD_RESTART" == "1" ]; then
                                                 	break
 						fi
 						echo_t "resetting radios"
@@ -877,7 +877,7 @@ interface=1
 					fi
 				done
 				#RDKB-30035 START
-				if [ "$isNativeHostapdDisabled" != "1" ] && [ "$(pidof hostapd)" == "" ] && [ "$(pidof apup)" == "" ] && [ "$(pidof fastdown)" == "" ] && [ "$(pidof apdown)" == "" ]; then
+				if [ "$isNativeHostapdDisabled" != "1" ] && [ "$(busybox pidof hostapd)" == "" ] && [ "$(busybox pidof apup)" == "" ] && [ "$(busybox pidof fastdown)" == "" ] && [ "$(busybox pidof apdown)" == "" ]; then
                                 	ifconfig $iface_24 up
 					ifconfig $iface_5 up
 					HOSTAPD_RESTART_COUNTER=$(($HOSTAPD_RESTART_COUNTER + 1))
@@ -898,7 +898,7 @@ interface=1
 
        if [ "$BOX_TYPE" = "XB3" ] && [ -f "/etc/webgui_atom.sh" ]
        then
-          Lighttpd_PID=`pidof lighttpd`
+          Lighttpd_PID=$(busybox pidof lighttpd)
           if [ "$Lighttpd_PID" = "" ]
           then
           	isPortKilled=`netstat -anp | awk '/:21515 */ {split($NF,a,"/"); print a[2],a[1]}' | cut -f2 -d" "`
@@ -922,7 +922,7 @@ interface=1
        fi
 	
 	#Checking the ntpd is running or not in ATOM
-	NTPD_PID=`pidof ntpd`
+	NTPD_PID=$(busybox pidof ntpd)
 	if [ "$NTPD_PID" = "" ] && [ $uptime -gt 900 ]; then
 			echo_t "RDKB_PROCESS_CRASHED : NTPD is not running in ATOM, restarting NTPD"
 			systemctl restart ntpc.service
@@ -967,7 +967,7 @@ interface=1
 	 fi
         fi
 #Checking if rpcserver is running
-	RPCSERVER_PID=`pidof rpcserver`
+	RPCSERVER_PID=$(busybox pidof rpcserver)
 	if [ "$RPCSERVER_PID" = "" ] && [ -f /usr/bin/rpcserver ]; then
 			echo_t "RDKB_PROCESS_CRASHED : RPCSERVER is not running on ATOM, restarting "
 			/usr/bin/rpcserver &
