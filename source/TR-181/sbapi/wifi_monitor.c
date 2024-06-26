@@ -1063,8 +1063,9 @@ int upload_client_telemetry_data(void *arg)
 #else
         bool enable24detailstats = false;
         bool enable5detailstats = false;
-        unsigned int itr = 0;
 #endif
+        unsigned int itr;
+
         if (strncmp(stflag, g_monitor_module.cliStatsList, MAX_VAP) != 0) {
             strncpy(g_monitor_module.cliStatsList, stflag, MAX_VAP);
             // check if we should enable of disable detailed client stats collection on XB3
