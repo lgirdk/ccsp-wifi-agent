@@ -2442,6 +2442,21 @@ Radio_GetParamIntValue
         return TRUE;
     }
 
+    if (strcmp(ParamName, "TxChainmask") == 0)
+    {
+
+           ULONG instanceNumber = pWifiRadioFull->Cfg.InstanceNumber;
+           wifi_getRadioTxChainMask(instanceNumber-1,pInt);
+           return TRUE;
+    }
+    if (strcmp(ParamName, "RxChainmask") == 0)
+    {
+           ULONG instanceNumber = pWifiRadioFull->Cfg.InstanceNumber;
+           wifi_getRadioRxChainMask(instanceNumber-1,pInt);
+           return TRUE;
+    }
+
+
     if (strcmp(ParamName, "X_CISCO_COM_MbssUserControl") == 0)
     {
         *pInt = pWifiRadioFull->Cfg.MbssUserControl; 
@@ -3445,6 +3460,15 @@ Radio_GetParamStringValue
         return 0;
     }
 
+
+    if(AnscEqualString(ParamName, "BeaconRate", TRUE))
+    {
+           ULONG apIndex = pWifiRadioFull->Cfg.InstanceNumber;
+           wifi_getApBeaconRate(apIndex-1, pValue);
+           return TRUE;
+    }
+
+
     /* CcspTraceWarning(("Unsupported parameter '%s'\n", ParamName)); */
     return -1;
 }
@@ -3960,6 +3984,21 @@ Radio_SetParamIntValue
 
         return TRUE;
     }
+
+    if (strcmp(ParamName, "TxChainmask") == 0)
+    {
+           ULONG instanceNumber = pWifiRadioFull->Cfg.InstanceNumber;
+           wifi_setRadioTxChainMask(instanceNumber-1, iValue);
+           return TRUE;
+
+    }
+    if (strcmp(ParamName, "RxChainmask") == 0)
+    {
+           ULONG instanceNumber = pWifiRadioFull->Cfg.InstanceNumber;
+           wifi_setRadioRxChainMask(instanceNumber-1, iValue);
+           return TRUE;
+    }
+
 
     if (strcmp(ParamName, "X_CISCO_COM_MbssUserControl") == 0)
     {
@@ -4523,6 +4562,7 @@ Radio_SetParamUlongValue
         ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s beaconInterval : %d\n", __FUNCTION__, wifiRadioOperParam->beaconInterval);
 #else
         /* save update to backup */
+	wifiRadioOperParam->beaconInterval = uValue;
         pWifiRadioFull->Cfg.BeaconInterval = uValue;
 	CosaDmlWiFi_setRadioBeaconPeriod((pWifiRadio->Radio.Cfg.InstanceNumber - 1),uValue);
 #endif
@@ -4921,6 +4961,14 @@ Radio_SetParamStringValue
 #endif //WIFI_HAL_VERSION_3
         return TRUE;
     }
+
+    if (strcmp(ParamName, "BeaconRate") == 0)
+    {
+           ULONG instanceNumber = pWifiRadioFull->Cfg.InstanceNumber;
+           wifi_setApBeaconRate(instanceNumber-1, pString);
+           return TRUE;
+    }
+
 
     if (strcmp(ParamName, "BasicDataTransmitRates") == 0)
     {
@@ -9877,6 +9925,14 @@ AccessPoint_SetParamStringValue
         /* Currently we dont allow to change this - May be when multi-SSID comes in */
         return FALSE;
     #endif
+    }
+    rc = strcmp_s("Kickmac", strlen("Kickmac"), ParamName, &ind);
+    ERR_CHK(rc);
+    if((rc == EOK) && (!ind))
+    {
+           ULONG  apIndex = pWifiAp->AP.Cfg.InstanceNumber;
+           wifi_kickApAssociatedDevice(apIndex-1 , pString);
+           return TRUE;
     }
 	
     rc = strcmp_s("X_RDKCENTRAL-COM_BeaconRate", strlen("X_RDKCENTRAL-COM_BeaconRate"), ParamName, &ind);

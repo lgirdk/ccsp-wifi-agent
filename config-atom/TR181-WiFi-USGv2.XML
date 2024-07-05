@@ -966,6 +966,24 @@ INSTMSMT_PH2 -->
                             <notify>off</notify>
                         </parameter>
                         <parameter>
+                            <name>TxChainmask</name>
+                            <type>int</type>
+                            <syntax>int</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                            <name>RxChainmask</name>
+                            <type>int</type>
+                            <syntax>int</syntax>
+                            <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                            <name>BeaconRate</name>
+                            <type>string</type>
+                            <syntax>string</syntax>
+                            <writable>true</writable>
+                     </parameter>
+                     <parameter>
                             <name>X_CISCO_COM_ApChannelScan</name>
                             <type>string(16384)</type>
                             <syntax>string</syntax>
@@ -2020,6 +2038,12 @@ INSTMSMT_PH2 -->
                         </parameter>
                         <parameter>
                             <name>SSIDReference</name>
+                            <type>string(256)</type>
+                            <syntax>string</syntax>
+			    <writable>true</writable>
+                        </parameter>
+                        <parameter>
+                            <name>Kickmac</name>
                             <type>string(256)</type>
                             <syntax>string</syntax>
                             <writable>true</writable>
