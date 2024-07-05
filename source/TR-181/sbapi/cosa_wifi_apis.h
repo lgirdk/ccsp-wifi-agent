@@ -2862,5 +2862,6 @@ ANSC_STATUS getMFPTypeFromString (const char *MFPName, wifi_mfp_cfg_t *MFPType);
 ANSC_STATUS CosaDmlCheckToKickAssocDevices(char* pSsid, PCOSA_DML_WIFI_AP_CFG pCfg);
 #endif //WIFI_HAL_VERSION_3
 ULONG CosaDmlWiFiRadioGetTrasmitPowerPercent(INT wlanIndex);
+INT CosaDmlWiFiRadioSetTrasmitPowerPercent(INT wlanIndex, INT transmitPower);
 BOOL CosaDmlWiFiRadioGetAutoChannelEnable(INT wlanIndex);
 #endif

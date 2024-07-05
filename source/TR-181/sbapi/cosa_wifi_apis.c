@@ -31211,6 +31211,15 @@ ULONG CosaDmlWiFiRadioGetTrasmitPowerPercent(INT wlanIndex)
     return curTransmitPower;
 }
 
+INT CosaDmlWiFiRadioSetTrasmitPowerPercent(INT wlanIndex, INT transmitPower)
+{
+#if defined(_LG_MV1_QCA_)
+    return wifi_setRadioTransmitPower(wlanIndex, transmitPower);
+#else
+    return ANSC_STATUS_FAILURE;
+#endif
+}
+
 BOOL CosaDmlWiFiRadioGetAutoChannelEnable(INT wlanIndex)
 {
     BOOL enabled = 0;
