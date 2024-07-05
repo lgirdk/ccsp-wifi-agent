@@ -4006,6 +4006,9 @@ Radio_SetParamIntValue
 #else //WIFI_HAL_VERSION_3
         /* save update to backup */
         pWifiRadioFull->Cfg.TransmitPower = iValue;
+#if defined(_LG_MV1_QCA_)
+        CosaDmlWiFiRadioSetTrasmitPowerPercent(pWifiRadioFull->Cfg.InstanceNumber-1, iValue);
+#endif
         pWifiRadio->bRadioChanged = TRUE;
 #endif //WIFI_HAL_VERSION_3
 
