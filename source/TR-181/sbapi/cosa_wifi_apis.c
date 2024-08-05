@@ -22003,7 +22003,6 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
     int retPsmGet = CCSP_SUCCESS;
     int retPsmSet = CCSP_SUCCESS;
     char *strValue = NULL;
-	BOOL enabled=FALSE;
 #if defined(ENABLE_FEATURE_MESHWIFI)
     CHAR multinet_instance[128] = {0};
 #endif
@@ -22025,8 +22024,8 @@ wifiDbgPrintf("%s\n",__FUNCTION__);
         }
 
 	pthread_mutex_lock(&MacFilt_CountMutex);
-	wifi_getApEnable(apIns-1, &enabled);
-	if (enabled) { 		 			
+
+	{
 		CcspTraceWarning(("Mac Filter Entry count:%d\n", g_macFiltCnt[apIns-1]));
 		int rc = wifi_addApAclDevice(apIns-1,pMacFilt->MACAddress);
 		if (rc != 0) {
