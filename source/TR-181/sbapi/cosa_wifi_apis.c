@@ -28806,6 +28806,8 @@ static INT Mesh_Notification(char *event, char *data)
         PCOSA_DML_WIFI_AP      pWifiAp = NULL;
         PCOSA_DML_WIFI_RADIO pWifiRadio = NULL;
  
+        wifi_radio_operationParam_t *wifiRadioOperParam = NULL;
+
         if(!pMyObject) {
             CcspTraceError(("%s Data Model object is NULL!\n",__FUNCTION__));
             return -1;
@@ -28888,12 +28890,24 @@ static INT Mesh_Notification(char *event, char *data)
                         CcspTraceError(("channel error:%d\n", channel));
                         return -1;
                 }
+
+#ifdef WIFI_HAL_VERSION_3
+                wifiRadioOperParam = getRadioOperationParam(radioIndex);
+                if (wifiRadioOperParam == NULL)
+                {
+                    CcspWifiTrace(("RDK_LOG_ERROR, %s Input radioIndex = %d not found for wifiRadioOperParam\n", __FUNCTION__, radioIndex));
+                }
+                else
+                {
+                    wifiRadioOperParam->autoChannelEnabled = FALSE;
+                }
+#endif //WIFI_HAL_VERSION_3
                 //When OpenSync changed the channel, we need to save it to data model and nvram.
                 pWifiRadio = pMyObject->pRadio+radioIndex;
-                if ( pWifiRadio && pWifiRadio->Radio.Cfg.Channel != channel )
+                if ( pWifiRadio )
                 {
                     pWifiRadio->Radio.Cfg.Channel = channel;
-                    wifi_setRadioChannel(radioIndex, channel);
+                    pWifiRadio->Radio.Cfg.AutoChannelEnable = FALSE;
                 }
  
                 return 0;
