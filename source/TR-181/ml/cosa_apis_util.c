@@ -701,6 +701,10 @@ CosaUtilChannelValidate
             }
             token = strtok_r(NULL, delimiter, &saveptr);
         }
+#ifdef _LG_MV1_CELENO_
+	// If the given channel is not in the PossibleChannels[] list, return false for the CBN MV1 platform.
+	return 0;
+#endif
     }
 #ifdef WIFI_HAL_VERSION_3
     if(wifiRadioChannelIsValid(uiRadio - 1, Channel) == ANSC_STATUS_SUCCESS)
