@@ -6353,6 +6353,9 @@ EnhancedACS_SetParamBoolValue
         return TRUE;
     }
     if (strcmp(ParamName, "ExcludeDFS") == 0) {
+//ExcludeDFS is set to TRUE by default for CBN MV1 platform.
+//If there is any attempt to change this value on the CBN MV1 platform, an error should be thrown.
+#ifndef _LG_MV1_CELENO_
         if (pWifiRadioEnhancedACS->ExcludeDFS != bValue) {
             // Only allow NOT excluding DFS if DFS is enabled.
             if ((pWifiRadioFull->Cfg.X_COMCAST_COM_DFSEnable == FALSE) && (bValue == FALSE)) {
@@ -6364,6 +6367,7 @@ EnhancedACS_SetParamBoolValue
 #endif
         }
         return TRUE;
+#endif
     }
     return FALSE;
 }
