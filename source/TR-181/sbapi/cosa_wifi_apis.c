@@ -14189,23 +14189,6 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
     /*RDKB-6907, CID-32973, null check before use*/
     pStoredCfg = &sWiFiDmlRadioStoredCfg[pCfg->InstanceNumber-1];
 
-    //  if radar pulse is detected, then the current channel will not be available and user cannot set the same channel for 30 mins.
-    if (pStoredCfg->Channel == pCfg->Channel)
-    {
-        void*   pCfgChannel = NULL;
-        
-        pCfgChannel = &pStoredCfg->Channel;
-        
-        if (0 != wifi_getRadioChannel(wlanIndex, pCfgChannel))
-        {
-            CcspTraceError(("%s:%d,Failed to get the radio channel\n", __FUNCTION__,__LINE__));
-        }
-        else
-        {
-            CcspTraceInfo(("%s:%d, pStoredCfg->Channel: %ld\n",__FUNCTION__,__LINE__,pStoredCfg->Channel));
-        }
-    }
-
     pCfg->LastChange             = AnscGetTickInSeconds();
     printf("%s: LastChange %lu \n", __func__,pCfg->LastChange);
 
@@ -14399,7 +14382,7 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
             wifi_setRadioChannel(wlanIndex, pCfg->Channel);
         }
 
-    } else if (  (pCfg->AutoChannelEnable == FALSE) && (pCfg->Channel != pStoredCfg->Channel || pStoredCfg->Channel != runningChannel) ) /* handle case of plume changing the channel */
+    } else if (  (pCfg->AutoChannelEnable == FALSE) && (pCfg->Channel != pStoredCfg->Channel || (runningChannel && pStoredCfg->Channel != runningChannel) ) ) /* handle case of plume changing the channel */
     {
 #if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
         char chnValue[16];
@@ -14478,6 +14461,12 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
          pCfg->AutoChannelEnable != pStoredCfg->AutoChannelEnable ) // Change from ACS to mannual, but without changing the channel
 #endif
     {
+        CcspWifiTrace(("RDK_LOG_ERROR, %s-%d difference in radio params, %ul %ul, %d %d, %d %d, %ul %ul, %d %d\n", __FUNCTION__, __LINE__,
+                        pCfg->OperatingStandards, pStoredCfg->OperatingStandards,
+                        pCfg->OperatingChannelBandwidth, pStoredCfg->OperatingChannelBandwidth,
+                        pCfg->ExtensionChannel, pStoredCfg->ExtensionChannel,
+                        pCfg->Channel, pStoredCfg->Channel,
+                        pCfg->AutoChannelEnable, pStoredCfg->AutoChannelEnable));
 
         char *chnMode = NULL;
 #if !defined (_WIFI_CONSOLIDATED_STANDARDS_)
@@ -14999,10 +14988,11 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
         }
 #else
 		if(gRadioRestartRequest[0] || gRadioRestartRequest[1] || gRadioRestartRequest[2]) {
-fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__, gRadioRestartRequest[0], gRadioRestartRequest[1] );		
-			wlanRestart=TRUE;
+fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__, gRadioRestartRequest[0], gRadioRestartRequest[1] );
+			CcspWifiTrace(("RDK_LOG_INFO, %s-%d gRadioRestartRequest=%d %d %d %d\n", __FUNCTION__, __LINE__,  wlanIndex, gRadioRestartRequest[0], gRadioRestartRequest[1], gRadioRestartRequest[2]));
 			if(gRadioRestartRequest[2] == TRUE)
 			{
+				wlanRestart=TRUE;
 				gRadioRestartRequest[0]=FALSE;
 				gRadioRestartRequest[1]=FALSE;
 				gRadioRestartRequest[2]=FALSE;
@@ -15010,10 +15000,10 @@ fprintf(stderr, "----# %s %d gRadioRestartRequest=%d %d \n", __func__, __LINE__,
 			}
 			else
 			{
-				if(wlanIndex == 0)
-					gRadioRestartRequest[0]=FALSE;
-				else
-					gRadioRestartRequest[1]=FALSE;
+				if(gRadioRestartRequest[wlanIndex]) {
+					wlanRestart=TRUE;
+					gRadioRestartRequest[wlanIndex]=FALSE;
+				}
 			}
 		}
 #endif
