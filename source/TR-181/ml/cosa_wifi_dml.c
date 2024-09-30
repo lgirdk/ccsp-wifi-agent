@@ -3680,7 +3680,11 @@ Radio_SetParamBoolValue
 
     if (strcmp(ParamName, "X_COMCAST_COM_DFSEnable") == 0)
     {
+#ifdef WIFI_HAL_VERSION_3
+        if (wifiRadioOperParam->DfsEnabled == bValue)
+#else //WIFI_HAL_VERSION_3
         if ( pWifiRadioFull->Cfg.X_COMCAST_COM_DFSEnable == bValue )
+#endif //WIFI_HAL_VERSION_3
         {
             return  TRUE;
         }
@@ -3691,9 +3695,14 @@ Radio_SetParamBoolValue
             return FALSE;
         }
 
+#ifdef WIFI_HAL_VERSION_3
+        wifiRadioOperParam->DfsEnabled = bValue;
+        pWifiRadioFull->Cfg.isRadioConfigChanged = TRUE;
+#else //WIFI_HAL_VERSION_3
         /* save update to backup */
         pWifiRadioFull->Cfg.X_COMCAST_COM_DFSEnable = bValue;
         pWifiRadio->bRadioChanged = TRUE;
+#endif //WIFI_HAL_VERSION_3
 
         return TRUE;
     }
