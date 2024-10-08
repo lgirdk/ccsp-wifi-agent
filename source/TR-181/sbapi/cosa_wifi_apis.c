@@ -18871,7 +18871,7 @@ wifiDbgPrintf("%s pSsid = %s\n",__FUNCTION__, pSsid);
             }
         }
 #if defined(_LG_MV1_QCA_)
-        else
+        else if(access("/tmp/migration_to_mng", F_OK) == 0)
         {
             UCHAR KeyPassphrase[64+1];
             wifi_getApSecurityKeyPassphrase(6, pCfg->KeyPassphrase);
