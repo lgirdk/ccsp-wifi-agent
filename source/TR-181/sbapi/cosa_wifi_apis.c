@@ -2087,7 +2087,7 @@ struct wifiCountryEnumStrMap wifiCountryMap[] =
     {wifi_countrycode_JM,"JM"}, /**< JAMAICA */
     {wifi_countrycode_JP,"JP"}, /**< JAPAN */
     {wifi_countrycode_JE,"JE"}, /**< JERSEY */
-    {wifi_countrycode_JO,"jo"}, /**< JORDAN */
+    {wifi_countrycode_JO,"JO"}, /**< JORDAN */
     {wifi_countrycode_KE,"KE"}, /**< KENYA */
     {wifi_countrycode_KG,"KG"}, /**< KYRGYZSTAN */
     {wifi_countrycode_KH,"KH"}, /**< CAMBODIA */
@@ -2221,7 +2221,12 @@ struct wifiCountryEnumStrMap wifiCountryMap[] =
     {wifi_countrycode_YU,"YU"}, /**< YUGOSLAVIA */
     {wifi_countrycode_ZA,"ZA"}, /**< SOUTH AFRICA */
     {wifi_countrycode_ZM,"ZM"}, /**< ZAMBIA */
-    {wifi_countrycode_ZW,"ZW"} /**< ZIMBABWE */
+    {wifi_countrycode_ZW,"ZW"}, /**< ZIMBABWE */
+    {wifi_countrycode_AX,"AX"}, /**< ALAND_ISLANDS */
+    {wifi_countrycode_BL,"BL"}, /**< SAINT_BARTHELEMY */
+    {wifi_countrycode_CW,"CW"}, /**< CURACAO */
+    {wifi_countrycode_MF,"MF"}, /**< SAINT_MARTIN */
+    {wifi_countrycode_SX,"SX"}  /**< SINT_MAARTEN */
 };
 
 struct wifiWPSCosaHalMap wifiWPSMap[] =
