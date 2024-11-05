@@ -25158,6 +25158,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
                                     return NULL;
                                 }
 
+                                CcspWifiTrace(("RDK_LOG_WARN, Association event: send association event for %s\n", mac_id));
 
 				
 				CosaDMLWiFi_Send_ReceivedHostDetails_To_LMLite( &(hosts.host[0]) );
@@ -25177,7 +25178,7 @@ void *Wifi_Hosts_Sync_Func(void *pt, int index, wifi_associated_dev_t *associate
 			);
 			rec_mac_id[17] = '\0';	
 	
-			CcspWifiTrace(("RDK_LOG_WARN, send association event for %s\n", rec_mac_id));
+			CcspWifiTrace(("RDK_LOG_WARN, Dissociation event: send dissociation event for %s\n", rec_mac_id));
 
                         rc = strcpy_s((char*)hosts.host[0].phyAddr, sizeof(hosts.host[0].phyAddr), rec_mac_id);
               		if (rc != 0) {
