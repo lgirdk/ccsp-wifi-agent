@@ -12972,6 +12972,9 @@ Security_SetParamStringValue
                 vapInfo->u.bss_info.security.u.key.type = wifi_security_key_type_psk_sae;
                 vapInfo->u.bss_info.security.mfp = wifi_mfp_cfg_optional;
                 break;
+            case wifi_security_mode_none:
+                vapInfo->u.bss_info.security.mfp = wifi_mfp_cfg_disabled;
+                break;
             default:
                 break;
         }
