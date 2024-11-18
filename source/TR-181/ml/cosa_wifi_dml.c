@@ -21415,8 +21415,11 @@ NeighboringScanResult_GetParamStringValue
 	 UNREFERENCED_PARAMETER(hInsContext);
 	 PCOSA_DATAMODEL_WIFI			 pMyObject		 = (PCOSA_DATAMODEL_WIFI	 )g_pCosaBEManager->hWifi;
 	 PCOSA_DML_WIFI_BANDSTEERING	 pBandSteering	 = pMyObject->pBandSteering;
-	 
-	 return pBandSteering->RadioCount;
+
+         if(pBandSteering !=NULL){
+             return pBandSteering->RadioCount;
+         }
+	 return ANSC_STATUS_FAILURE;
  }
 
 /**********************************************************************  
@@ -21965,9 +21968,10 @@ APGroup_GetEntryCount
 	PCOSA_DATAMODEL_WIFI            pWiFi     = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
 	PCOSA_DML_WIFI_ATM				pATM = pWiFi->pATM;
 	
-    return pATM->grpCount;
-	
-	
+	if(pATM != NULL){
+	    return pATM->grpCount;
+	}
+       return ANSC_STATUS_FAILURE;
 }
 
 
@@ -21984,11 +21988,13 @@ APGroup_GetEntry
 	PCOSA_DATAMODEL_WIFI            pWiFi     = (PCOSA_DATAMODEL_WIFI)g_pCosaBEManager->hWifi;
 	PCOSA_DML_WIFI_ATM				pATM = pWiFi->pATM;
 	//PCOSA_DML_WIFI_ATM_APGROUP		pATMApGroup=&pATM->APGroup;
-	
-	if(nIndex < pATM->grpCount) {
-		*pInsNumber=nIndex+1;
-		return pATM->APGroup+nIndex;
-	}
+
+	if(pATM != NULL){
+            if(nIndex < pATM->grpCount) {
+                *pInsNumber=nIndex+1;
+                return pATM->APGroup+nIndex;
+            }
+        }
 	return NULL;
 }
 
