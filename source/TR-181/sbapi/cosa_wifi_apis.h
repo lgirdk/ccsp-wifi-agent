@@ -2413,7 +2413,6 @@ void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg );
 #endif /* * _HUB4_PRODUCT_REQ_ */
 
 #if defined (FEATURE_SUPPORT_EASYMESH_CONTROLLER)
-int SendConfigChangeNotification(const char *type, int index, const char *val1, const char *val2);
 void WiFiEMControllerApplyChanges(char *val);
 #endif // FEATURE_SUPPORT_EASYMESH_CONTROLLER
 ANSC_STATUS CosaDmlWiFi_GetRapidReconnectIndicationEnable(BOOL *bEnable, BOOL usePersistent);
