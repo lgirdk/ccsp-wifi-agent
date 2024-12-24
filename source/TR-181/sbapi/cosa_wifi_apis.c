@@ -11889,11 +11889,10 @@ CosaDmlWiFiRadioGetSinfo
     /*Update PossibleChannels per radio*/
     strCount = 0;
     strLoc   = 0;
-    pInfo->PossibleChannels[strLoc] = '\0';
     arrayLen = wifiRadioCap->channel_list[bandArrIndex].num_channels;
     for (seqCounter = 0; seqCounter < arrayLen; seqCounter++)
     {
-        rc = sprintf_s(&pInfo->PossibleChannels[strLoc], (sizeof(pInfo->PossibleChannels) - strLoc), "%d,", wifiRadioCap->channel_list[bandArrIndex].channels_list[seqCounter]);
+        rc = sprintf_s(&pInfo->PossibleChannels[strLoc], sizeof(pInfo->PossibleChannels) ,"%d,", wifiRadioCap->channel_list[bandArrIndex].channels_list[seqCounter]);
         if(rc < EOK)
         {
             ERR_CHK(rc);
@@ -11913,11 +11912,10 @@ CosaDmlWiFiRadioGetSinfo
     /*update TransmitPowerSupported per radio*/
     strLoc   = 0;
     strCount = 0;
-    pInfo->TransmitPowerSupported[strLoc] = '\0';
     arrayLen = wifiRadioCap->transmitPowerSupported_list[bandArrIndex].numberOfElements;
     for (seqCounter = 0; seqCounter < arrayLen; seqCounter++)
     {
-        rc = sprintf_s(&pInfo->TransmitPowerSupported[strLoc], (sizeof(pInfo->TransmitPowerSupported) - strLoc), "%d,", wifiRadioCap->transmitPowerSupported_list[bandArrIndex].transmitPowerSupported[seqCounter]);
+        rc = sprintf_s(&pInfo->TransmitPowerSupported[strLoc], sizeof(pInfo->TransmitPowerSupported) , "%d,", wifiRadioCap->transmitPowerSupported_list[bandArrIndex].transmitPowerSupported[seqCounter]);
         if(rc < EOK)
         {
             ERR_CHK(rc);
@@ -23565,13 +23563,13 @@ This loop check for non zero table_index and fill the parameter values for them.
 		if( table_index[j] != 0)
 		{
 #ifdef WIFI_HAL_VERSION_3
-                rc = sprintf_s( param_name[i], sizeof(param_name[i]), "Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.MACAddress", j + 1,table_index[j] );
+                rc = sprintf_s( param_name[i], sizeof(param_name)-i , "Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.MACAddress", j + 1,table_index[j] );
                 if(rc < EOK)
                 {
                     ERR_CHK(rc);
                 }
 #else
-                rc = sprintf_s( param_name[i], sizeof(param_name[i]), "Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.MACAddress", Hotspot_Index[j],table_index[j] );
+                rc = sprintf_s( param_name[i], sizeof(param_name)-i, "Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.MACAddress", Hotspot_Index[j],table_index[j] );
                 if(rc < EOK)
                 {
                     ERR_CHK(rc);
@@ -23583,13 +23581,13 @@ This loop check for non zero table_index and fill the parameter values for them.
 		        i++;
 
 #ifdef WIFI_HAL_VERSION_3
-                rc = sprintf_s( param_name[i], sizeof(param_name[i]), "Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.DeviceName", j + 1,table_index[j] );
+                rc = sprintf_s( param_name[i], sizeof(param_name)-i , "Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.DeviceName", j + 1,table_index[j] );
                 if(rc < EOK)
                 {
                     ERR_CHK(rc);
                 }
 #else
-                rc = sprintf_s( param_name[i], sizeof(param_name[i]), "Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.DeviceName", Hotspot_Index[j],table_index[j] );
+                rc = sprintf_s( param_name[i], sizeof(param_name)-i , "Device.WiFi.AccessPoint.%d.X_CISCO_COM_MacFilterTable.%d.DeviceName", Hotspot_Index[j],table_index[j] );
                 if(rc < EOK)
                 {
                     ERR_CHK(rc);
@@ -26083,12 +26081,11 @@ ANSC_STATUS radioGetCfgUpdateFromHalToDml(UINT wlanIndex, PCOSA_DML_WIFI_RADIO_C
     }
     strLoc   = 0;
     strCount = 0;
-    pCfg->BasicDataTransmitRates[strLoc] = '\0';
     for (seqCounter = 0; seqCounter < ARRAY_SZ(wifiDataTxRateMap); seqCounter++)
     {
         if (pWifiRadioOperParam->basicDataTransmitRates & wifiDataTxRateMap[seqCounter].DataTxRateEnum)
         {
-            rc = sprintf_s(&pCfg->BasicDataTransmitRates[strLoc], (sizeof(pCfg->BasicDataTransmitRates) - strLoc), "%s,", wifiDataTxRateMap[seqCounter].DataTxRateStr);
+            rc = sprintf_s(&pCfg->BasicDataTransmitRates[strLoc], sizeof(pCfg->BasicDataTransmitRates) ,"%s,", wifiDataTxRateMap[seqCounter].DataTxRateStr);
             if(rc < EOK)
             {
                 ERR_CHK(rc);
@@ -26097,20 +26094,17 @@ ANSC_STATUS radioGetCfgUpdateFromHalToDml(UINT wlanIndex, PCOSA_DML_WIFI_RADIO_C
             strLoc += strCount;
         }
     }
-    if(strLoc) //To avoid SIGSEGV when strLoc is 0.
-    {
-        pCfg->BasicDataTransmitRates[strLoc-1] = '\0';
-    }
+    pCfg->BasicDataTransmitRates[strLoc-1] = '\0';
+
     ccspWifiDbgPrint(CCSP_WIFI_TRACE, "\n%s BasicDataTransmitRates : %s\n", __FUNCTION__, pCfg->BasicDataTransmitRates);
 
     strLoc   = 0;
     strCount = 0;
-    pCfg->OperationalDataTransmitRates[strLoc] = '\0';
     for (seqCounter = 0; seqCounter < ARRAY_SZ(wifiDataTxRateMap); seqCounter++)
     {
         if (pWifiRadioOperParam->operationalDataTransmitRates & wifiDataTxRateMap[seqCounter].DataTxRateEnum)
         {
-            rc = sprintf_s(&pCfg->OperationalDataTransmitRates[strLoc], (sizeof(pCfg->OperationalDataTransmitRates) - strLoc), "%s,", wifiDataTxRateMap[seqCounter].DataTxRateStr);
+            rc = sprintf_s(&pCfg->OperationalDataTransmitRates[strLoc], sizeof(pCfg->OperationalDataTransmitRates) ,"%s,", wifiDataTxRateMap[seqCounter].DataTxRateStr);
             if(rc < EOK)
             {
                 ERR_CHK(rc);
@@ -26119,10 +26113,8 @@ ANSC_STATUS radioGetCfgUpdateFromHalToDml(UINT wlanIndex, PCOSA_DML_WIFI_RADIO_C
             strLoc += strCount;
         }
     }
-    if(strLoc) //To avoid SIGSEGV when strLoc is 0.
-    {
-        pCfg->OperationalDataTransmitRates[strLoc-1] = '\0';
-    }
+    pCfg->OperationalDataTransmitRates[strLoc-1] = '\0';
+
     ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s  OperationalDataTransmitRates : %s\n", __FUNCTION__, pCfg->OperationalDataTransmitRates);
 
     for (seqCounter = 0; seqCounter < ARRAY_SZ(wifiFreqBandMap); seqCounter++)
@@ -29215,7 +29207,7 @@ void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg )
                  char *pos2 = NULL,
                       *pos5 = NULL;
 
-                 rc = sprintf_s( pstWiFiLMHostCfg[iTotalLMHostWiFiClients].acLowerLayerInterface1, sizeof( pstWiFiLMHostCfg[iTotalLMHostWiFiClients].acLowerLayerInterface1 ), "%s", acTmpReturnValue );
+                 rc = sprintf_s( pstWiFiLMHostCfg[iTotalLMHostWiFiClients].acLowerLayerInterface1, sizeof( pstWiFiLMHostCfg[iTotalLMHostWiFiClients].acLowerLayerInterface1 ) - 1 , "%s", acTmpReturnValue );
                  if(rc < EOK) ERR_CHK(rc);  
 
                  //Get Index
@@ -29238,7 +29230,7 @@ void* CosaDmlWiFi_WiFiClientsMonitorAndSyncThread( void *arg )
                  snprintf(acTmpQueryParam, sizeof(acTmpQueryParam),"%s%s",HostInfo[i]->parameterName,LMLITE_PHY_ADDR_PARAM_NAME);
                  CosaDmlWiFi_GetParamValues(LMLITE_COMPONENT_NAME, LMLITE_DBUS_PATH, acTmpQueryParam, acTmpReturnValue);
 
-                 rc = sprintf_s( pstWiFiLMHostCfg[iTotalLMHostWiFiClients].acMACAddress, sizeof(pstWiFiLMHostCfg[iTotalLMHostWiFiClients].acMACAddress), "%s", acTmpReturnValue );
+                 rc = sprintf_s( pstWiFiLMHostCfg[iTotalLMHostWiFiClients].acMACAddress, sizeof(pstWiFiLMHostCfg[iTotalLMHostWiFiClients].acMACAddress) - 1 , "%s", acTmpReturnValue );
                  if(rc < EOK) ERR_CHK(rc);
 
                  //Get Active Flag
