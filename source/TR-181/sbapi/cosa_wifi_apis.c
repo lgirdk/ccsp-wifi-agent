@@ -18035,8 +18035,14 @@ CosaDmlWiFiApGetInfo
 
     pInfo->Status = (wifiVapInfo->u.bss_info.enabled == TRUE) ? COSA_DML_WIFI_AP_STATUS_Enabled : COSA_DML_WIFI_AP_STATUS_Disabled;
     pInfo->BssUserStatus = (wifiVapInfo->u.bss_info.enabled == TRUE) ? 1 : 2;
-    pInfo->WMMCapability = TRUE;
-    pInfo->UAPSDCapability = TRUE;
+    //set WMMCapability and UAPSDCapability FALSE by default for community wifi
+    if (wlanIndex != 4 && wlanIndex != 5) {
+        pInfo->WMMCapability = TRUE;
+        pInfo->UAPSDCapability = TRUE;
+    } else {
+        pInfo->WMMCapability = FALSE;
+        pInfo->UAPSDCapability = FALSE;
+    }
     ccspWifiDbgPrint(CCSP_WIFI_TRACE, "%s Status : %d \n", __FUNCTION__, pInfo->Status);
 
 #else //WIFI_HAL_VERSION_3
@@ -18054,8 +18060,14 @@ CosaDmlWiFiApGetInfo
     wifi_getApEnable(wlanIndex,&enabled);
     pInfo->Status = (enabled == TRUE) ? COSA_DML_WIFI_AP_STATUS_Enabled : COSA_DML_WIFI_AP_STATUS_Disabled;
     pInfo->BssUserStatus = (enabled == TRUE) ? 1 : 2;
-	pInfo->WMMCapability = TRUE;        
-	pInfo->UAPSDCapability = TRUE;
+    //set WMMCapability and UAPSDCapability FALSE by default for community wifi
+    if (wlanIndex != 4 && wlanIndex != 5) {
+        pInfo->WMMCapability = TRUE;
+        pInfo->UAPSDCapability = TRUE;
+    } else {
+        pInfo->WMMCapability = FALSE;
+        pInfo->UAPSDCapability = FALSE;
+    }
 #endif //WIFI_HAL_VERSION_3
 
     return ANSC_STATUS_SUCCESS;
