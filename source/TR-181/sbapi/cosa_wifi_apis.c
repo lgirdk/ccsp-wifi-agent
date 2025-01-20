@@ -21109,7 +21109,7 @@ CosaDmlMacFilt_SetConf(ULONG apIns, ULONG macFiltIns, PCOSA_DML_WIFI_AP_MAC_FILT
     int retPsmSet = CCSP_SUCCESS;
     int retPsmGet = CCSP_FAILURE;
     errno_t  rc  =  -1;
-    char  *oldDevMac;
+    char  *oldDevMac = NULL;
     UNREFERENCED_PARAMETER(macFiltIns);
     if (!pMacFilt) return ANSC_STATUS_FAILURE;
 
@@ -21132,6 +21132,11 @@ CosaDmlMacFilt_SetConf(ULONG apIns, ULONG macFiltIns, PCOSA_DML_WIFI_AP_MAC_FILT
             else
             {
                 wifidb_print("%s Updated WIFI DB. delete of %s macfilter entry successful\n",__func__, oldDevMac);
+            }
+            CCSP_MESSAGE_BUS_INFO *busInfo = (CCSP_MESSAGE_BUS_INFO *)bus_handle;
+            if (busInfo && busInfo->freefunc && oldDevMac) {
+                busInfo->freefunc(oldDevMac);
+                oldDevMac = NULL;
             }
         }
     }
