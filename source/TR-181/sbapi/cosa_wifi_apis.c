@@ -12852,6 +12852,8 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
     rdk_wifi_vap_map_t *rdkWifiVap = NULL;
     wifi_vap_info_t *wifiVapInfo = NULL;
     wifi_vap_info_map_t tmpWifiVapInfoMap;
+    wifi_vap_info_map_t tmpWifiVapInfoMapRT;
+    BOOL isUseRuntimeRRM = FALSE;
     UINT vapCount = 0;
     BOOL isVapApply = FALSE;
     UINT vapIndex = 0;
@@ -12929,6 +12931,15 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
 
     memset(&tmpWifiVapInfoMap, 0, sizeof(wifi_vap_info_map_t));
 
+    memset(&tmpWifiVapInfoMapRT, 0, sizeof(wifi_vap_info_map_t));
+    isUseRuntimeRRM = TRUE;
+    ret = wifi_getRadioVapInfoMap(radioIndex, &tmpWifiVapInfoMapRT);
+    if (ret != ANSC_STATUS_SUCCESS)
+    {
+        CcspWifiTrace(("RDK_LOG_ERROR, %s wifi_getRadioVapInfoMap returned with error %d for %d\n", __FUNCTION__, ret, radioIndex));
+        isUseRuntimeRRM = FALSE;
+    }
+
     //Iterate over the vaps present in the radio
     for (vapCount = 0; vapCount < rdkWifiVap->num_vaps; vapCount++)
     {
@@ -12994,6 +13005,10 @@ PCOSA_DML_WIFI_RADIO_CFG    pCfg        /* Identified by InstanceNumber */
             }
 #endif
             memcpy(&tmpWifiVapInfoMap.vap_array[vapArrayIndex], wifiVapInfo, sizeof(wifi_vap_info_t));
+            if (isUseRuntimeRRM)
+            {
+                tmpWifiVapInfoMap.vap_array[vapArrayIndex].u.bss_info.nbrReportActivated = tmpWifiVapInfoMapRT.vap_array[vapArrayIndex].u.bss_info.nbrReportActivated;
+            }
             ccspWifiDbgPrint(CCSP_WIFI_TRACE, " %s %d vapIndex : %d is placed at vapArrayIndex : %d\n", __FUNCTION__, __LINE__, vapIndex, vapArrayIndex);
             vapArrayIndex++;
             tmpWifiVapInfoMap.num_vaps = vapArrayIndex;
