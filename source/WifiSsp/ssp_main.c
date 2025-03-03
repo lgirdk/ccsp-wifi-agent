@@ -465,21 +465,12 @@ static bool drop_root()
   appcaps.caps = NULL;
   appcaps.user_name = NULL;
   bool retval = false;
-  bool ret = false;
-  ret = isBlocklisted();
-  if(ret)
-  {
-    CcspTraceInfo(("NonRoot feature is disabled\n"));
-  }
-  else
-  {
-    CcspTraceInfo(("NonRoot feature is enabled, dropping root privileges for CcspWiFiAgent process\n"));
-    if(init_capability() != NULL) {
-      if(drop_root_caps(&appcaps) != -1) {
-        if(update_process_caps(&appcaps) != -1) {
-          read_capability(&appcaps);
-          retval = true;
-        }
+  CcspTraceInfo(("NonRoot feature is enabled, dropping root privileges for CcspWiFiAgent process\n"));
+  if(init_capability() != NULL) {
+    if(drop_root_caps(&appcaps) != -1) {
+      if(update_process_caps(&appcaps) != -1) {
+        read_capability(&appcaps);
+        retval = true;
       }
     }
   }
@@ -551,7 +542,7 @@ int main(int argc, char* argv[])
         }
     }
 
-  #if defined (_CBR_PRODUCT_REQ_) || ( defined (INTEL_PUMA7) && !defined (_XB7_PRODUCT_REQ_) ) || (defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_)) //Applicable only for TCHCBR, TCHXB6 & TCHXB7
+#if defined (_CBR_PRODUCT_REQ_) || ( defined (INTEL_PUMA7) && !defined (_XB7_PRODUCT_REQ_) ) || (defined (_XB6_PRODUCT_REQ_) && defined (_COSA_BCM_ARM_))
     if(!drop_root())
     {
         CcspTraceError(("drop_root function failed!\n"));
